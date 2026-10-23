@@ -9,7 +9,7 @@
             --bg-dark: #090d16;
             --card-dark: #1e293b;
             --card-border: #334155;
-            --primary: #f97316; /* Vibrant Chinese orange */
+            --primary: #f97316;
             --primary-hover: #ea580c;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -109,7 +109,6 @@
         th {
             background-color: #0f172a;
         }
-        /* Quiz Layout Inspired by Reference UI */
         .quiz-header {
             display: flex;
             justify-content: space-between;
@@ -141,11 +140,12 @@
             margin-bottom: 16px;
         }
         .prompt-display {
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: bold;
             color: var(--primary);
             margin: 10px 0 20px 0;
             letter-spacing: 2px;
+            word-break: break-word;
         }
         .prompt-instruction {
             font-size: 1rem;
@@ -166,6 +166,7 @@
             font-size: 1.1rem;
             border-radius: 10px;
             text-align: center;
+            cursor: pointer;
         }
         .option-btn:hover {
             background-color: #334155;
@@ -475,13 +476,12 @@
             document.getElementById('progress-bar').style.width = `${percent}%`;
             document.getElementById('progress-text').innerText = `${completed}/${totalItemsInSession}`;
 
-            document.getElementById('feedback-area.style.display') = 'none';
             const feedbackArea = document.getElementById('feedback-area');
             feedbackArea.style.display = 'none';
             feedbackArea.className = 'feedback-box';
             document.getElementById('next-btn').style.display = 'none';
 
-            currentQuizItem = quizQueue[0]; // Look at first item in queue
+            currentQuizItem = quizQueue[0];
 
             let settingType = document.getElementById('quiz-type').value;
             currentActiveType = settingType === 'random' ? ['c2e', 'c2p', 'p2c', 'e2c'][Math.floor(Math.random() * 4)] : settingType;
@@ -562,18 +562,15 @@
             const feedback = document.getElementById('feedback-area');
             feedback.style.display = 'block';
 
-            // Disable MC buttons if active
             document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
 
             if (isCorrect) {
                 feedback.className = 'feedback-box feedback-correct';
                 feedback.innerHTML = '✨ CORRECT!! Fantastic!';
-                // Remove item from queue only when answered right
                 quizQueue.shift();
             } else {
                 feedback.className = 'feedback-box feedback-incorrect';
                 feedback.innerHTML = `❌ Incorrect. Correct: <strong>${correctAnswer}</strong>`;
-                // Re-queue item further down so it repeats until gotten right
                 const missedItem = quizQueue.shift();
                 quizQueue.push(missedItem);
             }
