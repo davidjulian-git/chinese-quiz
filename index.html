@@ -152,6 +152,7 @@
             <div class="form-group">
                 <label>Question Type:</label>
                 <select id="quiz-type">
+                    <option value="random">🎲 Randomize All Types (Mixed)</option>
                     <option value="c2e">Chinese Character -> English</option>
                     <option value="c2p">Chinese Character -> Pinyin</option>
                     <option value="p2c">Pinyin -> Chinese Character</option>
@@ -341,22 +342,29 @@
             let correctAnswer = '';
             let targetKey = '';
 
-            if (currentQuiz.type === 'c2e') {
+            // Determine active type for this specific question
+            let activeType = currentQuiz.type;
+            if (activeType === 'random') {
+                const types = ['c2e', 'c2p', 'p2c', 'e2c'];
+                activeType = types[Math.floor(Math.random() * types.length)];
+            }
+
+            if (activeType === 'c2e') {
                 promptLabel = "What is the English translation for:";
                 promptText = item.chinese;
                 correctAnswer = item.english;
                 targetKey = 'english';
-            } else if (currentQuiz.type === 'c2p') {
+            } else if (activeType === 'c2p') {
                 promptLabel = "What is the pinyin for:";
                 promptText = item.chinese;
                 correctAnswer = item.pinyin;
                 targetKey = 'pinyin';
-            } else if (currentQuiz.type === 'p2c') {
+            } else if (activeType === 'p2c') {
                 promptLabel = "What is the Chinese character for:";
                 promptText = item.pinyin;
                 correctAnswer = item.chinese;
                 targetKey = 'chinese';
-            } else if (currentQuiz.type === 'e2c') {
+            } else if (activeType === 'e2c') {
                 promptLabel = "What is the Chinese character for:";
                 promptText = item.english;
                 correctAnswer = item.chinese;
