@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinese Study & Quiz App</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #cbd5e1;
+            --success: #16a34a;
+            --error: #dc2626;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        button.secondary {
+            background-color: #64748b;
+        }
+        button.secondary:hover {
+            background-color: #475569;
+        }
+        .tab-content {
+            display: none;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid var(--border);
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f5f9;
+        }
+        .quiz-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .prompt-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #0f172a;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .option-btn {
+            background-color: #e2e8f0;
+            color: var(--text);
+            padding: 16px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            border: 2px solid transparent;
+        }
+        .option-btn:hover {
+            background-color: #cbd5e1;
+        }
+        .feedback {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .correct { color: var(--success); }
+        .incorrect { color: var(--error); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Chinese Study & Quiz App</h1>
+    </header>
+
+    <nav>
+        <button onclick="switchTab('quiz')">Quiz Mode</button>
+        <button onclick="switchTab('manage')" class="secondary">Manage Vocabulary</button>
+    </nav>
+
+    <!-- QUIZ TAB -->
+    <div id="quiz-tab" class="tab-content active">
+        <div id="quiz-setup">
+            <h2>Quiz Settings</h2>
+            <div class="form-group">
+                <label>Mode:</label>
+                <select id="quiz-mode">
+                    <option value="mc">Multiple Choice</option>
+                    <option value="write">Write-in Answer</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Question Type:</label>
+                <select id="quiz-type">
+                    <option value="c2e">Chinese Character -> English</option>
+                    <option value="c2p">Chinese Character -> Pinyin</option>
+                    <option value="p2c">Pinyin -> Chinese Character</option>
+                    <option value="e2c">English -> Chinese Character</option>
+                </select>
+            </div>
+            <button onclick="startQuiz()">Start Quiz</button>
+        </div>
+
+        <div id="quiz-active" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="score-counter">Score: 0</span>
+                <button class="secondary" onclick="endQuiz()" style="padding: 6px 12px;">Quit Quiz</button>
+            </div>
+            <div class="quiz-card">
+                <div id="prompt-label" style="font-size: 1rem; color: #64748b;">Translate this:</div>
+                <div id="prompt-text" class="prompt-display"></div>
+                
+                <!-- Multiple Choice Container -->
+                <div id="mc-container" class="options-grid"></div>
+
+                <!-- Write-in Container -->
+                <div id="write-container" style="display: none; margin-top: 20px;">
+                    <input type="text" id="user-answer" placeholder="Type your answer here..." autocomplete="off">
+                    <button style="margin-top: 12px; width: 100%;" onclick="submitWriteAnswer()">Submit Answer</button>
+                </div>
+
+                <div id="feedback-area" class="feedback"></div>
+                <button id="next-btn" style="margin-top: 20px; display: none;" onclick="nextQuestion()">Next Question</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANAGE VOCABULARY TAB -->
+    <div id="manage-tab" class="tab-content">
+        <h2>Add New Vocabulary</h2>
+        <div class="form-group">
+            <label for="input-chinese">Chinese Characters (Traditional):</label>
+            <input type="text" id="input-chinese" placeholder="e.g., 台灣">
+        </div>
+        <div class="form-group">
+            <label for="input-pinyin">Pinyin:</label>
+            <input type="text" id="input-pinyin" placeholder="e.g., Táiwān">
+        </div>
+        <div class="form-group">
+            <label for="input-english">English Translation:</label>
+            <input type="text" id="input-english" placeholder="e.g., Taiwan">
+        </div>
+        <button onclick="addVocab()">Add Word</button>
+
+        <h3 style="margin-top: 30px;">Saved Vocabulary List (<span id="vocab-count">0</span>)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Chinese</th>
+                    <th>Pinyin</th>
+                    <th>English</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="vocab-table-body"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [
+            { chinese: "台灣", pinyin: "Táiwān", english: "Taiwan" },
+            { chinese: "謝謝", pinyin: "xièxie", english: "Thank you" }
+        ];
+
+        let currentQuiz = {
+            questions: [],
+            currentIndex: 0,
+            score: 0,
+            mode: 'mc',
+            type: 'c2e',
+            currentCorrectAnswer: ''
+        };
+
+        function saveVocabToStorage() {
+            localStorage.setItem('chinese_vocab', JSON.stringify(vocabList));
+            updateVocabTable();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            if (tabName === 'quiz') {
+                document.getElementById('quiz-tab').classList.add('active');
+                document.getElementById('quiz-setup').style.display = 'block';
+                document.getElementById('quiz-active').style.display = 'none';
+            } else {
+                document.getElementById('manage-tab').classList.add('active');
+                updateVocabTable();
+            }
+        }
+
+        function addVocab() {
+            const chinese = document.getElementById('input-chinese').value.trim();
+            const pinyin = document.getElementById('input-pinyin').value.trim();
+            const english = document.getElementById('input-english').value.trim();
+
+            if (!chinese || !pinyin || !english) {
+                alert('Please fill in all three fields.');
+                return;
+            }
+
+            vocabList.push({ chinese, pinyin, english });
+            saveVocabToStorage();
+
+            document.getElementById('input-chinese').value = '';
+            document.getElementById('input-pinyin').value = '';
+            document.getElementById('input-english').value = '';
+            alert('Word added successfully!');
+        }
+
+        function deleteVocab(index) {
+            vocabList.splice(index, 1);
+            saveVocabToStorage();
+        }
+
+        function updateVocabTable() {
+            const tbody = document.getElementById('vocab-table-body');
+            tbody.innerHTML = '';
+            document.getElementById('vocab-count').innerText = vocabList.length;
+            
+            vocabList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.chinese}</td>
+                    <td>${item.pinyin}</td>
+                    <td>${item.english}</td>
+                    <td><button class="secondary" style="padding: 4px 8px; background-color: var(--error);" onclick="deleteVocab(${index})">Delete</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function startQuiz() {
+            if (vocabList.length < 4) {
+                alert('Please add at least 4 vocabulary words before starting a quiz.');
+                return;
+            }
+
+            currentQuiz.mode = document.getElementById('quiz-mode').value;
+            currentQuiz.type = document.getElementById('quiz-type').value;
+            currentQuiz.score = 0;
+            currentQuiz.currentIndex = 0;
+            currentQuiz.questions = shuffle([...vocabList]);
+
+            document.getElementById('quiz-setup').style.display = 'none';
+            document.getElementById('quiz-active').style.display = 'block';
+
+            if (currentQuiz.mode === 'write') {
+                document.getElementById('mc-container').style.display = 'none';
+                document.getElementById('write-container').style.display = 'block';
+            } else {
+                document.getElementById('mc-container').style.display = 'grid';
+                document.getElementById('write-container').style.display = 'none';
+            }
+
+            loadQuestion();
+        }
+
+        function endQuiz() {
+            document.getElementById('quiz-setup').style.display = 'block';
+            document.getElementById('quiz-active').style.display = 'none';
+        }
+
+        function loadQuestion() {
+            if (currentQuiz.currentIndex >= currentQuiz.questions.length) {
+                alert(`Quiz finished! Final score: ${currentQuiz.score} / ${currentQuiz.questions.length}`);
+                endQuiz();
+                return;
+            }
+
+            document.getElementById('score-counter').innerText = `Score: ${currentQuiz.score} (${currentQuiz.currentIndex + 1}/${currentQuiz.questions.length})`;
+            document.getElementById('feedback-area').innerText = '';
+            document.getElementById('next-btn').style.display = 'none';
+
+            const item = currentQuiz.questions[currentQuiz.currentIndex];
+            let promptText = '';
+            let promptLabel = '';
+            let correctAnswer = '';
+            let targetKey = '';
+
+            if (currentQuiz.type === 'c2e') {
+                promptLabel = "What is the English translation for:";
+                promptText = item.chinese;
+                correctAnswer = item.english;
+                targetKey = 'english';
+            } else if (currentQuiz.type === 'c2p') {
+                promptLabel = "What is the pinyin for:";
+                promptText = item.chinese;
+                correctAnswer = item.pinyin;
+                targetKey = 'pinyin';
+            } else if (currentQuiz.type === 'p2c') {
+                promptLabel = "What is the Chinese character for:";
+                promptText = item.pinyin;
+                correctAnswer = item.chinese;
+                targetKey = 'chinese';
+            } else if (currentQuiz.type === 'e2c') {
+                promptLabel = "What is the Chinese character for:";
+                promptText = item.english;
+                correctAnswer = item.chinese;
+                targetKey = 'chinese';
+            }
+
+            document.getElementById('prompt-label').innerText = promptLabel;
+            document.getElementById('prompt-text').innerText = promptText;
+            currentQuiz.currentCorrectAnswer = correctAnswer;
+
+            if (currentQuiz.mode === 'mc') {
+                setupMultipleChoice(correctAnswer, targetKey);
+            } else {
+                document.getElementById('user-answer').value = '';
+                document.getElementById('user-answer').focus();
+            }
+        }
+
+        function setupMultipleChoice(correctAnswer, targetKey) {
+            const container = document.getElementById('mc-container');
+            container.innerHTML = '';
+
+            let wrongOptions = vocabList
+                .filter(i => i[targetKey] !== correctAnswer)
+                .map(i => i[targetKey]);
+            
+            wrongOptions = shuffle(wrongOptions).slice(0, 3);
+            let choices = shuffle([correctAnswer, ...wrongOptions]);
+
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = choice;
+                btn.onclick = () => checkMCAnswer(choice, correctAnswer);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkMCAnswer(selected, correct) {
+            const feedback = document.getElementById('feedback-area');
+            const buttons = document.querySelectorAll('.option-btn');
+
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selected === correct) {
+                feedback.innerHTML = '<span class="correct">Correct!</span>';
+                currentQuiz.score++;
+            } else {
+                feedback.innerHTML = `<span class="incorrect">Incorrect. Correct answer was: ${correct}</span>`;
+            }
+
+            document.getElementById('next-btn').style.display = 'block';
+        }
+
+        function submitWriteAnswer() {
+            const userText = document.getElementById('user-answer').value.trim();
+            const feedback = document.getElementById('feedback-area');
+            const correct = currentQuiz.currentCorrectAnswer;
+
+            if (!userText) return;
+
+            if (userText.toLowerCase() === correct.toLowerCase()) {
+                feedback.innerHTML = '<span class="correct">Correct!</span>';
+                currentQuiz.score++;
+            } else {
+                feedback.innerHTML = `<span class="incorrect">Incorrect. Correct answer was: ${correct}</span>`;
+            }
+
+            document.getElementById('next-btn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuiz.currentIndex++;
+            loadQuestion();
+        }
+
+        // Initialize table on load
+        updateVocabTable();
+    </script>
+</body>
+</html>
