@@ -13,8 +13,6 @@
             --text-muted: #94a3b8;
             --success: #22c55e;
             --error: #ef4444;
-            
-            /* Dynamic Type Colors */
             --theme-color: #f97316;
         }
         body {
@@ -282,7 +280,7 @@
                 <!-- Write-in Container -->
                 <div id="write-container" style="display: none;">
                     <input type="text" id="user-answer" placeholder="Type your answer here..." autocomplete="off">
-                    <button style="margin-top: 12px; width: 100%;" onclick="submitWriteAnswer()">Submit Answer</button>
+                    <button id="submit-btn" style="margin-top: 12px; width: 100%;" onclick="submitWriteAnswer()">Submit Answer</button>
                 </div>
 
                 <div id="feedback-area" class="feedback-box"></div>
@@ -356,6 +354,7 @@
         let totalItemsInSession = 0;
         let currentQuizItem = null;
         let currentActiveType = 'c2e';
+        let isRetryMode = false; // Tracks if user is forced to re-type after a mistake
 
         function saveVocabToStorage() {
             localStorage.setItem('chinese_vocab', JSON.stringify(vocabList));
@@ -500,11 +499,10 @@
         }
 
         function setAnswerTheme(answerCategory) {
-            // answerCategory can be 'chinese', 'pinyin', or 'english'
-            let color = '#f97316'; // default orange
-            if (answerCategory === 'chinese') color = '#f97316'; // Orange for Characters
-            else if (answerCategory === 'pinyin') color = '#38bdf8'; // Electric Blue for Pinyin
-            else if (answerCategory === 'english') color = '#a855f7'; // Purple for English
+            let color = '#f97316'; 
+            if (answerCategory === 'chinese') color = '#f97316'; 
+            else if (answerCategory === 'pinyin') color = '#38bdf8'; 
+            else if (answerCategory === 'english') color = '#a855f7'; 
 
             document.documentElement.style.setProperty('--theme-color', color);
         }
@@ -516,6 +514,8 @@
                 return;
             }
 
+            isRetryMode = false; // Reset retry flag for new question
+
             const completed = totalItemsInSession - quizQueue.length;
             const percent = (completed / totalItemsInSession) * 100;
             document.getElementById('progress-bar').style.width = `${percent}%`;
@@ -525,6 +525,7 @@
             feedbackArea.style.display = 'none';
             feedbackArea.className = 'feedback-box';
             document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('submit-btn').disabled = false;
 
             currentQuizItem = quizQueue[0];
 
@@ -610,17 +611,56 @@
             });
         }
 
+        function getCorrectAnswerString() {
+            if (currentActiveType === 'c2e' || currentActiveType === 'p2e') return currentQuizItem.english;
+            if (currentActiveType === 'c2p' || currentActiveType === 'e2p') return currentQuizItem.pinyin;
+            return currentQuizItem.chinese;
+        }
+
         function submitWriteAnswer() {
             const userText = document.getElementById('user-answer').value.trim();
+            const feedback = document.getElementById('feedback-area');
+            const correctAnswer = getCorrectAnswerString();
+
             if (!userText) return;
 
-            let correctAnswer = '';
-            if (currentActiveType === 'c2e' || currentActiveType === 'p2e') correctAnswer = currentQuizItem.english;
-            else if (currentActiveType === 'c2p' || currentActiveType === 'e2p') correctAnswer = currentQuizItem.pinyin;
-            else correctAnswer = currentQuizItem.chinese;
+            // If we are already in retry mode, check if they typed it right *now*
+            if (isRetryMode) {
+                if (userText.toLowerCase() === correctAnswer.toLowerCase()) {
+                    feedback.className = 'feedback-box feedback-correct';
+                    feedback.innerHTML = '✨ Correct! Moving on...';
+                    document.getElementById('submit-btn').disabled = true;
+                    // Now that they successfully typed it correctly on retry, clear from queue and move on
+                    quizQueue.shift();
+                    setTimeout(nextQuestion, 1000);
+                } else {
+                    feedback.className = 'feedback-box feedback-incorrect';
+                    feedback.innerHTML = `❌ Incorrect. Please type the exact correct answer: <strong>${correctAnswer}</strong>`;
+                    document.getElementById('user-answer').value = '';
+                    document.getElementById('user-answer').focus();
+                }
+                return;
+            }
 
+            // Normal first attempt check
             const isCorrect = userText.toLowerCase() === correctAnswer.toLowerCase();
-            checkAnswer(isCorrect, correctAnswer);
+            feedback.style.display = 'block';
+
+            if (isCorrect) {
+                feedback.className = 'feedback-box feedback-correct';
+                feedback.innerHTML = '✨ CORRECT!! Fantastic!';
+                document.getElementById('submit-btn').disabled = true;
+                quizQueue.shift();
+                document.getElementById('next-btn').style.display = 'block';
+            } else {
+                // First time wrong: Activate forced retry mode!
+                isRetryMode = true;
+                feedback.className = 'feedback-box feedback-incorrect';
+                feedback.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}</strong><br><span style="font-size:0.9rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
+                document.getElementById('user-answer').value = '';
+                document.getElementById('user-answer').focus();
+                // Note: We do NOT shift from quizQueue yet; it stays in queue until they successfully re-type it.
+            }
         }
 
         function checkAnswer(isCorrect, correctAnswer) {
