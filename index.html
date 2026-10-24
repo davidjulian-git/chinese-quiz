@@ -9,12 +9,13 @@
             --bg-dark: #090d16;
             --card-dark: #1e293b;
             --card-border: #334155;
-            --primary: #f97316;
-            --primary-hover: #ea580c;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --success: #22c55e;
             --error: #ef4444;
+            
+            /* Dynamic Type Colors */
+            --theme-color: #f97316;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -43,13 +44,19 @@
         nav button {
             background-color: #334155;
             color: var(--text-muted);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
         }
         nav button.active-tab {
-            background-color: var(--primary);
+            background-color: var(--theme-color);
             color: white;
         }
         button {
-            background-color: var(--primary);
+            background-color: var(--theme-color);
             color: white;
             border: none;
             padding: 12px 20px;
@@ -60,7 +67,7 @@
             transition: background 0.2s;
         }
         button:hover {
-            background-color: var(--primary-hover);
+            opacity: 0.9;
         }
         button.secondary {
             background-color: #334155;
@@ -98,6 +105,11 @@
             color: var(--text-main);
             font-size: 1rem;
             box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--theme-color);
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
         }
         textarea {
             resize: vertical;
@@ -141,24 +153,30 @@
         }
         .quiz-card-box {
             background-color: #0f172a;
-            border: 1px solid var(--card-border);
+            border: 2px solid var(--theme-color);
             border-radius: 16px;
             padding: 24px;
             text-align: center;
             margin-bottom: 16px;
+            transition: border-color 0.3s;
         }
         .prompt-display {
-            font-size: 3rem;
+            font-size: 2.8rem;
             font-weight: bold;
-            color: var(--primary);
+            color: var(--theme-color);
             margin: 10px 0 20px 0;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             word-break: break-word;
+            transition: color 0.3s;
         }
         .prompt-instruction {
-            font-size: 1rem;
-            color: var(--text-muted);
-            margin-bottom: 16px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--theme-color);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s;
         }
         .options-grid {
             display: grid;
@@ -171,7 +189,7 @@
             color: var(--text-main);
             border: 1px solid var(--card-border);
             padding: 16px;
-            font-size: 1.5rem; /* Larger font for readability */
+            font-size: 1.4rem;
             font-weight: 500;
             border-radius: 10px;
             text-align: center;
@@ -179,6 +197,7 @@
         }
         .option-btn:hover {
             background-color: #334155;
+            border-color: var(--theme-color);
         }
         .feedback-box {
             margin-top: 16px;
@@ -253,7 +272,7 @@
                 <span id="progress-text">0/0</span>
             </div>
 
-            <div class="quiz-card-box">
+            <div class="quiz-card-box" id="quiz-card-box">
                 <div id="prompt-instruction" class="prompt-instruction">Translate this:</div>
                 <div id="prompt-text" class="prompt-display"></div>
                 
@@ -346,7 +365,6 @@
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             
-            // Update Navigation Button Active States
             document.getElementById('nav-quiz').classList.remove('active-tab');
             document.getElementById('nav-manage').classList.remove('active-tab');
 
@@ -481,6 +499,16 @@
             document.getElementById('quiz-active').style.display = 'none';
         }
 
+        function setAnswerTheme(answerCategory) {
+            // answerCategory can be 'chinese', 'pinyin', or 'english'
+            let color = '#f97316'; // default orange
+            if (answerCategory === 'chinese') color = '#f97316'; // Orange for Characters
+            else if (answerCategory === 'pinyin') color = '#38bdf8'; // Electric Blue for Pinyin
+            else if (answerCategory === 'english') color = '#a855f7'; // Purple for English
+
+            document.documentElement.style.setProperty('--theme-color', color);
+        }
+
         function loadQuestion() {
             if (quizQueue.length === 0) {
                 alert('🎉 Session complete! You successfully mastered all words.');
@@ -508,38 +536,47 @@
             let promptLabel = '';
             let correctAnswer = '';
             let targetKey = '';
+            let answerCategory = 'english';
 
             if (currentActiveType === 'c2e') {
-                promptLabel = "Prompt: Provide the English";
+                promptLabel = "Translate to English 🇬🇧";
                 promptText = currentQuizItem.chinese;
                 correctAnswer = currentQuizItem.english;
                 targetKey = 'english';
+                answerCategory = 'english';
             } else if (currentActiveType === 'c2p') {
-                promptLabel = "Prompt: Provide the Pinyin";
+                promptLabel = "Provide the Pinyin 🔤";
                 promptText = currentQuizItem.chinese;
                 correctAnswer = currentQuizItem.pinyin;
                 targetKey = 'pinyin';
+                answerCategory = 'pinyin';
             } else if (currentActiveType === 'p2c') {
-                promptLabel = "Prompt: Provide the Characters";
+                promptLabel = "Provide Chinese Characters 🇨🇳";
                 promptText = currentQuizItem.pinyin;
                 correctAnswer = currentQuizItem.chinese;
                 targetKey = 'chinese';
+                answerCategory = 'chinese';
             } else if (currentActiveType === 'e2c') {
-                promptLabel = "Prompt: Provide the Characters";
+                promptLabel = "Provide Chinese Characters 🇨🇳";
                 promptText = currentQuizItem.english;
                 correctAnswer = currentQuizItem.chinese;
                 targetKey = 'chinese';
+                answerCategory = 'chinese';
             } else if (currentActiveType === 'p2e') {
-                promptLabel = "Prompt: Provide the English";
+                promptLabel = "Translate to English 🇬🇧";
                 promptText = currentQuizItem.pinyin;
                 correctAnswer = currentQuizItem.english;
                 targetKey = 'english';
+                answerCategory = 'english';
             } else if (currentActiveType === 'e2p') {
-                promptLabel = "Prompt: Provide the Pinyin";
+                promptLabel = "Provide the Pinyin 🔤";
                 promptText = currentQuizItem.english;
                 correctAnswer = currentQuizItem.pinyin;
                 targetKey = 'pinyin';
+                answerCategory = 'pinyin';
             }
+
+            setAnswerTheme(answerCategory);
 
             document.getElementById('prompt-instruction').innerText = promptLabel;
             document.getElementById('prompt-text').innerText = promptText;
