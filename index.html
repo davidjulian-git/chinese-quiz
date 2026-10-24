@@ -40,6 +40,14 @@
             gap: 10px;
             margin-bottom: 20px;
         }
+        nav button {
+            background-color: #334155;
+            color: var(--text-muted);
+        }
+        nav button.active-tab {
+            background-color: var(--primary);
+            color: white;
+        }
         button {
             background-color: var(--primary);
             color: white;
@@ -155,15 +163,16 @@
         .options-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 12px;
             margin-top: 15px;
         }
         .option-btn {
             background-color: #1e293b;
             color: var(--text-main);
             border: 1px solid var(--card-border);
-            padding: 14px;
-            font-size: 1.1rem;
+            padding: 16px;
+            font-size: 1.5rem; /* Larger font for readability */
+            font-weight: 500;
             border-radius: 10px;
             text-align: center;
             cursor: pointer;
@@ -205,8 +214,8 @@
     </header>
 
     <nav>
-        <button onclick="switchTab('quiz')">Study Quiz</button>
-        <button onclick="switchTab('manage')" class="secondary">Manage Words</button>
+        <button id="nav-quiz" class="active-tab" onclick="switchTab('quiz')">Study Quiz</button>
+        <button id="nav-manage" onclick="switchTab('manage')">Manage Words</button>
     </nav>
 
     <!-- QUIZ TAB -->
@@ -228,6 +237,8 @@
                     <option value="c2p">Chinese Character -> Pinyin</option>
                     <option value="p2c">Pinyin -> Chinese Character</option>
                     <option value="e2c">English -> Chinese Character</option>
+                    <option value="p2e">Pinyin -> English</option>
+                    <option value="e2p">English -> Pinyin</option>
                 </select>
             </div>
             <button style="width: 100%; margin-top: 10px;" onclick="startQuiz()">Start Session</button>
@@ -334,12 +345,19 @@
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            
+            // Update Navigation Button Active States
+            document.getElementById('nav-quiz').classList.remove('active-tab');
+            document.getElementById('nav-manage').classList.remove('active-tab');
+
             if (tabName === 'quiz') {
                 document.getElementById('quiz-tab').classList.add('active');
+                document.getElementById('nav-quiz').classList.add('active-tab');
                 document.getElementById('quiz-setup').style.display = 'block';
                 document.getElementById('quiz-active').style.display = 'none';
             } else {
                 document.getElementById('manage-tab').classList.add('active');
+                document.getElementById('nav-manage').classList.add('active-tab');
                 updateVocabTable();
             }
         }
@@ -470,7 +488,6 @@
                 return;
             }
 
-            // Update Progress Bar
             const completed = totalItemsInSession - quizQueue.length;
             const percent = (completed / totalItemsInSession) * 100;
             document.getElementById('progress-bar').style.width = `${percent}%`;
@@ -484,7 +501,8 @@
             currentQuizItem = quizQueue[0];
 
             let settingType = document.getElementById('quiz-type').value;
-            currentActiveType = settingType === 'random' ? ['c2e', 'c2p', 'p2c', 'e2c'][Math.floor(Math.random() * 4)] : settingType;
+            const allTypes = ['c2e', 'c2p', 'p2c', 'e2c', 'p2e', 'e2p'];
+            currentActiveType = settingType === 'random' ? allTypes[Math.floor(Math.random() * allTypes.length)] : settingType;
 
             let promptText = '';
             let promptLabel = '';
@@ -511,6 +529,16 @@
                 promptText = currentQuizItem.english;
                 correctAnswer = currentQuizItem.chinese;
                 targetKey = 'chinese';
+            } else if (currentActiveType === 'p2e') {
+                promptLabel = "Prompt: Provide the English";
+                promptText = currentQuizItem.pinyin;
+                correctAnswer = currentQuizItem.english;
+                targetKey = 'english';
+            } else if (currentActiveType === 'e2p') {
+                promptLabel = "Prompt: Provide the Pinyin";
+                promptText = currentQuizItem.english;
+                correctAnswer = currentQuizItem.pinyin;
+                targetKey = 'pinyin';
             }
 
             document.getElementById('prompt-instruction').innerText = promptLabel;
@@ -550,8 +578,8 @@
             if (!userText) return;
 
             let correctAnswer = '';
-            if (currentActiveType === 'c2e') correctAnswer = currentQuizItem.english;
-            else if (currentActiveType === 'c2p') correctAnswer = currentQuizItem.pinyin;
+            if (currentActiveType === 'c2e' || currentActiveType === 'p2e') correctAnswer = currentQuizItem.english;
+            else if (currentActiveType === 'c2p' || currentActiveType === 'e2p') correctAnswer = currentQuizItem.pinyin;
             else correctAnswer = currentQuizItem.chinese;
 
             const isCorrect = userText.toLowerCase() === correctAnswer.toLowerCase();
