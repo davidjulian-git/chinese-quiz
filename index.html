@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mandarin Flashcard & Translation Trainer</title>
+    <title>Chinese Flashcard Quiz & Sentence Trainer</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header / Mode Switcher -->
+    <!-- Header & Mode Switcher -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-lg font-bold text-slate-900">Mandarin Trainer</h1>
+            <h1 class="text-lg font-bold text-slate-900">Chinese Quiz App</h1>
             <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
                 <button id="tab-flashcard" onclick="switchMode('flashcard')" class="px-3 py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-sm">Flashcard Quiz</button>
                 <button id="tab-translation" onclick="switchMode('translation')" class="px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900">Sentence Translation</button>
@@ -22,34 +22,40 @@
     <!-- Main Container -->
     <main class="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col justify-center">
 
-        <!-- ================= ORIGINAL FLASHCARD QUIZ MODE ================= -->
+        <!-- ================= FLASHCARD QUIZ MODE ================= -->
         <div id="mode-flashcard-container" class="space-y-4">
-            <!-- File Upload Bar -->
+            <!-- File Upload & List Controls -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex items-center justify-between">
                 <div>
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Vocabulary Source</h2>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Vocabulary List</h2>
                     <p id="file-name-display" class="text-sm font-medium text-slate-800">Default Built-in List</p>
                 </div>
-                <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2 px-4 rounded-xl transition-colors">
-                    Upload List (.txt/.json)
-                    <input type="file" id="vocab-file-input" accept=".txt,.json" class="hidden" onchange="handleFileUpload(event)">
-                </label>
+                <div class="flex gap-2">
+                    <button onclick="exportJSON()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2 px-3 rounded-xl transition-colors">
+                        Export JSON
+                    </button>
+                    <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-4 rounded-xl transition-colors shadow-sm">
+                        Upload List
+                        <input type="file" id="vocab-file-input" accept=".json,.txt" class="hidden" onchange="handleFileUpload(event)">
+                    </label>
+                </div>
             </div>
 
+            <!-- Quiz Stats Header -->
             <div class="flex justify-between items-center text-xs font-medium text-slate-400 uppercase tracking-wider px-1">
-                <span id="fc-counter">Card 1 of 4</span>
+                <span id="fc-counter">Question 1 of 4</span>
                 <span id="fc-score">Score: 0 / 0</span>
             </div>
 
-            <!-- The Flashcard Box -->
+            <!-- Quiz Card -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 min-h-[22rem] flex flex-col justify-between transition-all relative">
                 <div class="flex justify-between items-start">
-                    <span id="fc-category" class="text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full"></span>
+                    <span id="fc-category" class="text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full">Category</span>
                     <span id="fc-prompt-type" class="text-xs text-indigo-600 font-semibold uppercase tracking-wider">What does this mean?</span>
                 </div>
 
-                <!-- Card Content Display -->
-                <div class="text-center my-auto py-6 space-y-4">
+                <!-- Prompt Display -->
+                <div class="text-center my-auto py-6 space-y-3">
                     <h2 id="fc-display-main" class="text-4xl md:text-5xl font-bold tracking-wide text-slate-900">捷運</h2>
                     <div id="fc-display-phonetic" class="space-y-1">
                         <p id="fc-zhuyin" class="font-mono text-indigo-600 text-base">ㄐㄧㄝˊㄩㄣˋ</p>
@@ -57,14 +63,14 @@
                     </div>
                 </div>
 
-                <!-- Options Grid -->
+                <!-- Multiple Choice Options -->
                 <div id="fc-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2"></div>
 
                 <!-- Feedback & Next Button -->
                 <div id="fc-feedback-area" class="hidden pt-4 border-t border-slate-100 flex items-center justify-between">
                     <p id="fc-feedback-text" class="font-semibold text-sm"></p>
                     <button onclick="nextFlashcardQuestion()" class="bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-5 rounded-xl transition-colors text-sm">
-                        Next Card ➔
+                        Next Question ➔
                     </button>
                 </div>
             </div>
@@ -204,7 +210,7 @@
             }
         }
 
-        // ================= FILE UPLOAD LOGIC =================
+        // ================= VOCABULARY FILE UPLOAD & EXPORT =================
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -218,7 +224,6 @@
                     if (file.name.endsWith('.json')) {
                         parsedData = JSON.parse(content);
                     } else {
-                        // Assume CSV or Tab-delimited text
                         const lines = content.split('\n');
                         lines.forEach(line => {
                             if (!line.trim()) return;
@@ -252,12 +257,22 @@
             reader.readAsText(file);
         }
 
-        // ================= ORIGINAL FLASHCARD QUIZ LOGIC =================
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(flashcardList, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "chinese_vocabulary.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // ================= FLASHCARD QUIZ LOGIC =================
         function loadFlashcardQuestion() {
             isAnswerLocked = false;
             const card = flashcardList[fcIndex];
             
-            document.getElementById("fc-counter").innerText = `Card ${fcIndex + 1} of ${flashcardList.length}`;
+            document.getElementById("fc-counter").innerText = `Question ${fcIndex + 1} of ${flashcardList.length}`;
             document.getElementById("fc-score").innerText = `Score: ${fcScore} / ${fcTotal}`;
             document.getElementById("fc-category").innerText = card.category || "General";
             document.getElementById("fc-feedback-area").classList.add("hidden");
