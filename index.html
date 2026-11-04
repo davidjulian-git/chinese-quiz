@@ -12,8 +12,9 @@
     <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="text-lg font-bold text-slate-900">Mandarin Trainer</h1>
-            <div id="mode-indicator" class="text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full">
-                Sentence Translation Mode
+            <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                <button id="tab-flashcard" onclick="switchMode('flashcard')" class="px-3 py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-sm">Flashcards</button>
+                <button id="tab-translation" onclick="switchMode('translation')" class="px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900">Sentences</button>
             </div>
         </div>
     </header>
@@ -21,143 +22,250 @@
     <!-- Main Container -->
     <main class="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col justify-center">
 
-        <!-- Card Box -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 transition-all">
-            
-            <!-- Prompt Display -->
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-3">
-                    <span id="card-counter" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Question 1 of 4</span>
-                    <span id="direction-badge" class="text-xs font-medium px-2 py-0.5 bg-slate-100 text-slate-600 rounded">EN ➔ 中文</span>
-                </div>
-                
-                <h2 id="prompt-text" class="text-xl md:text-2xl font-semibold text-slate-900 leading-snug min-h-[4rem] flex items-center">
-                    Do you want to take the MRT together?
-                </h2>
-                
-                <div id="phonetic-container" class="mt-2 text-sm text-slate-500 hidden">
-                    <p id="phonetic-zhuyin" class="font-mono text-indigo-600"></p>
-                    <p id="phonetic-pinyin" class="italic"></p>
-                </div>
+        <!-- ================= FLASHCARD MODE ================= -->
+        <div id="mode-flashcard-container" class="space-y-4">
+            <div class="flex justify-between items-center text-xs font-medium text-slate-400 uppercase tracking-wider px-1">
+                <span id="fc-counter">Card 1 of 4</span>
+                <span>Tap card to flip</span>
             </div>
 
-            <!-- Input Area -->
-            <div id="input-section" class="space-y-4">
-                <div>
-                    <label for="user-input" class="block text-xs font-medium text-slate-500 mb-1">Your Translation:</label>
-                    <textarea id="user-input" rows="3" class="w-full rounded-xl border border-slate-300 p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base" placeholder="Type your translation here..."></textarea>
+            <!-- The Flashcard -->
+            <div onclick="flipFlashcard()" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 min-h-[20rem] flex flex-col justify-between cursor-pointer transition-all hover:border-slate-300 relative">
+                <div class="flex justify-between items-start">
+                    <span id="fc-category" class="text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full"></span>
+                    <span class="text-xs text-indigo-600 font-medium">Flip ↺</span>
                 </div>
-                
-                <div class="flex gap-3">
-                    <button id="submit-btn" onclick="checkAnswer()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm">
-                        Submit Answer
-                    </button>
-                    <button id="reveal-btn" onclick="revealAnswer()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors text-sm">
-                        Reveal
-                    </button>
-                </div>
-            </div>
 
-            <!-- Feedback Box (Hidden by default) -->
-            <div id="feedback-section" class="hidden mt-6 pt-6 border-t border-slate-100 space-y-4">
-                <div id="result-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></div>
-                
-                <div class="bg-slate-50 p-4 rounded-xl space-y-2 text-sm">
-                    <div>
-                        <span class="text-slate-400 font-medium block text-xs">Correct Target:</span>
-                        <span id="correct-target-text" class="text-slate-900 font-semibold text-base"></span>
+                <!-- Card Faces -->
+                <div class="text-center my-auto py-6">
+                    <!-- Front (Chinese) -->
+                    <div id="fc-front" class="space-y-3">
+                        <h2 id="fc-chinese" class="text-4xl md:text-5xl font-bold tracking-wide text-slate-900">捷運</h2>
+                        <div class="space-y-1">
+                            <p id="fc-zhuyin" class="font-mono text-indigo-600 text-base">ㄐㄧㄝˊㄩㄣˋ</p>
+                            <p id="fc-pinyin" class="italic text-slate-500 text-sm">jiéyùn</p>
+                        </div>
                     </div>
-                    <div id="user-diff-container" class="hidden">
-                        <span class="text-slate-400 font-medium block text-xs">What you wrote:</span>
-                        <span id="user-submitted-text" class="text-red-600 line-through"></span>
+                    <!-- Back (English - Hidden by default) -->
+                    <div id="fc-back" class="hidden space-y-3">
+                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">English Definition</span>
+                        <h2 id="fc-english" class="text-2xl md:text-3xl font-semibold text-slate-900">MRT (Rapid Transit)</h2>
                     </div>
                 </div>
 
-                <div id="grammar-box" class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
-                    <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-1">Grammar Breakdown</h3>
-                    <p id="grammar-text" class="text-sm text-indigo-950 leading-relaxed"></p>
+                <div class="text-center text-xs text-slate-400">
+                    Click anywhere on card to reveal definition
                 </div>
+            </div>
 
-                <button onclick="nextCard()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-4 rounded-xl transition-colors">
-                    Next Sentence ➔
+            <!-- Flashcard Controls -->
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="prevFlashcard()" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors shadow-sm text-sm">
+                    ➔ Previous Card
+                </button>
+                <button onclick="nextFlashcard()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm text-sm">
+                    Next Card ➔
                 </button>
             </div>
+        </div>
 
+
+        <!-- ================= SENTENCE TRANSLATION MODE ================= -->
+        <div id="mode-translation-container" class="hidden space-y-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 transition-all">
+                
+                <!-- Prompt Display -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <span id="st-counter" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sentence 1 of 2</span>
+                        <span id="st-direction-badge" class="text-xs font-medium px-2 py-0.5 bg-slate-100 text-slate-600 rounded">EN ➔ 中文</span>
+                    </div>
+                    
+                    <h2 id="st-prompt-text" class="text-xl md:text-2xl font-semibold text-slate-900 leading-snug min-h-[4rem] flex items-center">
+                        Do you want to take the MRT together?
+                    </h2>
+                    
+                    <div id="st-phonetic-container" class="mt-2 text-sm text-slate-500 hidden">
+                        <p id="st-phonetic-zhuyin" class="font-mono text-indigo-600"></p>
+                        <p id="st-phonetic-pinyin" class="italic"></p>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div id="st-input-section" class="space-y-4">
+                    <div>
+                        <label for="st-user-input" class="block text-xs font-medium text-slate-500 mb-1">Your Translation:</label>
+                        <textarea id="st-user-input" rows="3" class="w-full rounded-xl border border-slate-300 p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base" placeholder="Type your translation here..."></textarea>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="checkSentenceAnswer()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm">
+                            Submit Answer
+                        </button>
+                        <button onclick="revealSentenceAnswer()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors text-sm">
+                            Reveal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback Box (Hidden by default) -->
+                <div id="st-feedback-section" class="hidden mt-6 pt-6 border-t border-slate-100 space-y-4">
+                    <div id="st-result-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></div>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl space-y-2 text-sm">
+                        <div>
+                            <span class="text-slate-400 font-medium block text-xs">Correct Target:</span>
+                            <span id="st-correct-target-text" class="text-slate-900 font-semibold text-base"></span>
+                        </div>
+                        <div id="st-user-diff-container" class="hidden">
+                            <span class="text-slate-400 font-medium block text-xs">What you wrote:</span>
+                            <span id="st-user-submitted-text" class="text-red-600 line-through"></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
+                        <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-1">Grammar Breakdown</h3>
+                        <p id="st-grammar-text" class="text-sm text-indigo-950 leading-relaxed"></p>
+                    </div>
+
+                    <button onclick="nextSentenceCard()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-4 rounded-xl transition-colors">
+                        Next Sentence ➔
+                    </button>
+                </div>
+
+            </div>
         </div>
 
     </main>
 
     <!-- Footer Controls -->
     <footer class="bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-400">
-        Single-file offline app • Target: Traditional Chinese, Zhuyin, Pinyin
-    ></footer>
+        Single-file offline app • Dual Modes: Flashcards & Strict List-Only Sentences
+    </footer>
 
     <script>
-        // Sentence Database (Combines your vocabulary list items & common lower-intermediate structures)
+        // ================= DATA =================
+        const flashcardList = [
+            { chinese: "捷運", zhuyin: "ㄐㄧㄝˊㄩㄣˋ", pinyin: "jiéyùn", english: "MRT (Mass Rapid Transit)", category: "Transportation" },
+            { chinese: "搭", zhuyin: "ㄉㄚ", pinyin: "dā", english: "To take (transportation) / to ride", category: "Verbs" },
+            { chinese: "內用", zhuyin: "ㄋㄟˋㄩㄥˋ", pinyin: "nèiyòng", english: "Dine-in", category: "Dining" },
+            { chinese: "外帶", zhuyin: "ㄨㄞˋㄉㄞˋ", pinyin: "wàidài", english: "Takeout", category: "Dining" }
+        ];
+
+        // Sentences built strictly from your flashcard list vocabulary (plus foundational pronouns/particles)
         const sentencePool = [
             {
                 id: "s1",
-                direction: "en-to-zh", // English to Chinese
-                prompt: "Do you want to take the MRT together?",
-                answer: "你要一起搭捷運嗎？",
-                zhuyin: "ㄋㄧˇ ㄧㄠˋ ㄧㄑㄧˇ ㄉㄚ ㄐㄧㄝˊㄩㄣˋ ㄇㄚ?",
-                pinyin: "Nǐ yào yīqǐ dā jiéyùn ma?",
-                grammarNote: "Uses '要' (want to/going to) for future intent, and '一起' (together) directly preceding the verb '搭' (to take/ride transportation)."
+                direction: "en-to-zh",
+                prompt: "Takeout",
+                answer: "外帶",
+                zhuyin: "ㄨㄞˋㄉㄞˋ",
+                pinyin: "wàidài",
+                grammarNote: "Core vocabulary item from your list for ordering food to go."
             },
             {
                 id: "s2",
                 direction: "en-to-zh",
-                prompt: "Is this for dine-in or takeout?",
-                answer: "請問要內用還是外帶？",
-                zhuyin: "ㄑㄧㄥˇㄨㄣˋ ㄧㄠˋ ㄋㄟˋㄩㄥˋ ㄏㄞˊㄕˋ ㄨㄞˋㄉㄞˋ?",
-                pinyin: "Qǐngwèn yào nèiyòng háishì wàidài?",
-                grammarNote: "Uses '還是' (háishì) for 'or' in questions, contrasting '內用' (dine-in) and '外帶' (takeout) which are core daily restaurant phrases."
-            },
-            {
-                id: "s3",
-                direction: "zh-to-en", // Chinese to English
-                prompt: "捷運站附近有沒有好吃的餐廳？",
-                zhuyin: "ㄐㄧㄝˊㄩㄣˋ ㄓㄢˋ ㄈㄨˋㄐㄧㄣˋ ㄧㄡˇㄇㄟˊㄧㄡˇ ㄏㄠˇㄔ˙ ㄉㄜ˙ ㄘㄢㄊㄧㄥ?",
-                pinyin: "Jiéyùn zhàn fùjìn yǒu méiyǒu hǎochī de cāntīng?",
-                answer: "Are there any delicious restaurants near the MRT station?",
-                grammarNote: "Constructions with '附近' (nearby) follow the location noun ('捷運站附近'). '有沒有' functions as the standard question form for existence."
-            },
-            {
-                id: "s4",
-                direction: "en-to-zh",
-                prompt: "I want to order bubble tea with less ice.",
-                answer: "我要點少冰的珍珠奶茶。",
-                zhuyin: "ㄨㄛˋ ㄧㄠˋ ㄉㄧㄢˇ ㄕㄠˇㄅㄧㄥ ㄉㄜ˙ ㄓㄣㄓㄨ ㄋㄞˇㄔㄚˊ.",
-                pinyin: "Wǒ yào diǎn shǎobīng de zhēnzhū nǎichá.",
-                grammarNote: "Beverage customization modifies the ice level ('少冰') before the noun using '的', with '點' serving as the active verb for ordering food/drink."
+                prompt: "Dine-in",
+                answer: "內用",
+                zhuyin: "ㄋㄟˋㄩㄥˋ",
+                pinyin: "nèiyòng",
+                grammarNote: "Core vocabulary item from your list for eating at the restaurant establishment."
             }
         ];
 
-        let currentIndex = 0;
+        // ================= STATE =================
+        let currentMode = "flashcard";
+        let fcIndex = 0;
+        let isFlipped = false;
+        let stIndex = 0;
 
-        function loadCard() {
-            const card = sentencePool[currentIndex];
+        // ================= MODE SWITCHING =================
+        function switchMode(mode) {
+            currentMode = mode;
+            const fcContainer = document.getElementById("mode-flashcard-container");
+            const stContainer = document.getElementById("mode-translation-container");
+            const tabFc = document.getElementById("tab-flashcard");
+            const tabSt = document.getElementById("tab-translation");
+
+            if (mode === "flashcard") {
+                fcContainer.classList.remove("hidden");
+                stContainer.classList.add("hidden");
+                tabFc.className = "px-3 py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-sm";
+                tabSt.className = "px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900";
+                loadFlashcard();
+            } else {
+                fcContainer.classList.add("hidden");
+                stContainer.classList.remove("hidden");
+                tabSt.className = "px-3 py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-sm";
+                tabFc.className = "px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900";
+                loadSentenceCard();
+            }
+        }
+
+        // ================= FLASHCARD LOGIC =================
+        function loadFlashcard() {
+            const card = flashcardList[fcIndex];
+            isFlipped = false;
             
-            // Update counter and mode badge
-            document.getElementById("card-counter").innerText = `Question ${currentIndex + 1} of ${sentencePool.length}`;
+            document.getElementById("fc-counter").innerText = `Card ${fcIndex + 1} of ${flashcardList.length}`;
+            document.getElementById("fc-category").innerText = card.category;
             
-            const badge = document.getElementById("direction-badge");
+            document.getElementById("fc-chinese").innerText = card.chinese;
+            document.getElementById("fc-zhuyin").innerText = card.zhuyin;
+            document.getElementById("fc-pinyin").innerText = card.pinyin;
+            document.getElementById("fc-english").innerText = card.english;
+
+            document.getElementById("fc-front").classList.remove("hidden");
+            document.getElementById("fc-back").classList.add("hidden");
+        }
+
+        function flipFlashcard() {
+            isFlipped = !isFlipped;
+            const front = document.getElementById("fc-front");
+            const back = document.getElementById("fc-back");
+            
+            if (isFlipped) {
+                front.classList.add("hidden");
+                back.classList.remove("hidden");
+            } else {
+                front.classList.remove("hidden");
+                back.classList.add("hidden");
+            }
+        }
+
+        function nextFlashcard() {
+            fcIndex = (fcIndex + 1) % flashcardList.length;
+            loadFlashcard();
+        }
+
+        function prevFlashcard() {
+            fcIndex = (fcIndex - 1 + flashcardList.length) % flashcardList.length;
+            loadFlashcard();
+        }
+
+        // ================= SENTENCE TRANSLATION LOGIC =================
+        function loadSentenceCard() {
+            const card = sentencePool[stIndex];
+            
+            document.getElementById("st-counter").innerText = `Sentence ${stIndex + 1} of ${sentencePool.length}`;
+            
+            const badge = document.getElementById("st-direction-badge");
             if (card.direction === "en-to-zh") {
                 badge.innerText = "EN ➔ 中文";
-                document.getElementById("prompt-text").innerText = card.prompt;
-                document.getElementById("phonetic-container").classList.add("hidden");
+                document.getElementById("st-prompt-text").innerText = card.prompt;
+                document.getElementById("st-phonetic-container").classList.add("hidden");
             } else {
                 badge.innerText = "中文 ➔ EN";
-                document.getElementById("prompt-text").innerText = card.prompt;
-                document.getElementById("phonetic-zhuyin").innerText = card.zhuyin;
-                document.getElementById("phonetic-pinyin").innerText = card.pinyin;
-                document.getElementById("phonetic-container").classList.remove("hidden");
+                document.getElementById("st-prompt-text").innerText = card.prompt;
+                document.getElementById("st-phonetic-zhuyin").innerText = card.zhuyin;
+                document.getElementById("st-phonetic-pinyin").innerText = card.pinyin;
+                document.getElementById("st-phonetic-container").classList.remove("hidden");
             }
 
-            // Reset input and views
-            document.getElementById("user-input").value = "";
-            document.getElementById("input-section").classList.remove("hidden");
-            document.getElementById("feedback-section").classList.add("hidden");
+            document.getElementById("st-user-input").value = "";
+            document.getElementById("st-input-section").classList.remove("hidden");
+            document.getElementById("st-feedback-section").classList.add("hidden");
         }
 
         function sanitize(str) {
@@ -167,31 +275,30 @@
                 .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
-        function checkAnswer() {
-            const card = sentencePool[currentIndex];
-            const userText = document.getElementById("user-input").value;
+        function checkSentenceAnswer() {
+            const card = sentencePool[stIndex];
+            const userText = document.getElementById("st-user-input").value;
             
-            if (!userText.trim()) return; // Don't submit empty
+            if (!userText.trim()) return;
 
             const cleanUser = sanitize(userText);
             const cleanCorrect = sanitize(card.answer);
-            
             const isCorrect = (cleanUser === cleanCorrect);
 
-            showFeedback(isCorrect, userText, card);
+            showSentenceFeedback(isCorrect, userText, card);
         }
 
-        function revealAnswer() {
-            const card = sentencePool[currentIndex];
-            showFeedback(false, "[Revealed without guessing]", card);
+        function revealSentenceAnswer() {
+            const card = sentencePool[stIndex];
+            showSentenceFeedback(false, "[Revealed without guessing]", card);
         }
 
-        function showFeedback(isCorrect, userText, card) {
-            document.getElementById("input-section").classList.add("hidden");
-            document.getElementById("feedback-section").classList.remove("hidden");
+        function showSentenceFeedback(isCorrect, userText, card) {
+            document.getElementById("st-input-section").classList.add("hidden");
+            document.getElementById("st-feedback-section").classList.remove("hidden");
 
-            const resultBadge = document.getElementById("result-badge");
-            const userDiffContainer = document.getElementById("user-diff-container");
+            const resultBadge = document.getElementById("st-result-badge");
+            const userDiffContainer = document.getElementById("st-user-diff-container");
             
             if (isCorrect) {
                 resultBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800";
@@ -200,21 +307,24 @@
             } else {
                 resultBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800";
                 resultBadge.innerText = "Not Quite Right";
-                document.getElementById("user-submitted-text").innerText = userText;
+                document.getElementById("st-user-submitted-text").innerText = userText;
                 userDiffContainer.classList.remove("hidden");
             }
 
-            document.getElementById("correct-target-text").innerText = card.answer + (card.direction === "en-to-zh" ? ` (${card.pinyin})` : "");
-            document.getElementById("grammar-text").innerText = card.grammarNote;
+            document.getElementById("st-correct-target-text").innerText = card.answer + (card.direction === "en-to-zh" ? ` (${card.pinyin})` : "");
+            document.getElementById("st-grammar-text").innerText = card.grammarNote;
         }
 
-        function nextCard() {
-            currentIndex = (currentIndex + 1) % sentencePool.length;
-            loadCard();
+        function nextSentenceCard() {
+            stIndex = (stIndex + 1) % sentencePool.length;
+            loadSentenceCard();
         }
 
-        // Initialize first card on load
-        window.onload = loadCard;
+        // Initialize on load
+        window.onload = function() {
+            loadFlashcard();
+            loadSentenceCard();
+        };
     </script>
 </body>
 </html>
