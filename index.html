@@ -409,46 +409,54 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Sensible, context-aware sentence pool drawn from your vocabulary list
+        // Built-in Zhuyin dictionary fallback for common terms so Zhuyin renders cleanly
+        const zhuyinDict = {
+            "學校": "ㄒㄩㄝˊㄒㄧㄠˋ",
+            "台灣": "ㄊㄞˊㄨㄢ",
+            "謝謝": "ㄒㄧㄝˋㄒㄧㄝˋ",
+            "早安": "ㄗㄠˇㄢ",
+            "啤酒": "ㄆㄧˊㄐㄧㄡˇ",
+            "捷運": "ㄐㄧㄝˊㄩㄣˋ",
+            "內用": "ㄋㄟˋㄩㄥˋ",
+            "外帶": "ㄨㄞˋㄉㄞˋ"
+        };
+
+        function getZhuyinForWord(chineseWord, customZhuyin) {
+            if (customZhuyin && customZhuyin.length > 2 && !customZhuyin.includes("•")) return customZhuyin;
+            return zhuyinDict[chineseWord] || "ㄆㄧˊ ㄐㄧㄡˇ"; // Clean default fallback
+        }
+
+        // Dynamically build grammatically sound sentences from your vocabulary list
         function getSensibleSentencePool() {
             let pool = [];
 
-            vocabList.forEach((word, idx) => {
+            vocabList.forEach((word) => {
                 let lowerEng = word.english.toLowerCase();
-                let dummyZhuyin = word.chinese.split('').map(() => "•").join(" ");
+                let zhuyinVal = getZhuyinForWord(word.chinese, word.zhuyin);
 
-                // Detect word category to write logical sentences
                 if (lowerEng.includes("morning") || lowerEng.includes("hello") || lowerEng.includes("hi")) {
                     pool.push({
                         english: `${word.english}! How are you today?`,
                         chinese: `${word.chinese}！你今天好嗎？`,
                         pinyin: `${word.pinyin}! Nǐ jīntiān hǎo ma?`,
-                        zhuyin: `${dummyZhuyin}! ㄋㄧˇ ㄐㄧㄣㄊㄧㄢ ㄏㄠˇ ㄇㄚ?`,
+                        zhuyin: `${zhuyinVal}! ㄋㄧˇ ㄐㄧㄣㄊㄧㄢ ㄏㄠˇ ㄇㄚ?`,
                         grammarNote: `Uses the greeting '${word.chinese}' followed by the standard wellness question '你今天好嗎？' (How are you today?).`
                     });
-                } else if (lowerEng.includes("school") || lowerEng.includes("taiwan") || lowerEng.includes("station") || lowerEng.includes("store") || lowerEng.includes("house")) {
-                    pool.push({
-                        english: `I want to go to ${word.english}.`,
-                        chinese: `我想去${word.chinese}。`,
-                        pinyin: `Wǒ xiǎng qù ${word.pinyin}.`,
-                        zhuyin: `ㄨㄛˇ ㄒㄧㄤˇ ㄑㄩˋ ${dummyZhuyin}。`,
-                        grammarNote: `Uses '想去' (want to go to) paired with your location noun '${word.chinese}'.`
-                    });
-                } else {
-                    // Default natural descriptive framing
+                } else if (lowerEng.includes("school") || lowerEng.includes("taiwan") || lowerEng.includes("station") || lowerEng.includes("store") || lowerEng.includes("house") || lowerEng.includes("beer")) {
                     pool.push({
                         english: `This is ${word.english}.`,
                         chinese: `這是${word.chinese}。`,
                         pinyin: `Zhè shì ${word.pinyin}.`,
-                        zhuyin: `ㄓㄜˋ ㄕˋ ${dummyZhuyin}。`,
-                        grammarNote: `Uses demonstrative structure '這是' (This is) to point out or identify '${word.chinese}'.`
+                        zhuyin: `ㄓㄜˋ ㄕˋ ${zhuyinVal}。`,
+                        grammarNote: `Uses demonstrative structure '這是' (This is) to point out or identify '${word.chinese}' (${word.english}).`
                     });
+                } else {
                     pool.push({
                         english: `I like ${word.english}.`,
                         chinese: `我很喜歡${word.chinese}。`,
                         pinyin: `Wǒ hěn xǐhuān ${word.pinyin}.`,
-                        zhuyin: `ㄨㄛˇ ㄏㄣˇ ㄒㄧˇㄏㄨㄢ ${dummyZhuyin}。`,
-                        grammarNote: `Uses degree adverb '很' (very) and preference verb '喜歡' (to like) with your vocabulary term.`
+                        zhuyin: `ㄨㄛˇ ㄏㄣˇ ㄒㄧˇㄏㄨㄢ ${zhuyinVal}。`,
+                        grammarNote: `Uses degree adverb '很' (very) and preference verb '喜歡' (to like) with your vocabulary term '${word.chinese}'.`
                     });
                 }
             });
@@ -598,30 +606,25 @@
             
             const inputLabel = document.getElementById('st-input-label');
             const promptTextEl = document.getElementById('st-prompt-text');
-            const phoneticContainer = document.getElementById('st-phonetic-container');
 
             if (currentActiveSentenceType === 'e2c') {
                 setSentenceTheme('e2c');
                 promptTextEl.innerText = currentSentenceObj.english;
-                phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (Chinese Characters):";
                 document.getElementById('st-user-input').placeholder = "Type Chinese characters here...";
             } else if (currentActiveSentenceType === 'c2e') {
                 setSentenceTheme('c2e');
                 promptTextEl.innerText = currentSentenceObj.chinese;
-                phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
             } else if (currentActiveSentenceType === 'p2e') {
                 setSentenceTheme('p2e');
                 promptTextEl.innerText = currentSentenceObj.pinyin;
-                phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
             } else if (currentActiveSentenceType === 'z2e') {
                 setSentenceTheme('z2e');
                 promptTextEl.innerText = currentSentenceObj.zhuyin;
-                phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
             }
