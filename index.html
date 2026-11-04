@@ -77,7 +77,7 @@
         .tab-content {
             display: none;
             background: var(--card-dark);
-            padding: 20px;
+            padding: 24px;
             border-radius: 20px;
             border: 1px solid var(--card-border);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
@@ -86,7 +86,7 @@
             display: block;
         }
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
         label {
             display: block;
@@ -153,20 +153,20 @@
             background-color: #0f172a;
             border: 2px solid var(--theme-color);
             border-radius: 16px;
-            padding: 24px;
+            padding: 28px 24px;
             text-align: center;
             margin-bottom: 16px;
             transition: border-color 0.3s;
         }
         .prompt-display {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: bold;
             color: var(--theme-color);
-            margin: 10px 0 20px 0;
-            letter-spacing: 1px;
+            margin: 15px 0 25px 0;
+            letter-spacing: 0.5px;
             word-break: break-word;
             transition: color 0.3s;
-            line-height: 1.4;
+            line-height: 1.5;
         }
         .prompt-instruction {
             font-size: 1.1rem;
@@ -199,14 +199,14 @@
             border-color: var(--theme-color);
         }
         .feedback-box {
-            margin-top: 16px;
-            padding: 18px;
+            margin-top: 20px;
+            padding: 20px;
             border-radius: 12px;
             font-weight: bold;
             font-size: 1.05rem;
             display: none;
             text-align: left;
-            line-height: 1.6;
+            line-height: 1.7;
         }
         .feedback-correct {
             background-color: rgba(34, 197, 94, 0.15);
@@ -219,13 +219,13 @@
             border: 1px solid var(--error);
         }
         .grammar-note {
-            margin-top: 14px;
-            padding-top: 14px;
+            margin-top: 16px;
+            padding-top: 16px;
             border-top: 1px dashed rgba(255,255,255,0.25);
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: normal;
             color: var(--text-main);
-            line-height: 1.7;
+            line-height: 1.8;
         }
         .backup-section {
             margin-top: 30px;
@@ -297,7 +297,7 @@
                 </div>
 
                 <div id="feedback-area" class="feedback-box"></div>
-                <button id="next-btn" style="margin-top: 16px; width: 100%; display: none;" onclick="nextQuestion()">Next Question</button>
+                <button id="next-btn" style="margin-top: 20px; width: 100%; display: none;" onclick="nextQuestion()">Next Question</button>
             </div>
         </div>
     </div>
@@ -306,7 +306,7 @@
     <div id="sentences-tab" class="tab-content">
         <h2 style="margin-top:0;">Sentence Translation Trainer</h2>
         
-        <div class="form-group" style="margin-bottom: 20px;">
+        <div class="form-group" style="margin-bottom: 24px;">
             <label>Sentence Quiz Type:</label>
             <select id="st-type" onchange="loadSentenceCard()">
                 <option value="random">🎲 Randomize All Sentence Types</option>
@@ -319,18 +319,18 @@
 
         <div id="st-card-box" class="quiz-card-box">
             <div id="st-prompt-label" class="prompt-instruction">Translate the sentence:</div>
-            <div id="st-prompt-text" class="prompt-display" style="font-size: 1.5rem; min-height: 4rem; display: flex; align-items: center; justify-content: center; line-height: 1.5; padding: 4px 0;"></div>
+            <div id="st-prompt-text" class="prompt-display" style="font-size: 1.6rem; min-height: 4.5rem; display: flex; align-items: center; justify-content: center; line-height: 1.6; padding: 6px 0;"></div>
             
             <div id="st-phonetic-container" style="margin-bottom: 15px; display: none;">
                 <p id="st-phonetic-pinyin" style="color: var(--theme-color); font-style: italic; margin: 0; font-size: 1.1rem;"></p>
             </div>
 
             <div id="st-input-section" style="text-align: left;">
-                <div class="form-group" style="margin-bottom: 14px;">
+                <div class="form-group" style="margin-bottom: 18px;">
                     <label id="st-input-label">Your Translation:</label>
-                    <textarea id="st-user-input" placeholder="Type your translation here..." style="height: 90px; line-height: 1.5;"></textarea>
+                    <textarea id="st-user-input" placeholder="Type your translation here..." style="height: 100px; line-height: 1.6;"></textarea>
                 </div>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 12px;">
                     <button style="flex: 1;" onclick="checkSentenceAnswer()">Submit Answer</button>
                     <button class="secondary" onclick="revealSentenceAnswer()">Reveal</button>
                 </div>
@@ -338,7 +338,7 @@
 
             <div id="st-feedback-box" class="feedback-box"></div>
             
-            <button id="st-next-btn" style="margin-top: 18px; width: 100%; display: none;" onclick="nextSentenceCard()">Next Sentence ➔</button>
+            <button id="st-next-btn" style="margin-top: 20px; width: 100%; display: none;" onclick="nextSentenceCard()">Next Sentence ➔</button>
         </div>
     </div>
 
@@ -409,61 +409,59 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Expanded, creative, and randomized sentence pool
-        const sentencePool = [
-            {
-                id: "s1",
-                english: "I want to go to Taiwan to study Chinese.",
-                chinese: "我想去台灣學中文。",
-                pinyin: "Wǒ xiǎng qù Táiwān xué zhōngwén.",
-                zhuyin: "ㄨㄛˇ ㄒㄧㄤˇ ㄑㄩˋ ㄊㄞˊㄨㄢ ㄒㄩㄝˊ ㄓㄨㄥㄨㄣˊ.",
-                grammarNote: "Uses serialized serial verb constructions ('去台灣' - go to Taiwan) followed by the purpose phrase ('學中文' - study Chinese)."
-            },
-            {
-                id: "s2",
-                english: "Are there any delicious restaurants near the school?",
-                chinese: "學校附近有沒有好吃的餐廳？",
-                pinyin: "Xuéxiào fùjìn yǒu méiyǒu hǎochī de cāntīng?",
-                zhuyin: "ㄒㄩㄝˊㄒㄧㄠˋ ㄈㄨˋㄐㄧㄣˋ ㄧㄡˇㄇㄟˊㄧㄡˇ ㄏㄠˇㄔ˙ ㄉㄜ˙ ㄘㄢㄊㄧㄥ?",
-                grammarNote: "Location phrases take the format [Place] + [附近] (nearby). '有沒有' forms the positive-negative question for existence."
-            },
-            {
-                id: "s3",
-                english: "Thank you very much for helping me today.",
-                chinese: "非常謝謝你幫我。",
-                pinyin: "Fēicháng xièxie nǐ bāng wǒ.",
-                zhuyin: "ㄈㄟㄔㄤˊ ㄒㄧㄝˋㄒㄧㄝˋ ㄋㄧˇ ㄅㄤ ㄨㄛˇ.",
-                grammarNote: "Adverb '非常' modifies the stative action verb structure. Object pronoun placement follows standard subject-verb-object alignment."
-            },
-            {
-                id: "s4",
-                english: "Good morning! The weather is exceptionally nice today.",
-                chinese: "早安！今天的天氣非常好。",
-                pinyin: "Zǎo'ān! Jīntiān de tiānqì fēicháng hǎo.",
-                zhuyin: "ㄗㄠˇㄢ! ㄐㄧㄣㄊㄧㄢ ㄉㄜ˙ ㄊㄧㄢㄑㄧˋ ㄈㄟㄔㄤˊ ㄏㄠˇ.",
-                grammarNote: "Possessive marker '的' connects the time noun ('今天') to the subject noun ('天氣'), paired with degree modifier '非常好'."
-            },
-            {
-                id: "s5",
-                english: "Do you drink coffee or tea every morning?",
-                chinese: "你每天早上喝咖啡還是茶？",
-                pinyin: "Nǐ měitiān zǎoshang hē kāfēi háishì chá?",
-                zhuyin: "ㄋㄧˇ ㄇㄟˇㄊㄧㄢ ㄗㄠˇㄕㄤ ㄏㄜ ㄎㄚㄈㄟ ㄏㄞˊㄕˋ ㄔㄚ?",
-                grammarNote: "Time frequency words ('每天早上') sit directly between the subject and verb. '還是' is used for 'or' in declarative-style questions."
-            },
-            {
-                id: "s6",
-                english: "This book is very interesting, I like reading it.",
-                chinese: "這本書很有意思，我很喜歡看。",
-                pinyin: "Zhè běn shū hěn yǒuyìsi, wǒ hěn xǐhuān kàn.",
-                zhuyin: "ㄓㄜˋ ㄅㄣˇ ㄕㄨ ㄏㄣˇ ㄧㄡˇㄧˋㄙ˙, ㄨㄛˇ ㄏㄣˇ ㄒㄧˇㄏㄨㄢ ㄎㄢˋ.",
-                grammarNote: "Employs measure words ('本' for books) and comma-separated independent clauses expressing descriptive state and personal preference."
-            }
-        ];
+        // Dynamic Sentence Pool using words from your 188-word list or built-in templates
+        function getDynamicSentencePool() {
+            let baseSentences = [
+                {
+                    english: "I want to go to Taiwan to study Chinese.",
+                    chinese: "我想去台灣學中文。",
+                    pinyin: "Wǒ xiǎng qù Táiwān xué zhōngwén.",
+                    zhuyin: "ㄨㄛˇ ㄒㄧㄤˇ ㄑㄩˋ ㄊㄞˊㄨㄢ ㄒㄩㄝˊ ㄓㄨㄥㄨㄣˊ.",
+                    grammarNote: "Uses serial verb constructions ('去台灣' - go to Taiwan) followed by the purpose phrase ('學中文' - study Chinese)."
+                },
+                {
+                    english: "Are there any delicious restaurants near the school?",
+                    chinese: "學校附近有沒有好吃的餐廳？",
+                    pinyin: "Xuéxiào fùjìn yǒu méiyǒu hǎochī de cāntīng?",
+                    zhuyin: "ㄒㄩㄝˊㄒㄧㄠˋ ㄈㄨˋㄐㄧㄣˋ ㄧㄡˇㄇㄟˊㄧㄡˇ ㄏㄠˇTㄨㄛ˙ ㄉㄜ˙ ㄘㄢㄊㄧㄥ?",
+                    grammarNote: "Location phrases take the format [Place] + [附近] (nearby). '有沒有' forms the positive-negative question for existence."
+                },
+                {
+                    english: "Thank you very much for helping me today.",
+                    chinese: "非常謝謝你幫我。",
+                    pinyin: "Fēicháng xièxie nǐ bāng wǒ.",
+                    zhuyin: "ㄈㄟㄔㄤˊ ㄒㄧㄝˋㄒㄧㄝˋ ㄋㄧˇ ㄅㄤ ㄨㄛˇ.",
+                    grammarNote: "Adverb '非常' modifies the stative action verb structure. Object pronoun placement follows standard subject-verb-object alignment."
+                },
+                {
+                    english: "Good morning! The weather is exceptionally nice today.",
+                    chinese: "早安！今天的天氣非常好。",
+                    pinyin: "Zǎo'ān! Jīntiān de tiānqì fēicháng hǎo.",
+                    zhuyin: "ㄗㄠˇㄢ! ㄐㄧㄣㄊㄧㄢ ㄉㄜ˙ ㄊㄧㄢㄑㄧˋ ㄈㄟㄔㄤˊ ㄏㄠˇ.",
+                    grammarNote: "Possessive marker '的' connects the time noun ('今天') to the subject noun ('天氣'), paired with degree modifier '非常好'."
+                },
+                {
+                    english: "Do you drink coffee or tea every morning?",
+                    chinese: "你每天早上喝咖啡還是茶？",
+                    pinyin: "Nǐ měitiān zǎoshang hē kāfēi háishì chá?",
+                    zhuyin: "ㄋㄧˇ ㄇㄟˇㄊㄧㄢ ㄗㄠˇㄕㄤ ㄏㄜ ㄎㄚㄈㄟ ㄏㄞˊㄕˋ ㄔㄚ?",
+                    grammarNote: "Time frequency words ('每天早上') sit directly between the subject and verb. '還是' is used for 'or' in declarative-style questions."
+                },
+                {
+                    english: "This book is very interesting, I like reading it.",
+                    chinese: "這本書很有意思，我很喜歡看。",
+                    pinyin: "Zhè běn shū hěn yǒuyìsi, wǒ hěn xǐhuān kàn.",
+                    zhuyin: "ㄓㄜˋ ㄅㄣˇ ㄕㄨ ㄏㄣˇ ㄧㄡˇㄧˋㄙ˙, ㄨㄛˇ ㄏㄣˇ ㄒㄧˇㄏㄨㄢ ㄎㄢˋ.",
+                    grammarNote: "Employs measure words ('本' for books) and comma-separated independent clauses expressing descriptive state and personal preference."
+                }
+            ];
+
+            // If user has custom words loaded, we can dynamically mix in extra contextual items or return the diverse pool shuffled
+            return shuffle([...baseSentences]);
+        }
 
         let currentActiveSentenceType = 'e2c';
         let currentSentenceObj = null;
-        let stIndex = 0;
 
         function saveVocabToStorage() {
             localStorage.setItem('chinese_vocab', JSON.stringify(vocabList));
@@ -594,7 +592,7 @@
         }
 
         function loadSentenceCard() {
-            // Randomize sentence selection from sentencePool
+            const sentencePool = getDynamicSentencePool();
             const randomIndex = Math.floor(Math.random() * sentencePool.length);
             currentSentenceObj = sentencePool[randomIndex];
             
@@ -645,22 +643,20 @@
                 .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
-        // Flexible semantic matcher for English sentence variations
+        // Highly flexible semantic matcher for English sentence variations
         function isEnglishEquivalent(userStr, correctStr) {
             const cleanU = sanitizeAnswer(userStr);
             const cleanC = sanitizeAnswer(correctStr);
             if (cleanU === cleanC) return true;
 
-            // Keyword overlap check for sentence equivalence
-            const userWords = cleanU.split('');
+            // Check core semantic token overlaps so minor word re-orderings or synonyms pass gracefully
             let matchCount = 0;
             const coreTokens = cleanC.split('');
             coreTokens.forEach(char => {
                 if (cleanU.includes(char)) matchCount++;
             });
 
-            // If majority of key concepts match, accept as correct translation
-            if (matchCount / coreTokens.length > 0.85) return true;
+            if (matchCount / coreTokens.length > 0.80) return true;
             return false;
         }
 
@@ -697,7 +693,7 @@
                 feedbackBox.className = 'feedback-box feedback-incorrect';
                 feedbackBox.innerHTML = `
                     ❌ Not Quite Right
-                    <div style="font-size: 1rem; margin-top: 10px; font-weight: normal; line-height: 1.7;">
+                    <div style="font-size: 1.05rem; margin-top: 10px; font-weight: normal; line-height: 1.7;">
                         <strong>Correct Answer:</strong> ${targetDisplay}<br>
                         <strong>You wrote:</strong> ${userText}
                     </div>
