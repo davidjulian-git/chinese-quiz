@@ -404,41 +404,31 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Curated, 100% natural conversational sentence bank
+        // Dynamically builds sentences using EVERY word in your uploaded vocabulary list
         function getSensibleSentencePool() {
-            return shuffle([
-                {
-                    english: "Good morning! Thank you for your help.",
-                    chinese: "早安！謝謝你的幫忙。",
-                    pinyin: "Zǎo'ān! Xièxie nǐ de bāngmáng.",
-                    grammarNote: "Combines standard greeting and gratitude structure '謝謝你的幫忙' (Thank you for your help) using the possessive particle '的'."
-                },
-                {
-                    english: "I want to go to school now.",
-                    chinese: "我現在要去學校。",
-                    pinyin: "Wǒ xiànzài yào qù xuéxiào.",
-                    grammarNote: "Uses time word '現在' (now) and intent structure '要去' (going to) followed by destination noun '學校'."
-                },
-                {
-                    english: "Where is Taiwan?",
-                    chinese: "請問台灣在哪裡？",
-                    pinyin: "Qǐngwèn Táiwān zài nǎlǐ?",
-                    grammarNote: "Employs politeness opener '請問' (May I ask) paired with location inquiry structure '[Place] 在哪裡？' (Where is [Place]?)."
-                },
-                {
-                    english: "I like this place very much.",
-                    chinese: "我很喜歡這裡。",
-                    altChinese: ["我喜歡這裡", "我很喜歡這裡"],
-                    pinyin: "Wǒ hěn xǐhuān zhèlǐ.",
-                    grammarNote: "Uses degree adverb '很' (very) and preference verb '喜歡' (to like) with location term '這裡'."
-                },
-                {
-                    english: "Do you want to drink tea or coffee?",
-                    chinese: "你想喝茶還是咖啡？",
-                    pinyin: "Nǐ xiǎng hē chá háishì kāfēi?",
-                    grammarNote: "Uses modal verb '想' (want to) and '還是' (háishì) to offer an 'or' choice between two beverage nouns."
-                }
-            ]);
+            let pool = [];
+
+            vocabList.forEach((item) => {
+                // Template 1: I like [Word]
+                pool.push({
+                    english: `I like ${item.english}.`,
+                    chinese: `我喜歡${item.chinese}。`,
+                    altChinese: [`我喜歡${item.chinese}`, `我很喜歡${item.chinese}`, `我喜歡${item.chinese}。`, `我很喜歡${item.chinese}。`],
+                    pinyin: `Wǒ xǐhuān ${item.pinyin}.`,
+                    grammarNote: `Uses the preference verb '喜歡' (to like) combined with your vocabulary word '${item.chinese}' (${item.english}).`
+                });
+
+                // Template 2: This is [Word]
+                pool.push({
+                    english: `This is ${item.english}.`,
+                    chinese: `這是${item.chinese}。`,
+                    altChinese: [`這是${item.chinese}`, `這是${item.chinese}。`],
+                    pinyin: `Zhè shì ${item.pinyin}.`,
+                    grammarNote: `Uses demonstrative structure '這是' (This is) to identify your vocabulary word '${item.chinese}' (${item.english}).`
+                });
+            });
+
+            return shuffle(pool);
         }
 
         let currentActiveSentenceType = 'e2c';
@@ -618,8 +608,8 @@
             const cleanC = sanitizeAnswer(correctStr);
             if (cleanU === cleanC) return true;
 
-            // Accept flexible short/natural variations (e.g. "I like this" for "I like this place very much")
-            if (cleanU === "ilikethis" || cleanU === "ilikehere" || cleanU === "ihavethis") {
+            // Flexible natural short answers
+            if (cleanU.startsWith("ilike") || cleanU.startsWith("thisis")) {
                 return true;
             }
 
@@ -629,7 +619,7 @@
                 if (cleanU.includes(char)) matchCount++;
             });
 
-            if (matchCount / coreTokens.length > 0.70) return true;
+            if (matchCount / coreTokens.length > 0.60) return true;
             return false;
         }
 
