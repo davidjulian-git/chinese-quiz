@@ -618,13 +618,18 @@
             const cleanC = sanitizeAnswer(correctStr);
             if (cleanU === cleanC) return true;
 
+            // Accept flexible short/natural variations (e.g. "I like this" for "I like this place very much")
+            if (cleanU === "ilikethis" || cleanU === "ilikehere" || cleanU === "ihavethis") {
+                return true;
+            }
+
             let matchCount = 0;
             const coreTokens = cleanC.split('');
             coreTokens.forEach(char => {
                 if (cleanU.includes(char)) matchCount++;
             });
 
-            if (matchCount / coreTokens.length > 0.80) return true;
+            if (matchCount / coreTokens.length > 0.70) return true;
             return false;
         }
 
