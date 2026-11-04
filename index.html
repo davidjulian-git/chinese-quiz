@@ -409,34 +409,51 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Automatically generate clean sentences strictly from your 188-word list
-        function getDynamicSentencePool() {
-            let generatedPool = [];
+        // Sensible, context-aware sentence pool drawn from your vocabulary list
+        function getSensibleSentencePool() {
+            let pool = [];
 
-            // Loop through your stored vocabulary and auto-generate clean sentences using your words
             vocabList.forEach((word, idx) => {
-                let dummyZhuyin = word.chinese.split('').map(() => "•").join(" "); // Fallback phonetic representation if zhuyin missing
-                
-                generatedPool.push({
-                    id: "gen_" + idx,
-                    english: `This is ${word.english}.`,
-                    chinese: `這是${word.chinese}。`,
-                    pinyin: `Zhè shì ${word.pinyin}.`,
-                    zhuyin: `ㄓㄜˋ ㄕˋ ${dummyZhuyin}。`,
-                    grammarNote: `Uses the demonstrative pronoun '這' (this) paired with '是' (is) to identify or point out your vocabulary word '${word.chinese}' (${word.english}).`
-                });
+                let lowerEng = word.english.toLowerCase();
+                let dummyZhuyin = word.chinese.split('').map(() => "•").join(" ");
 
-                generatedPool.push({
-                    id: "gen_want_" + idx,
-                    english: `I want ${word.english}.`,
-                    chinese: `我要${word.chinese}。`,
-                    pinyin: `Wǒ yào ${word.pinyin}.`,
-                    zhuyin: `ㄨㄛˇ ㄧㄠˋ ${dummyZhuyin}。`,
-                    grammarNote: `Employs the modal verb '要' (want/desire) directly linked with your target vocabulary item '${word.chinese}'.`
-                });
+                // Detect word category to write logical sentences
+                if (lowerEng.includes("morning") || lowerEng.includes("hello") || lowerEng.includes("hi")) {
+                    pool.push({
+                        english: `${word.english}! How are you today?`,
+                        chinese: `${word.chinese}！你今天好嗎？`,
+                        pinyin: `${word.pinyin}! Nǐ jīntiān hǎo ma?`,
+                        zhuyin: `${dummyZhuyin}! ㄋㄧˇ ㄐㄧㄣㄊㄧㄢ ㄏㄠˇ ㄇㄚ?`,
+                        grammarNote: `Uses the greeting '${word.chinese}' followed by the standard wellness question '你今天好嗎？' (How are you today?).`
+                    });
+                } else if (lowerEng.includes("school") || lowerEng.includes("taiwan") || lowerEng.includes("station") || lowerEng.includes("store") || lowerEng.includes("house")) {
+                    pool.push({
+                        english: `I want to go to ${word.english}.`,
+                        chinese: `我想去${word.chinese}。`,
+                        pinyin: `Wǒ xiǎng qù ${word.pinyin}.`,
+                        zhuyin: `ㄨㄛˇ ㄒㄧㄤˇ ㄑㄩˋ ${dummyZhuyin}。`,
+                        grammarNote: `Uses '想去' (want to go to) paired with your location noun '${word.chinese}'.`
+                    });
+                } else {
+                    // Default natural descriptive framing
+                    pool.push({
+                        english: `This is ${word.english}.`,
+                        chinese: `這是${word.chinese}。`,
+                        pinyin: `Zhè shì ${word.pinyin}.`,
+                        zhuyin: `ㄓㄜˋ ㄕˋ ${dummyZhuyin}。`,
+                        grammarNote: `Uses demonstrative structure '這是' (This is) to point out or identify '${word.chinese}'.`
+                    });
+                    pool.push({
+                        english: `I like ${word.english}.`,
+                        chinese: `我很喜歡${word.chinese}。`,
+                        pinyin: `Wǒ hěn xǐhuān ${word.pinyin}.`,
+                        zhuyin: `ㄨㄛˇ ㄏㄣˇ ㄒㄧˇㄏㄨㄢ ${dummyZhuyin}。`,
+                        grammarNote: `Uses degree adverb '很' (very) and preference verb '喜歡' (to like) with your vocabulary term.`
+                    });
+                }
             });
 
-            return shuffle(generatedPool);
+            return shuffle(pool);
         }
 
         let currentActiveSentenceType = 'e2c';
@@ -562,7 +579,7 @@
 
         // ================= SENTENCE TRANSLATION LOGIC =================
         function setSentenceTheme(themeType) {
-            let color = '#f97316'; // orange for English -> Chinese characters
+            let color = '#f97316'; // orange for English -> Chinese
             if (themeType === 'c2e') color = '#f97316'; // orange for Chinese -> English
             else if (themeType === 'p2e') color = '#38bdf8'; // blue for Pinyin -> English
             else if (themeType === 'z2e') color = '#a855f7'; // purple for Zhuyin -> English
@@ -571,7 +588,7 @@
         }
 
         function loadSentenceCard() {
-            const sentencePool = getDynamicSentencePool();
+            const sentencePool = getSensibleSentencePool();
             const randomIndex = Math.floor(Math.random() * sentencePool.length);
             currentSentenceObj = sentencePool[randomIndex];
             
