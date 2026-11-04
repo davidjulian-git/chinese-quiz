@@ -166,6 +166,7 @@
             letter-spacing: 1px;
             word-break: break-word;
             transition: color 0.3s;
+            line-height: 1.4;
         }
         .prompt-instruction {
             font-size: 1.1rem;
@@ -199,12 +200,13 @@
         }
         .feedback-box {
             margin-top: 16px;
-            padding: 14px;
-            border-radius: 10px;
+            padding: 18px;
+            border-radius: 12px;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             display: none;
             text-align: left;
+            line-height: 1.6;
         }
         .feedback-correct {
             background-color: rgba(34, 197, 94, 0.15);
@@ -217,13 +219,13 @@
             border: 1px solid var(--error);
         }
         .grammar-note {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed rgba(255,255,255,0.2);
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px dashed rgba(255,255,255,0.25);
             font-size: 0.95rem;
             font-weight: normal;
             color: var(--text-main);
-            line-height: 1.5;
+            line-height: 1.7;
         }
         .backup-section {
             margin-top: 30px;
@@ -304,23 +306,33 @@
     <div id="sentences-tab" class="tab-content">
         <h2 style="margin-top:0;">Sentence Translation Trainer</h2>
         
-        <div class="quiz-header" style="margin-bottom: 12px;">
-            <span id="st-counter" style="color: var(--text-muted); font-size: 0.9rem;">Sentence 1 of 5</span>
-            <span id="st-direction-badge" style="background: #0f172a; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; border: 1px solid var(--card-border);">EN ➔ 中文</span>
+        <div class="form-group" style="margin-bottom: 14px;">
+            <label>Sentence Quiz Type:</label>
+            <select id="st-type" onchange="loadSentenceCard()">
+                <option value="e2c">English ➔ Chinese Characters</option>
+                <option value="c2e">Chinese Characters ➔ English</option>
+                <option value="p2e">Pinyin ➔ English</option>
+                <option value="z2e">Zhuyin ➔ English</option>
+            </select>
         </div>
 
-        <div class="quiz-card-box">
+        <div class="quiz-header" style="margin-bottom: 16px;">
+            <span id="st-counter" style="color: var(--text-muted); font-size: 0.95rem;">Sentence #1</span>
+            <span id="st-direction-badge" style="background: #0f172a; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--card-border);">EN ➔ 中文</span>
+        </div>
+
+        <div id="st-card-box" class="quiz-card-box">
             <div id="st-prompt-label" class="prompt-instruction">Translate the sentence:</div>
-            <div id="st-prompt-text" class="prompt-display" style="font-size: 1.6rem; min-height: 3.5rem; display: flex; align-items: center; justify-content: center;"></div>
+            <div id="st-prompt-text" class="prompt-display" style="font-size: 1.5rem; min-height: 4rem; display: flex; align-items: center; justify-content: center; line-height: 1.5; padding: 4px 0;"></div>
             
             <div id="st-phonetic-container" style="margin-bottom: 15px; display: none;">
-                <p id="st-phonetic-pinyin" style="color: var(--theme-color); font-style: italic; margin: 0;"></p>
+                <p id="st-phonetic-pinyin" style="color: var(--theme-color); font-style: italic; margin: 0; font-size: 1.1rem;"></p>
             </div>
 
             <div id="st-input-section" style="text-align: left;">
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label id="st-input-label">Your Translation (Chinese):</label>
-                    <textarea id="st-user-input" placeholder="Type translation here..." style="height: 80px;"></textarea>
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label id="st-input-label">Your Translation:</label>
+                    <textarea id="st-user-input" placeholder="Type your translation here..." style="height: 90px; line-height: 1.5;"></textarea>
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button style="flex: 1;" onclick="checkSentenceAnswer()">Submit Answer</button>
@@ -330,7 +342,7 @@
 
             <div id="st-feedback-box" class="feedback-box"></div>
             
-            <button id="st-next-btn" style="margin-top: 16px; width: 100%; display: none;" onclick="nextSentenceCard()">Next Sentence ➔</button>
+            <button id="st-next-btn" style="margin-top: 18px; width: 100%; display: none;" onclick="nextSentenceCard()">Next Sentence ➔</button>
         </div>
     </div>
 
@@ -401,43 +413,43 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Dynamic sentence generator pool mapping common words from saved lists
+        // Expanded sentence pool with strict phrase mapping & semantic flexibility
         function getDynamicSentencePool() {
             let pool = [
                 {
                     id: "s1",
-                    direction: "en-to-zh",
                     targetVocab: ["台灣"],
-                    prompt: "I want to go to Taiwan.",
-                    answer: "我想去台灣。",
+                    english: "I want to go to Taiwan.",
+                    chinese: "我想去台灣。",
                     pinyin: "Wǒ xiǎng qù Táiwān.",
+                    zhuyin: "ㄨㄛˇ ㄒㄧㄤˇ ㄑㄩˋ ㄊㄞˊㄨㄢ。",
                     grammarNote: "Uses '想' (xiǎng) for 'want to' followed by the destination verb phrase '去台灣' (to go to Taiwan)."
                 },
                 {
                     id: "s2",
-                    direction: "en-to-zh",
                     targetVocab: ["學校"],
-                    prompt: "Is this your school?",
-                    answer: "這是你的學校嗎？",
+                    english: "Is this your school?",
+                    chinese: "這是你的學校嗎？",
                     pinyin: "Zhè shì nǐ de xuéxiào ma?",
+                    zhuyin: "ㄓㄜˋ ㄕˋ ㄋㄧˇ ㄉㄜ˙ ㄒㄩㄝˊㄒㄧㄠˋ ㄇㄚ?",
                     grammarNote: "Uses '這' (this) + '是' (is) to ask identifying questions, ending with the question particle '嗎' (ma)."
                 },
                 {
                     id: "s3",
-                    direction: "en-to-zh",
                     targetVocab: ["謝謝"],
-                    prompt: "Thank you very much!",
-                    answer: "非常謝謝你！",
+                    english: "Thank you very much!",
+                    chinese: "非常謝謝你！",
                     pinyin: "Fēicháng xièxie nǐ!",
+                    zhuyin: "ㄈㄟㄔㄤˊ ㄒㄧㄝˋㄒㄧㄝˋ ㄋㄧˇ!",
                     grammarNote: "Employs the degree adverb '非常' (fēicháng - extremely/very) directly modifying the politeness verb '謝謝'."
                 },
                 {
                     id: "s4",
-                    direction: "zh-to-en",
                     targetVocab: ["早安"],
-                    prompt: "早安！今天天氣很好。",
+                    english: "Good morning! The weather is very good today.",
+                    chinese: "早安！今天天氣很好。",
                     pinyin: "Zǎo'ān! Jīntiān tiānqì hěn hǎo.",
-                    answer: "Good morning! The weather is very good today.",
+                    zhuyin: "ㄗㄠˇㄢ! ㄐㄧㄣㄊㄧㄢ ㄊㄧㄢㄑㄧˋ ㄏㄣˇ ㄏㄠˇ.",
                     grammarNote: "Combines the greeting '早安' with a standard time-topic structure ('今天' - today) followed by the weather description."
                 }
             ];
@@ -568,27 +580,54 @@
         }
 
         // ================= SENTENCE TRANSLATION LOGIC =================
+        function setSentenceTheme(themeType) {
+            let color = '#f97316'; // default orange (English -> Chinese)
+            if (themeType === 'c2e') color = '#f97316'; // Chinese -> English
+            else if (themeType === 'p2e') color = '#38bdf8'; // Pinyin -> English
+            else if (themeType === 'z2e') color = '#a855f7'; // Zhuyin -> English
+
+            document.documentElement.style.setProperty('--theme-color', color);
+        }
+
         function loadSentenceCard() {
             const sentencePool = getDynamicSentencePool();
             if (stIndex >= sentencePool.length) stIndex = 0;
             const card = sentencePool[stIndex];
             
-            document.getElementById('st-counter').innerText = `Sentence ${stIndex + 1} of ${sentencePool.length}`;
+            const mode = document.getElementById('st-type').value;
+            document.getElementById('st-counter').innerText = `Sentence #${stIndex + 1}`;
             
             const badge = document.getElementById('st-direction-badge');
             const inputLabel = document.getElementById('st-input-label');
-            
-            if (card.direction === "en-to-zh") {
+            const promptTextEl = document.getElementById('st-prompt-text');
+            const phoneticContainer = document.getElementById('st-phonetic-container');
+
+            if (mode === 'e2c') {
+                setSentenceTheme('e2c');
                 badge.innerText = "EN ➔ 中文";
-                document.getElementById('st-prompt-text').innerText = card.prompt;
-                document.getElementById('st-phonetic-container').style.display = 'none';
-                inputLabel.innerText = "Your Translation (Chinese):";
-                document.getElementById('st-user-input').placeholder = "Type Chinese translation here...";
-            } else {
+                promptTextEl.innerText = card.english;
+                phoneticContainer.style.display = 'none';
+                inputLabel.innerText = "Your Translation (Chinese Characters):";
+                document.getElementById('st-user-input').placeholder = "Type Chinese characters here...";
+            } else if (mode === 'c2e') {
+                setSentenceTheme('c2e');
                 badge.innerText = "中文 ➔ EN";
-                document.getElementById('st-prompt-text').innerText = card.prompt;
-                document.getElementById('st-phonetic-pinyin').innerText = card.pinyin;
-                document.getElementById('st-phonetic-container').style.display = 'block';
+                promptTextEl.innerText = card.chinese;
+                phoneticContainer.style.display = 'none';
+                inputLabel.innerText = "Your Translation (English):";
+                document.getElementById('st-user-input').placeholder = "Type English translation here...";
+            } else if (mode === 'p2e') {
+                setSentenceTheme('p2e');
+                badge.innerText = "Pinyin ➔ EN";
+                promptTextEl.innerText = card.pinyin;
+                phoneticContainer.style.display = 'none';
+                inputLabel.innerText = "Your Translation (English):";
+                document.getElementById('st-user-input').placeholder = "Type English translation here...";
+            } else if (mode === 'z2e') {
+                setSentenceTheme('z2e');
+                badge.innerText = "Zhuyin ➔ EN";
+                promptTextEl.innerText = card.zhuyin;
+                phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
             }
@@ -606,44 +645,67 @@
                 .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
+        // Semantic synonym checking for English variations (e.g. "Good morning! The weather is very good today" vs "good morning! today the weather is good")
+        function isEnglishEquivalent(userStr, correctStr) {
+            const cleanU = sanitizeAnswer(userStr);
+            const cleanC = sanitizeAnswer(correctStr);
+            if (cleanU === cleanC) return true;
+
+            // Handle variations in "Good morning! The weather is very good today."
+            if (cleanC.includes("goodmorning") && cleanU.includes("goodmorning")) {
+                if ((cleanU.includes("weather") && cleanU.includes("good")) || (cleanU.includes("today") && cleanU.includes("good"))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         function checkSentenceAnswer() {
             const sentencePool = getDynamicSentencePool();
             const card = sentencePool[stIndex];
             const userText = document.getElementById('st-user-input').value;
+            const mode = document.getElementById('st-type').value;
             
             if (!userText.trim()) return;
 
-            const cleanUser = sanitizeAnswer(userText);
-            const cleanCorrect = sanitizeAnswer(card.answer);
-            const isCorrect = (cleanUser === cleanCorrect);
+            let isCorrect = false;
+            if (mode === 'e2c') {
+                isCorrect = sanitizeAnswer(userText) === sanitizeAnswer(card.chinese);
+            } else {
+                // c2e, p2e, z2e
+                isCorrect = isEnglishEquivalent(userText, card.english);
+            }
 
-            showSentenceFeedback(isCorrect, userText, card);
+            showSentenceFeedback(isCorrect, userText, card, mode);
         }
 
         function revealSentenceAnswer() {
             const sentencePool = getDynamicSentencePool();
             const card = sentencePool[stIndex];
-            showSentenceFeedback(false, "[Revealed without guessing]", card);
+            const mode = document.getElementById('st-type').value;
+            showSentenceFeedback(false, "[Revealed without guessing]", card, mode);
         }
 
-        function showSentenceFeedback(isCorrect, userText, card) {
+        function showSentenceFeedback(isCorrect, userText, card, mode) {
             document.getElementById('st-input-section').style.display = 'none';
             const feedbackBox = document.getElementById('st-feedback-box');
             feedbackBox.style.display = 'block';
 
+            let targetDisplay = mode === 'e2c' ? `${card.chinese} (${card.pinyin})` : `${card.english} (${card.chinese} - ${card.pinyin})`;
+
             if (isCorrect) {
                 feedbackBox.className = 'feedback-box feedback-correct';
-                feedbackBox.innerHTML = `✨ Correct! 太棒了！<div class="grammar-note"><strong>Target:</strong> ${card.answer} (${card.pinyin})</div>`;
+                feedbackBox.innerHTML = `✨ Correct! 太棒了！<div class="grammar-note"><strong>Target:</strong> ${targetDisplay}</div>`;
             } else {
                 feedbackBox.className = 'feedback-box feedback-incorrect';
                 feedbackBox.innerHTML = `
                     ❌ Not Quite Right
-                    <div style="font-size: 0.9rem; margin-top: 6px; font-weight: normal;">
-                        <strong>Correct Answer:</strong> ${card.answer} (${card.pinyin})<br>
+                    <div style="font-size: 0.95rem; margin-top: 8px; font-weight: normal; line-height: 1.5;">
+                        <strong>Correct Answer:</strong> ${targetDisplay}<br>
                         <strong>You wrote:</strong> ${userText}
                     </div>
                     <div class="grammar-note">
-                        <strong>Grammar Breakdown:</strong><br>${card.grammarNote}
+                        <strong>Grammar Breakdown & Correction:</strong><br>${card.grammarNote}
                     </div>
                 `;
             }
