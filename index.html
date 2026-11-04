@@ -1,693 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chinese Study & Quiz App</title>
-    <style>
-        :root {
-            --bg-dark: #090d16;
-            --card-dark: #1e293b;
-            --card-border: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #22c55e;
-            --error: #ef4444;
-            --theme-color: #f97316;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 16px;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 16px;
-        }
-        header h1 {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            margin: 0;
-            font-weight: 500;
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        nav button {
-            background-color: #334155;
-            color: var(--text-muted);
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-        nav button.active-tab {
-            background-color: var(--theme-color);
-            color: white;
-        }
-        button {
-            background-color: var(--theme-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        button:hover {
-            opacity: 0.9;
-        }
-        button.secondary {
-            background-color: #334155;
-            color: var(--text-main);
-        }
-        button.secondary:hover {
-            background-color: #475569;
-        }
-        .tab-content {
-            display: none;
-            background: var(--card-dark);
-            padding: 20px;
-            border-radius: 20px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            background-color: #0f172a;
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            color: var(--text-main);
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--theme-color);
-            box-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
-        }
-        textarea {
-            resize: vertical;
-            height: 100px;
-            font-family: monospace;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid var(--card-border);
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #0f172a;
-        }
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-        .progress-bar-container {
-            flex-grow: 1;
-            margin: 0 15px;
-            background: #0f172a;
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            background: var(--success);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        .quiz-card-box {
-            background-color: #0f172a;
-            border: 2px solid var(--theme-color);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            margin-bottom: 16px;
-            transition: border-color 0.3s;
-        }
-        .prompt-display {
-            font-size: 2.8rem;
-            font-weight: bold;
-            color: var(--theme-color);
-            margin: 10px 0 20px 0;
-            letter-spacing: 1px;
-            word-break: break-word;
-            transition: color 0.3s;
-        }
-        .prompt-instruction {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--theme-color);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: color 0.3s;
-        }
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-top: 15px;
-        }
-        .option-btn {
-            background-color: #1e293b;
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
-            padding: 16px;
-            font-size: 1.4rem;
-            font-weight: 500;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-        }
-        .option-btn:hover {
-            background-color: #334155;
-            border-color: var(--theme-color);
-        }
-        .feedback-box {
-            margin-top: 16px;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            display: none;
-        }
-        .feedback-correct {
-            background-color: rgba(34, 197, 94, 0.15);
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-        .feedback-incorrect {
-            background-color: rgba(239, 68, 68, 0.15);
-            color: var(--error);
-            border: 1px solid var(--error);
-        }
-        .backup-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--card-border);
-            display: flex;
-            gap: 10px;
-        }
-    </style>
+    <title>Mandarin Flashcard & Translation Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <header>
-        <h1>Chinese Study App</h1>
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-lg font-bold text-slate-900">Mandarin Trainer</h1>
+            <div id="mode-indicator" class="text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full">
+                Sentence Translation Mode
+            </div>
+        </div>
     </header>
 
-    <nav>
-        <button id="nav-quiz" class="active-tab" onclick="switchTab('quiz')">Study Quiz</button>
-        <button id="nav-manage" onclick="switchTab('manage')">Manage Words</button>
-    </nav>
+    <!-- Main Container -->
+    <main class="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col justify-center">
 
-    <!-- QUIZ TAB -->
-    <div id="quiz-tab" class="tab-content active">
-        <div id="quiz-setup">
-            <h2 style="margin-top:0;">Quiz Settings</h2>
-            <div class="form-group">
-                <label>Mode:</label>
-                <select id="quiz-mode">
-                    <option value="mc">Multiple Choice</option>
-                    <option value="write">Write-in Answer</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Question Type:</label>
-                <select id="quiz-type">
-                    <option value="random">🎲 Randomize All Types (Mixed)</option>
-                    <option value="c2e">Chinese Character -> English</option>
-                    <option value="c2p">Chinese Character -> Pinyin</option>
-                    <option value="p2c">Pinyin -> Chinese Character</option>
-                    <option value="e2c">English -> Chinese Character</option>
-                    <option value="p2e">Pinyin -> English</option>
-                    <option value="e2p">English -> Pinyin</option>
-                </select>
-            </div>
-            <button style="width: 100%; margin-top: 10px;" onclick="startQuiz()">Start Session</button>
-        </div>
-
-        <div id="quiz-active" style="display: none;">
-            <div class="quiz-header">
-                <span id="exit-btn" style="cursor:pointer; color: var(--error);" onclick="endQuiz()">✕ Exit</span>
-                <div class="progress-bar-container">
-                    <div id="progress-bar" class="progress-bar"></div>
+        <!-- Card Box -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 transition-all">
+            
+            <!-- Prompt Display -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <span id="card-counter" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Question 1 of 4</span>
+                    <span id="direction-badge" class="text-xs font-medium px-2 py-0.5 bg-slate-100 text-slate-600 rounded">EN ➔ 中文</span>
                 </div>
-                <span id="progress-text">0/0</span>
-            </div>
-
-            <div class="quiz-card-box" id="quiz-card-box">
-                <div id="prompt-instruction" class="prompt-instruction">Translate this:</div>
-                <div id="prompt-text" class="prompt-display"></div>
                 
-                <!-- Multiple Choice Container -->
-                <div id="mc-container" class="options-grid"></div>
+                <h2 id="prompt-text" class="text-xl md:text-2xl font-semibold text-slate-900 leading-snug min-h-[4rem] flex items-center">
+                    Do you want to take the MRT together?
+                </h2>
+                
+                <div id="phonetic-container" class="mt-2 text-sm text-slate-500 hidden">
+                    <p id="phonetic-zhuyin" class="font-mono text-indigo-600"></p>
+                    <p id="phonetic-pinyin" class="italic"></p>
+                </div>
+            </div>
 
-                <!-- Write-in Container -->
-                <div id="write-container" style="display: none;">
-                    <input type="text" id="user-answer" placeholder="Type your answer here..." autocomplete="off">
-                    <button id="submit-btn" style="margin-top: 12px; width: 100%;" onclick="submitWriteAnswer()">Submit Answer</button>
+            <!-- Input Area -->
+            <div id="input-section" class="space-y-4">
+                <div>
+                    <label for="user-input" class="block text-xs font-medium text-slate-500 mb-1">Your Translation:</label>
+                    <textarea id="user-input" rows="3" class="w-full rounded-xl border border-slate-300 p-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base" placeholder="Type your translation here..."></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button id="submit-btn" onclick="checkAnswer()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm">
+                        Submit Answer
+                    </button>
+                    <button id="reveal-btn" onclick="revealAnswer()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors text-sm">
+                        Reveal
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feedback Box (Hidden by default) -->
+            <div id="feedback-section" class="hidden mt-6 pt-6 border-t border-slate-100 space-y-4">
+                <div id="result-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></div>
+                
+                <div class="bg-slate-50 p-4 rounded-xl space-y-2 text-sm">
+                    <div>
+                        <span class="text-slate-400 font-medium block text-xs">Correct Target:</span>
+                        <span id="correct-target-text" class="text-slate-900 font-semibold text-base"></span>
+                    </div>
+                    <div id="user-diff-container" class="hidden">
+                        <span class="text-slate-400 font-medium block text-xs">What you wrote:</span>
+                        <span id="user-submitted-text" class="text-red-600 line-through"></span>
+                    </div>
                 </div>
 
-                <div id="feedback-area" class="feedback-box"></div>
-                <button id="next-btn" style="margin-top: 16px; width: 100%; display: none;" onclick="nextQuestion()">Next Question</button>
-            </div>
-        </div>
-    </div>
+                <div id="grammar-box" class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
+                    <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-1">Grammar Breakdown</h3>
+                    <p id="grammar-text" class="text-sm text-indigo-950 leading-relaxed"></p>
+                </div>
 
-    <!-- MANAGE VOCABULARY TAB -->
-    <div id="manage-tab" class="tab-content">
-        <h2 style="margin-top:0;">Manage Vocabulary</h2>
-        
-        <!-- Bulk Import -->
-        <div style="background: #0f172a; padding: 16px; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 20px;">
-            <h3 style="margin-top:0; color:var(--text-main);">Bulk Import Words</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Paste format: <code>Chinese, Pinyin, English</code> (one word per line)</p>
-            <div class="form-group" style="margin-bottom: 10px;">
-                <textarea id="bulk-input" placeholder="台灣, Táiwān, Taiwan&#10;學校, xuéxiào, School"></textarea>
+                <button onclick="nextCard()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-4 rounded-xl transition-colors">
+                    Next Sentence ➔
+                </button>
             </div>
-            <button onclick="bulkImport()">Import List</button>
+
         </div>
 
-        <!-- Single Add -->
-        <details style="background: #0f172a; padding: 16px; border-radius: 12px; border: 1px solid var(--card-border);">
-            <summary style="font-weight:600; cursor:pointer; color: var(--text-muted);">Add Single Word Manually</summary>
-            <div class="form-group" style="margin-top: 12px;">
-                <label>Chinese Characters:</label>
-                <input type="text" id="input-chinese" placeholder="e.g., 台灣">
-            </div>
-            <div class="form-group">
-                <label>Pinyin:</label>
-                <input type="text" id="input-pinyin" placeholder="e.g., Táiwān">
-            </div>
-            <div class="form-group">
-                <label>English Translation:</label>
-                <input type="text" id="input-english" placeholder="e.g., Taiwan">
-            </div>
-            <button onclick="addVocab()">Add Word</button>
-        </details>
+    </main>
 
-        <h3 style="margin-top: 30px;">Saved Vocabulary (<span id="vocab-count">0</span>)</h3>
-        <div style="max-height: 300px; overflow-y: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Chinese</th>
-                        <th>Pinyin</th>
-                        <th>English</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="vocab-table-body"></tbody>
-            </table>
-        </div>
-
-        <div class="backup-section">
-            <button class="secondary" onclick="exportVocab()">Export JSON</button>
-            <button class="secondary" style="background-color: var(--error);" onclick="clearAllVocab()">Delete All</button>
-        </div>
-    </div>
+    <!-- Footer Controls -->
+    <footer class="bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-400">
+        Single-file offline app • Target: Traditional Chinese, Zhuyin, Pinyin
+    ></footer>
 
     <script>
-        let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [
-            { chinese: "學校", pinyin: "xuéxiào", english: "School" },
-            { chinese: "台灣", pinyin: "Táiwān", english: "Taiwan" },
-            { chinese: "謝謝", pinyin: "xièxie", english: "Thank you" },
-            { chinese: "早安", pinyin: "zǎo'ān", english: "Good morning" }
+        // Sentence Database (Combines your vocabulary list items & common lower-intermediate structures)
+        const sentencePool = [
+            {
+                id: "s1",
+                direction: "en-to-zh", // English to Chinese
+                prompt: "Do you want to take the MRT together?",
+                answer: "你要一起搭捷運嗎？",
+                zhuyin: "ㄋㄧˇ ㄧㄠˋ ㄧㄑㄧˇ ㄉㄚ ㄐㄧㄝˊㄩㄣˋ ㄇㄚ?",
+                pinyin: "Nǐ yào yīqǐ dā jiéyùn ma?",
+                grammarNote: "Uses '要' (want to/going to) for future intent, and '一起' (together) directly preceding the verb '搭' (to take/ride transportation)."
+            },
+            {
+                id: "s2",
+                direction: "en-to-zh",
+                prompt: "Is this for dine-in or takeout?",
+                answer: "請問要內用還是外帶？",
+                zhuyin: "ㄑㄧㄥˇㄨㄣˋ ㄧㄠˋ ㄋㄟˋㄩㄥˋ ㄏㄞˊㄕˋ ㄨㄞˋㄉㄞˋ?",
+                pinyin: "Qǐngwèn yào nèiyòng háishì wàidài?",
+                grammarNote: "Uses '還是' (háishì) for 'or' in questions, contrasting '內用' (dine-in) and '外帶' (takeout) which are core daily restaurant phrases."
+            },
+            {
+                id: "s3",
+                direction: "zh-to-en", // Chinese to English
+                prompt: "捷運站附近有沒有好吃的餐廳？",
+                zhuyin: "ㄐㄧㄝˊㄩㄣˋ ㄓㄢˋ ㄈㄨˋㄐㄧㄣˋ ㄧㄡˇㄇㄟˊㄧㄡˇ ㄏㄠˇㄔ˙ ㄉㄜ˙ ㄘㄢㄊㄧㄥ?",
+                pinyin: "Jiéyùn zhàn fùjìn yǒu méiyǒu hǎochī de cāntīng?",
+                answer: "Are there any delicious restaurants near the MRT station?",
+                grammarNote: "Constructions with '附近' (nearby) follow the location noun ('捷運站附近'). '有沒有' functions as the standard question form for existence."
+            },
+            {
+                id: "s4",
+                direction: "en-to-zh",
+                prompt: "I want to order bubble tea with less ice.",
+                answer: "我要點少冰的珍珠奶茶。",
+                zhuyin: "ㄨㄛˋ ㄧㄠˋ ㄉㄧㄢˇ ㄕㄠˇㄅㄧㄥ ㄉㄜ˙ ㄓㄣㄓㄨ ㄋㄞˇㄔㄚˊ.",
+                pinyin: "Wǒ yào diǎn shǎobīng de zhēnzhū nǎichá.",
+                grammarNote: "Beverage customization modifies the ice level ('少冰') before the noun using '的', with '點' serving as the active verb for ordering food/drink."
+            }
         ];
 
-        let quizQueue = [];
-        let totalItemsInSession = 0;
-        let currentQuizItem = null;
-        let currentActiveType = 'c2e';
-        let isRetryMode = false; // Tracks if user is forced to re-type after a mistake
+        let currentIndex = 0;
 
-        function saveVocabToStorage() {
-            localStorage.setItem('chinese_vocab', JSON.stringify(vocabList));
-            updateVocabTable();
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        function loadCard() {
+            const card = sentencePool[currentIndex];
             
-            document.getElementById('nav-quiz').classList.remove('active-tab');
-            document.getElementById('nav-manage').classList.remove('active-tab');
-
-            if (tabName === 'quiz') {
-                document.getElementById('quiz-tab').classList.add('active');
-                document.getElementById('nav-quiz').classList.add('active-tab');
-                document.getElementById('quiz-setup').style.display = 'block';
-                document.getElementById('quiz-active').style.display = 'none';
-            } else {
-                document.getElementById('manage-tab').classList.add('active');
-                document.getElementById('nav-manage').classList.add('active-tab');
-                updateVocabTable();
-            }
-        }
-
-        function addVocab() {
-            const chinese = document.getElementById('input-chinese').value.trim();
-            const pinyin = document.getElementById('input-pinyin').value.trim();
-            const english = document.getElementById('input-english').value.trim();
-
-            if (!chinese || !pinyin || !english) {
-                alert('Please fill in all three fields.');
-                return;
-            }
-
-            vocabList.push({ chinese, pinyin, english });
-            saveVocabToStorage();
-
-            document.getElementById('input-chinese').value = '';
-            document.getElementById('input-pinyin').value = '';
-            document.getElementById('input-english').value = '';
-            alert('Word added successfully!');
-        }
-
-        function bulkImport() {
-            const text = document.getElementById('bulk-input').value.trim();
-            if (!text) return;
-
-            const lines = text.split('\n');
-            let addedCount = 0;
-
-            lines.forEach(line => {
-                const parts = line.split(',').map(p => p.trim());
-                if (parts.length >= 3) {
-                    vocabList.push({
-                        chinese: parts[0],
-                        pinyin: parts[1],
-                        english: parts.slice(2).join(', ')
-                    });
-                    addedCount++;
-                }
-            });
-
-            if (addedCount > 0) {
-                saveVocabToStorage();
-                document.getElementById('bulk-input').value = '';
-                alert(`Successfully imported ${addedCount} words!`);
-            } else {
-                alert('Invalid format. Use: Chinese, Pinyin, English');
-            }
-        }
-
-        function deleteVocab(index) {
-            vocabList.splice(index, 1);
-            saveVocabToStorage();
-        }
-
-        function clearAllVocab() {
-            if (confirm('Delete all saved vocabulary?')) {
-                vocabList = [];
-                saveVocabToStorage();
-            }
-        }
-
-        function exportVocab() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vocabList));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "chinese_vocab_backup.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        function updateVocabTable() {
-            const tbody = document.getElementById('vocab-table-body');
-            tbody.innerHTML = '';
-            document.getElementById('vocab-count').innerText = vocabList.length;
+            // Update counter and mode badge
+            document.getElementById("card-counter").innerText = `Question ${currentIndex + 1} of ${sentencePool.length}`;
             
-            vocabList.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.chinese}</td>
-                    <td>${item.pinyin}</td>
-                    <td>${item.english}</td>
-                    <td><button class="secondary" style="padding: 4px 8px; background-color: var(--error);" onclick="deleteVocab(${index})">✕</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function shuffle(array) {
-            return array.sort(() => Math.random() - 0.5);
-        }
-
-        function startQuiz() {
-            if (vocabList.length < 4) {
-                alert('Please add at least 4 vocabulary words before starting a quiz.');
-                return;
-            }
-
-            quizQueue = shuffle([...vocabList]);
-            totalItemsInSession = quizQueue.length;
-
-            document.getElementById('quiz-setup').style.display = 'none';
-            document.getElementById('quiz-active').style.display = 'block';
-
-            const mode = document.getElementById('quiz-mode').value;
-            if (mode === 'write') {
-                document.getElementById('mc-container').style.display = 'none';
-                document.getElementById('write-container').style.display = 'block';
+            const badge = document.getElementById("direction-badge");
+            if (card.direction === "en-to-zh") {
+                badge.innerText = "EN ➔ 中文";
+                document.getElementById("prompt-text").innerText = card.prompt;
+                document.getElementById("phonetic-container").classList.add("hidden");
             } else {
-                document.getElementById('mc-container').style.display = 'grid';
-                document.getElementById('write-container').style.display = 'none';
+                badge.innerText = "中文 ➔ EN";
+                document.getElementById("prompt-text").innerText = card.prompt;
+                document.getElementById("phonetic-zhuyin").innerText = card.zhuyin;
+                document.getElementById("phonetic-pinyin").innerText = card.pinyin;
+                document.getElementById("phonetic-container").classList.remove("hidden");
             }
 
-            loadQuestion();
+            // Reset input and views
+            document.getElementById("user-input").value = "";
+            document.getElementById("input-section").classList.remove("hidden");
+            document.getElementById("feedback-section").classList.add("hidden");
         }
 
-        function endQuiz() {
-            document.getElementById('quiz-setup').style.display = 'block';
-            document.getElementById('quiz-active').style.display = 'none';
+        function sanitize(str) {
+            return str
+                .toLowerCase()
+                .trim()
+                .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
-        function setAnswerTheme(answerCategory) {
-            let color = '#f97316'; 
-            if (answerCategory === 'chinese') color = '#f97316'; 
-            else if (answerCategory === 'pinyin') color = '#38bdf8'; 
-            else if (answerCategory === 'english') color = '#a855f7'; 
-
-            document.documentElement.style.setProperty('--theme-color', color);
-        }
-
-        function loadQuestion() {
-            if (quizQueue.length === 0) {
-                alert('🎉 Session complete! You successfully mastered all words.');
-                endQuiz();
-                return;
-            }
-
-            isRetryMode = false; // Reset retry flag for new question
-
-            const completed = totalItemsInSession - quizQueue.length;
-            const percent = (completed / totalItemsInSession) * 100;
-            document.getElementById('progress-bar').style.width = `${percent}%`;
-            document.getElementById('progress-text').innerText = `${completed}/${totalItemsInSession}`;
-
-            const feedbackArea = document.getElementById('feedback-area');
-            feedbackArea.style.display = 'none';
-            feedbackArea.className = 'feedback-box';
-            document.getElementById('next-btn').style.display = 'none';
-            document.getElementById('submit-btn').disabled = false;
-
-            currentQuizItem = quizQueue[0];
-
-            let settingType = document.getElementById('quiz-type').value;
-            const allTypes = ['c2e', 'c2p', 'p2c', 'e2c', 'p2e', 'e2p'];
-            currentActiveType = settingType === 'random' ? allTypes[Math.floor(Math.random() * allTypes.length)] : settingType;
-
-            let promptText = '';
-            let promptLabel = '';
-            let correctAnswer = '';
-            let targetKey = '';
-            let answerCategory = 'english';
-
-            if (currentActiveType === 'c2e') {
-                promptLabel = "Translate to English 🇬🇧";
-                promptText = currentQuizItem.chinese;
-                correctAnswer = currentQuizItem.english;
-                targetKey = 'english';
-                answerCategory = 'english';
-            } else if (currentActiveType === 'c2p') {
-                promptLabel = "Provide the Pinyin 🔤";
-                promptText = currentQuizItem.chinese;
-                correctAnswer = currentQuizItem.pinyin;
-                targetKey = 'pinyin';
-                answerCategory = 'pinyin';
-            } else if (currentActiveType === 'p2c') {
-                promptLabel = "Provide Chinese Characters 🇨🇳";
-                promptText = currentQuizItem.pinyin;
-                correctAnswer = currentQuizItem.chinese;
-                targetKey = 'chinese';
-                answerCategory = 'chinese';
-            } else if (currentActiveType === 'e2c') {
-                promptLabel = "Provide Chinese Characters 🇨🇳";
-                promptText = currentQuizItem.english;
-                correctAnswer = currentQuizItem.chinese;
-                targetKey = 'chinese';
-                answerCategory = 'chinese';
-            } else if (currentActiveType === 'p2e') {
-                promptLabel = "Translate to English 🇬🇧";
-                promptText = currentQuizItem.pinyin;
-                correctAnswer = currentQuizItem.english;
-                targetKey = 'english';
-                answerCategory = 'english';
-            } else if (currentActiveType === 'e2p') {
-                promptLabel = "Provide the Pinyin 🔤";
-                promptText = currentQuizItem.english;
-                correctAnswer = currentQuizItem.pinyin;
-                targetKey = 'pinyin';
-                answerCategory = 'pinyin';
-            }
-
-            setAnswerTheme(answerCategory);
-
-            document.getElementById('prompt-instruction').innerText = promptLabel;
-            document.getElementById('prompt-text').innerText = promptText;
-
-            const mode = document.getElementById('quiz-mode').value;
-            if (mode === 'mc') {
-                setupMultipleChoice(correctAnswer, targetKey);
-            } else {
-                document.getElementById('user-answer').value = '';
-                document.getElementById('user-answer').focus();
-            }
-        }
-
-        function setupMultipleChoice(correctAnswer, targetKey) {
-            const container = document.getElementById('mc-container');
-            container.innerHTML = '';
-
-            let wrongOptions = vocabList
-                .filter(i => i[targetKey] !== correctAnswer)
-                .map(i => i[targetKey]);
+        function checkAnswer() {
+            const card = sentencePool[currentIndex];
+            const userText = document.getElementById("user-input").value;
             
-            wrongOptions = shuffle(wrongOptions).slice(0, 3);
-            let choices = shuffle([correctAnswer, ...wrongOptions]);
+            if (!userText.trim()) return; // Don't submit empty
 
-            choices.forEach(choice => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerText = choice;
-                btn.onclick = () => checkAnswer(choice === correctAnswer, correctAnswer);
-                container.appendChild(btn);
-            });
+            const cleanUser = sanitize(userText);
+            const cleanCorrect = sanitize(card.answer);
+            
+            const isCorrect = (cleanUser === cleanCorrect);
+
+            showFeedback(isCorrect, userText, card);
         }
 
-        function getCorrectAnswerString() {
-            if (currentActiveType === 'c2e' || currentActiveType === 'p2e') return currentQuizItem.english;
-            if (currentActiveType === 'c2p' || currentActiveType === 'e2p') return currentQuizItem.pinyin;
-            return currentQuizItem.chinese;
+        function revealAnswer() {
+            const card = sentencePool[currentIndex];
+            showFeedback(false, "[Revealed without guessing]", card);
         }
 
-        function submitWriteAnswer() {
-            const userText = document.getElementById('user-answer').value.trim();
-            const feedback = document.getElementById('feedback-area');
-            const correctAnswer = getCorrectAnswerString();
+        function showFeedback(isCorrect, userText, card) {
+            document.getElementById("input-section").classList.add("hidden");
+            document.getElementById("feedback-section").classList.remove("hidden");
 
-            if (!userText) return;
-
-            // If we are already in retry mode, check if they typed it right *now*
-            if (isRetryMode) {
-                if (userText.toLowerCase() === correctAnswer.toLowerCase()) {
-                    feedback.className = 'feedback-box feedback-correct';
-                    feedback.innerHTML = '✨ Correct! Moving on...';
-                    document.getElementById('submit-btn').disabled = true;
-                    // Now that they successfully typed it correctly on retry, clear from queue and move on
-                    quizQueue.shift();
-                    setTimeout(nextQuestion, 1000);
-                } else {
-                    feedback.className = 'feedback-box feedback-incorrect';
-                    feedback.innerHTML = `❌ Incorrect. Please type the exact correct answer: <strong>${correctAnswer}</strong>`;
-                    document.getElementById('user-answer').value = '';
-                    document.getElementById('user-answer').focus();
-                }
-                return;
-            }
-
-            // Normal first attempt check
-            const isCorrect = userText.toLowerCase() === correctAnswer.toLowerCase();
-            feedback.style.display = 'block';
-
+            const resultBadge = document.getElementById("result-badge");
+            const userDiffContainer = document.getElementById("user-diff-container");
+            
             if (isCorrect) {
-                feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = '✨ CORRECT!! Fantastic!';
-                document.getElementById('submit-btn').disabled = true;
-                quizQueue.shift();
-                document.getElementById('next-btn').style.display = 'block';
+                resultBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800";
+                resultBadge.innerText = "Correct! 太棒了！";
+                userDiffContainer.classList.add("hidden");
             } else {
-                // First time wrong: Activate forced retry mode!
-                isRetryMode = true;
-                feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}</strong><br><span style="font-size:0.9rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
-                document.getElementById('user-answer').value = '';
-                document.getElementById('user-answer').focus();
-                // Note: We do NOT shift from quizQueue yet; it stays in queue until they successfully re-type it.
-            }
-        }
-
-        function checkAnswer(isCorrect, correctAnswer) {
-            const feedback = document.getElementById('feedback-area');
-            feedback.style.display = 'block';
-
-            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
-
-            if (isCorrect) {
-                feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = '✨ CORRECT!! Fantastic!';
-                quizQueue.shift();
-            } else {
-                feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Incorrect. Correct: <strong>${correctAnswer}</strong>`;
-                const missedItem = quizQueue.shift();
-                quizQueue.push(missedItem);
+                resultBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800";
+                resultBadge.innerText = "Not Quite Right";
+                document.getElementById("user-submitted-text").innerText = userText;
+                userDiffContainer.classList.remove("hidden");
             }
 
-            document.getElementById('next-btn').style.display = 'block';
+            document.getElementById("correct-target-text").innerText = card.answer + (card.direction === "en-to-zh" ? ` (${card.pinyin})` : "");
+            document.getElementById("grammar-text").innerText = card.grammarNote;
         }
 
-        function nextQuestion() {
-            loadQuestion();
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % sentencePool.length;
+            loadCard();
         }
 
-        updateVocabTable();
+        // Initialize first card on load
+        window.onload = loadCard;
     </script>
 </body>
 </html>
