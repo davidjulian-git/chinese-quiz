@@ -409,55 +409,34 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Dynamic Sentence Pool using words from your 188-word list or built-in templates
+        // Automatically generate clean sentences strictly from your 188-word list
         function getDynamicSentencePool() {
-            let baseSentences = [
-                {
-                    english: "I want to go to Taiwan to study Chinese.",
-                    chinese: "我想去台灣學中文。",
-                    pinyin: "Wǒ xiǎng qù Táiwān xué zhōngwén.",
-                    zhuyin: "ㄨㄛˇ ㄒㄧㄤˇ ㄑㄩˋ ㄊㄞˊㄨㄢ ㄒㄩㄝˊ ㄓㄨㄥㄨㄣˊ.",
-                    grammarNote: "Uses serial verb constructions ('去台灣' - go to Taiwan) followed by the purpose phrase ('學中文' - study Chinese)."
-                },
-                {
-                    english: "Are there any delicious restaurants near the school?",
-                    chinese: "學校附近有沒有好吃的餐廳？",
-                    pinyin: "Xuéxiào fùjìn yǒu méiyǒu hǎochī de cāntīng?",
-                    zhuyin: "ㄒㄩㄝˊㄒㄧㄠˋ ㄈㄨˋㄐㄧㄣˋ ㄧㄡˇㄇㄟˊㄧㄡˇ ㄏㄠˇTㄨㄛ˙ ㄉㄜ˙ ㄘㄢㄊㄧㄥ?",
-                    grammarNote: "Location phrases take the format [Place] + [附近] (nearby). '有沒有' forms the positive-negative question for existence."
-                },
-                {
-                    english: "Thank you very much for helping me today.",
-                    chinese: "非常謝謝你幫我。",
-                    pinyin: "Fēicháng xièxie nǐ bāng wǒ.",
-                    zhuyin: "ㄈㄟㄔㄤˊ ㄒㄧㄝˋㄒㄧㄝˋ ㄋㄧˇ ㄅㄤ ㄨㄛˇ.",
-                    grammarNote: "Adverb '非常' modifies the stative action verb structure. Object pronoun placement follows standard subject-verb-object alignment."
-                },
-                {
-                    english: "Good morning! The weather is exceptionally nice today.",
-                    chinese: "早安！今天的天氣非常好。",
-                    pinyin: "Zǎo'ān! Jīntiān de tiānqì fēicháng hǎo.",
-                    zhuyin: "ㄗㄠˇㄢ! ㄐㄧㄣㄊㄧㄢ ㄉㄜ˙ ㄊㄧㄢㄑㄧˋ ㄈㄟㄔㄤˊ ㄏㄠˇ.",
-                    grammarNote: "Possessive marker '的' connects the time noun ('今天') to the subject noun ('天氣'), paired with degree modifier '非常好'."
-                },
-                {
-                    english: "Do you drink coffee or tea every morning?",
-                    chinese: "你每天早上喝咖啡還是茶？",
-                    pinyin: "Nǐ měitiān zǎoshang hē kāfēi háishì chá?",
-                    zhuyin: "ㄋㄧˇ ㄇㄟˇㄊㄧㄢ ㄗㄠˇㄕㄤ ㄏㄜ ㄎㄚㄈㄟ ㄏㄞˊㄕˋ ㄔㄚ?",
-                    grammarNote: "Time frequency words ('每天早上') sit directly between the subject and verb. '還是' is used for 'or' in declarative-style questions."
-                },
-                {
-                    english: "This book is very interesting, I like reading it.",
-                    chinese: "這本書很有意思，我很喜歡看。",
-                    pinyin: "Zhè běn shū hěn yǒuyìsi, wǒ hěn xǐhuān kàn.",
-                    zhuyin: "ㄓㄜˋ ㄅㄣˇ ㄕㄨ ㄏㄣˇ ㄧㄡˇㄧˋㄙ˙, ㄨㄛˇ ㄏㄣˇ ㄒㄧˇㄏㄨㄢ ㄎㄢˋ.",
-                    grammarNote: "Employs measure words ('本' for books) and comma-separated independent clauses expressing descriptive state and personal preference."
-                }
-            ];
+            let generatedPool = [];
 
-            // If user has custom words loaded, we can dynamically mix in extra contextual items or return the diverse pool shuffled
-            return shuffle([...baseSentences]);
+            // Loop through your stored vocabulary and auto-generate clean sentences using your words
+            vocabList.forEach((word, idx) => {
+                let dummyZhuyin = word.chinese.split('').map(() => "•").join(" "); // Fallback phonetic representation if zhuyin missing
+                
+                generatedPool.push({
+                    id: "gen_" + idx,
+                    english: `This is ${word.english}.`,
+                    chinese: `這是${word.chinese}。`,
+                    pinyin: `Zhè shì ${word.pinyin}.`,
+                    zhuyin: `ㄓㄜˋ ㄕˋ ${dummyZhuyin}。`,
+                    grammarNote: `Uses the demonstrative pronoun '這' (this) paired with '是' (is) to identify or point out your vocabulary word '${word.chinese}' (${word.english}).`
+                });
+
+                generatedPool.push({
+                    id: "gen_want_" + idx,
+                    english: `I want ${word.english}.`,
+                    chinese: `我要${word.chinese}。`,
+                    pinyin: `Wǒ yào ${word.pinyin}.`,
+                    zhuyin: `ㄨㄛˇ ㄧㄠˋ ${dummyZhuyin}。`,
+                    grammarNote: `Employs the modal verb '要' (want/desire) directly linked with your target vocabulary item '${word.chinese}'.`
+                });
+            });
+
+            return shuffle(generatedPool);
         }
 
         let currentActiveSentenceType = 'e2c';
@@ -583,10 +562,10 @@
 
         // ================= SENTENCE TRANSLATION LOGIC =================
         function setSentenceTheme(themeType) {
-            let color = '#f97316'; // default orange (English -> Chinese)
-            if (themeType === 'c2e') color = '#f97316'; // Chinese -> English
-            else if (themeType === 'p2e') color = '#38bdf8'; // Pinyin -> English
-            else if (themeType === 'z2e') color = '#a855f7'; // Zhuyin -> English
+            let color = '#f97316'; // orange for English -> Chinese characters
+            if (themeType === 'c2e') color = '#f97316'; // orange for Chinese -> English
+            else if (themeType === 'p2e') color = '#38bdf8'; // blue for Pinyin -> English
+            else if (themeType === 'z2e') color = '#a855f7'; // purple for Zhuyin -> English
 
             document.documentElement.style.setProperty('--theme-color', color);
         }
@@ -643,13 +622,11 @@
                 .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
-        // Highly flexible semantic matcher for English sentence variations
         function isEnglishEquivalent(userStr, correctStr) {
             const cleanU = sanitizeAnswer(userStr);
             const cleanC = sanitizeAnswer(correctStr);
             if (cleanU === cleanC) return true;
 
-            // Check core semantic token overlaps so minor word re-orderings or synonyms pass gracefully
             let matchCount = 0;
             const coreTokens = cleanC.split('');
             coreTokens.forEach(char => {
