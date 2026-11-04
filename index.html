@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mandarin Vocabulary Trainer</title>
+    <title>Mandarin Flashcard & Translation Trainer</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
@@ -24,6 +24,18 @@
 
         <!-- ================= ORIGINAL FLASHCARD QUIZ MODE ================= -->
         <div id="mode-flashcard-container" class="space-y-4">
+            <!-- File Upload Bar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Vocabulary Source</h2>
+                    <p id="file-name-display" class="text-sm font-medium text-slate-800">Default Built-in List</p>
+                </div>
+                <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2 px-4 rounded-xl transition-colors">
+                    Upload List (.txt/.json)
+                    <input type="file" id="vocab-file-input" accept=".txt,.json" class="hidden" onchange="handleFileUpload(event)">
+                </label>
+            </div>
+
             <div class="flex justify-between items-center text-xs font-medium text-slate-400 uppercase tracking-wider px-1">
                 <span id="fc-counter">Card 1 of 4</span>
                 <span id="fc-score">Score: 0 / 0</span>
@@ -31,7 +43,6 @@
 
             <!-- The Flashcard Box -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 min-h-[22rem] flex flex-col justify-between transition-all relative">
-                
                 <div class="flex justify-between items-start">
                     <span id="fc-category" class="text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full"></span>
                     <span id="fc-prompt-type" class="text-xs text-indigo-600 font-semibold uppercase tracking-wider">What does this mean?</span>
@@ -47,9 +58,7 @@
                 </div>
 
                 <!-- Options Grid -->
-                <div id="fc-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    <!-- Dynamic Answer Buttons Injected Here -->
-                </div>
+                <div id="fc-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2"></div>
 
                 <!-- Feedback & Next Button -->
                 <div id="fc-feedback-area" class="hidden pt-4 border-t border-slate-100 flex items-center justify-between">
@@ -136,7 +145,7 @@
 
     <script>
         // ================= DATA =================
-        const flashcardList = [
+        let flashcardList = [
             { chinese: "捷運", zhuyin: "ㄐㄧㄝˊㄩㄣˋ", pinyin: "jiéyùn", english: "MRT (Mass Rapid Transit)", category: "Transportation" },
             { chinese: "搭", zhuyin: "ㄉㄚ", pinyin: "dā", english: "To take (transportation) / to ride", category: "Verbs" },
             { chinese: "內用", zhuyin: "ㄋㄟˋㄩㄥˋ", pinyin: "nèiyòng", english: "Dine-in", category: "Dining" },
@@ -195,6 +204,54 @@
             }
         }
 
+        // ================= FILE UPLOAD LOGIC =================
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    let parsedData = [];
+
+                    if (file.name.endsWith('.json')) {
+                        parsedData = JSON.parse(content);
+                    } else {
+                        // Assume CSV or Tab-delimited text
+                        const lines = content.split('\n');
+                        lines.forEach(line => {
+                            if (!line.trim()) return;
+                            const parts = line.split(/[\t,]/);
+                            if (parts.length >= 4) {
+                                parsedData.push({
+                                    chinese: parts[0].trim(),
+                                    zhuyin: parts[1].trim(),
+                                    pinyin: parts[2].trim(),
+                                    english: parts[3].trim(),
+                                    category: parts[4] ? parts[4].trim() : "Custom"
+                                });
+                            }
+                        });
+                    }
+
+                    if (parsedData.length > 0) {
+                        flashcardList = parsedData;
+                        fcIndex = 0;
+                        fcScore = 0;
+                        fcTotal = 0;
+                        document.getElementById("file-name-display").innerText = file.name;
+                        loadFlashcardQuestion();
+                    } else {
+                        alert("Could not parse valid vocabulary from file format.");
+                    }
+                } catch (err) {
+                    alert("Error reading file: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
         // ================= ORIGINAL FLASHCARD QUIZ LOGIC =================
         function loadFlashcardQuestion() {
             isAnswerLocked = false;
@@ -202,16 +259,14 @@
             
             document.getElementById("fc-counter").innerText = `Card ${fcIndex + 1} of ${flashcardList.length}`;
             document.getElementById("fc-score").innerText = `Score: ${fcScore} / ${fcTotal}`;
-            document.getElementById("fc-category").innerText = card.category;
+            document.getElementById("fc-category").innerText = card.category || "General";
             document.getElementById("fc-feedback-area").classList.add("hidden");
 
-            // Display Chinese on front, prompt for English meaning
             document.getElementById("fc-display-main").innerText = card.chinese;
             document.getElementById("fc-zhuyin").innerText = card.zhuyin;
             document.getElementById("fc-pinyin").innerText = card.pinyin;
             document.getElementById("fc-display-phonetic").classList.remove("hidden");
 
-            // Generate multiple choice options from flashcardList
             let options = [card.english];
             while (options.length < Math.min(4, flashcardList.length)) {
                 let randomCard = flashcardList[Math.floor(Math.random() * flashcardList.length)];
