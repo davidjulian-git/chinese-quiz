@@ -43,10 +43,10 @@
             background-color: #334155;
             color: var(--text-muted);
             border: none;
-            padding: 12px 20px;
+            padding: 12px 16px;
             border-radius: 12px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
         }
         nav button.active-tab {
@@ -159,7 +159,7 @@
             transition: border-color 0.3s;
         }
         .prompt-display {
-            font-size: 2.8rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: var(--theme-color);
             margin: 10px 0 20px 0;
@@ -204,6 +204,7 @@
             font-weight: bold;
             font-size: 1.1rem;
             display: none;
+            text-align: left;
         }
         .feedback-correct {
             background-color: rgba(34, 197, 94, 0.15);
@@ -214,6 +215,15 @@
             background-color: rgba(239, 68, 68, 0.15);
             color: var(--error);
             border: 1px solid var(--error);
+        }
+        .grammar-note {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255,255,255,0.2);
+            font-size: 0.95rem;
+            font-weight: normal;
+            color: var(--text-main);
+            line-height: 1.5;
         }
         .backup-section {
             margin-top: 30px;
@@ -232,6 +242,7 @@
 
     <nav>
         <button id="nav-quiz" class="active-tab" onclick="switchTab('quiz')">Study Quiz</button>
+        <button id="nav-sentences" onclick="switchTab('sentences')">Sentences</button>
         <button id="nav-manage" onclick="switchTab('manage')">Manage Words</button>
     </nav>
 
@@ -286,6 +297,40 @@
                 <div id="feedback-area" class="feedback-box"></div>
                 <button id="next-btn" style="margin-top: 16px; width: 100%; display: none;" onclick="nextQuestion()">Next Question</button>
             </div>
+        </div>
+    </div>
+
+    <!-- SENTENCE TRANSLATION TAB -->
+    <div id="sentences-tab" class="tab-content">
+        <h2 style="margin-top:0;">Sentence Translation Trainer</h2>
+        
+        <div class="quiz-header" style="margin-bottom: 12px;">
+            <span id="st-counter" style="color: var(--text-muted); font-size: 0.9rem;">Sentence 1 of 5</span>
+            <span id="st-direction-badge" style="background: #0f172a; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; border: 1px solid var(--card-border);">EN ➔ 中文</span>
+        </div>
+
+        <div class="quiz-card-box">
+            <div id="st-prompt-label" class="prompt-instruction">Translate the sentence:</div>
+            <div id="st-prompt-text" class="prompt-display" style="font-size: 1.6rem; min-height: 3.5rem; display: flex; align-items: center; justify-content: center;"></div>
+            
+            <div id="st-phonetic-container" style="margin-bottom: 15px; display: none;">
+                <p id="st-phonetic-pinyin" style="color: var(--theme-color); font-style: italic; margin: 0;"></p>
+            </div>
+
+            <div id="st-input-section" style="text-align: left;">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label id="st-input-label">Your Translation (Chinese):</label>
+                    <textarea id="st-user-input" placeholder="Type translation here..." style="height: 80px;"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button style="flex: 1;" onclick="checkSentenceAnswer()">Submit Answer</button>
+                    <button class="secondary" onclick="revealSentenceAnswer()">Reveal</button>
+                </div>
+            </div>
+
+            <div id="st-feedback-box" class="feedback-box"></div>
+            
+            <button id="st-next-btn" style="margin-top: 16px; width: 100%; display: none;" onclick="nextSentenceCard()">Next Sentence ➔</button>
         </div>
     </div>
 
@@ -354,7 +399,55 @@
         let totalItemsInSession = 0;
         let currentQuizItem = null;
         let currentActiveType = 'c2e';
-        let isRetryMode = false; // Tracks if user is forced to re-type after a mistake
+        let isRetryMode = false;
+
+        // Dynamic sentence generator pool mapping common words from saved lists
+        function getDynamicSentencePool() {
+            let pool = [
+                {
+                    id: "s1",
+                    direction: "en-to-zh",
+                    targetVocab: ["台灣"],
+                    prompt: "I want to go to Taiwan.",
+                    answer: "我想去台灣。",
+                    pinyin: "Wǒ xiǎng qù Táiwān.",
+                    grammarNote: "Uses '想' (xiǎng) for 'want to' followed by the destination verb phrase '去台灣' (to go to Taiwan)."
+                },
+                {
+                    id: "s2",
+                    direction: "en-to-zh",
+                    targetVocab: ["學校"],
+                    prompt: "Is this your school?",
+                    answer: "這是你的學校嗎？",
+                    pinyin: "Zhè shì nǐ de xuéxiào ma?",
+                    grammarNote: "Uses '這' (this) + '是' (is) to ask identifying questions, ending with the question particle '嗎' (ma)."
+                },
+                {
+                    id: "s3",
+                    direction: "en-to-zh",
+                    targetVocab: ["謝謝"],
+                    prompt: "Thank you very much!",
+                    answer: "非常謝謝你！",
+                    pinyin: "Fēicháng xièxie nǐ!",
+                    grammarNote: "Employs the degree adverb '非常' (fēicháng - extremely/very) directly modifying the politeness verb '謝謝'."
+                },
+                {
+                    id: "s4",
+                    direction: "zh-to-en",
+                    targetVocab: ["早安"],
+                    prompt: "早安！今天天氣很好。",
+                    pinyin: "Zǎo'ān! Jīntiān tiānqì hěn hǎo.",
+                    answer: "Good morning! The weather is very good today.",
+                    grammarNote: "Combines the greeting '早安' with a standard time-topic structure ('今天' - today) followed by the weather description."
+                }
+            ];
+
+            let activeWords = vocabList.map(v => v.chinese);
+            let filtered = pool.filter(s => s.targetVocab.some(w => activeWords.includes(w)));
+            return filtered.length > 0 ? filtered : pool;
+        }
+
+        let stIndex = 0;
 
         function saveVocabToStorage() {
             localStorage.setItem('chinese_vocab', JSON.stringify(vocabList));
@@ -365,6 +458,7 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             
             document.getElementById('nav-quiz').classList.remove('active-tab');
+            document.getElementById('nav-sentences').classList.remove('active-tab');
             document.getElementById('nav-manage').classList.remove('active-tab');
 
             if (tabName === 'quiz') {
@@ -372,6 +466,10 @@
                 document.getElementById('nav-quiz').classList.add('active-tab');
                 document.getElementById('quiz-setup').style.display = 'block';
                 document.getElementById('quiz-active').style.display = 'none';
+            } else if (tabName === 'sentences') {
+                document.getElementById('sentences-tab').classList.add('active');
+                document.getElementById('nav-sentences').classList.add('active-tab');
+                loadSentenceCard();
             } else {
                 document.getElementById('manage-tab').classList.add('active');
                 document.getElementById('nav-manage').classList.add('active-tab');
@@ -469,6 +567,97 @@
             return array.sort(() => Math.random() - 0.5);
         }
 
+        // ================= SENTENCE TRANSLATION LOGIC =================
+        function loadSentenceCard() {
+            const sentencePool = getDynamicSentencePool();
+            if (stIndex >= sentencePool.length) stIndex = 0;
+            const card = sentencePool[stIndex];
+            
+            document.getElementById('st-counter').innerText = `Sentence ${stIndex + 1} of ${sentencePool.length}`;
+            
+            const badge = document.getElementById('st-direction-badge');
+            const inputLabel = document.getElementById('st-input-label');
+            
+            if (card.direction === "en-to-zh") {
+                badge.innerText = "EN ➔ 中文";
+                document.getElementById('st-prompt-text').innerText = card.prompt;
+                document.getElementById('st-phonetic-container').style.display = 'none';
+                inputLabel.innerText = "Your Translation (Chinese):";
+                document.getElementById('st-user-input').placeholder = "Type Chinese translation here...";
+            } else {
+                badge.innerText = "中文 ➔ EN";
+                document.getElementById('st-prompt-text').innerText = card.prompt;
+                document.getElementById('st-phonetic-pinyin').innerText = card.pinyin;
+                document.getElementById('st-phonetic-container').style.display = 'block';
+                inputLabel.innerText = "Your Translation (English):";
+                document.getElementById('st-user-input').placeholder = "Type English translation here...";
+            }
+
+            document.getElementById('st-user-input').value = '';
+            document.getElementById('st-input-section').style.display = 'block';
+            document.getElementById('st-feedback-box').style.display = 'none';
+            document.getElementById('st-next-btn').style.display = 'none';
+        }
+
+        function sanitizeAnswer(str) {
+            return str
+                .toLowerCase()
+                .trim()
+                .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
+        }
+
+        function checkSentenceAnswer() {
+            const sentencePool = getDynamicSentencePool();
+            const card = sentencePool[stIndex];
+            const userText = document.getElementById('st-user-input').value;
+            
+            if (!userText.trim()) return;
+
+            const cleanUser = sanitizeAnswer(userText);
+            const cleanCorrect = sanitizeAnswer(card.answer);
+            const isCorrect = (cleanUser === cleanCorrect);
+
+            showSentenceFeedback(isCorrect, userText, card);
+        }
+
+        function revealSentenceAnswer() {
+            const sentencePool = getDynamicSentencePool();
+            const card = sentencePool[stIndex];
+            showSentenceFeedback(false, "[Revealed without guessing]", card);
+        }
+
+        function showSentenceFeedback(isCorrect, userText, card) {
+            document.getElementById('st-input-section').style.display = 'none';
+            const feedbackBox = document.getElementById('st-feedback-box');
+            feedbackBox.style.display = 'block';
+
+            if (isCorrect) {
+                feedbackBox.className = 'feedback-box feedback-correct';
+                feedbackBox.innerHTML = `✨ Correct! 太棒了！<div class="grammar-note"><strong>Target:</strong> ${card.answer} (${card.pinyin})</div>`;
+            } else {
+                feedbackBox.className = 'feedback-box feedback-incorrect';
+                feedbackBox.innerHTML = `
+                    ❌ Not Quite Right
+                    <div style="font-size: 0.9rem; margin-top: 6px; font-weight: normal;">
+                        <strong>Correct Answer:</strong> ${card.answer} (${card.pinyin})<br>
+                        <strong>You wrote:</strong> ${userText}
+                    </div>
+                    <div class="grammar-note">
+                        <strong>Grammar Breakdown:</strong><br>${card.grammarNote}
+                    </div>
+                `;
+            }
+
+            document.getElementById('st-next-btn').style.display = 'block';
+        }
+
+        function nextSentenceCard() {
+            const sentencePool = getDynamicSentencePool();
+            stIndex = (stIndex + 1) % sentencePool.length;
+            loadSentenceCard();
+        }
+
+        // ================= STUDY QUIZ LOGIC =================
         function startQuiz() {
             if (vocabList.length < 4) {
                 alert('Please add at least 4 vocabulary words before starting a quiz.');
@@ -514,7 +703,7 @@
                 return;
             }
 
-            isRetryMode = false; // Reset retry flag for new question
+            isRetryMode = false;
 
             const completed = totalItemsInSession - quizQueue.length;
             const percent = (completed / totalItemsInSession) * 100;
@@ -624,13 +813,11 @@
 
             if (!userText) return;
 
-            // If we are already in retry mode, check if they typed it right *now*
             if (isRetryMode) {
                 if (userText.toLowerCase() === correctAnswer.toLowerCase()) {
                     feedback.className = 'feedback-box feedback-correct';
                     feedback.innerHTML = '✨ Correct! Moving on...';
                     document.getElementById('submit-btn').disabled = true;
-                    // Now that they successfully typed it correctly on retry, clear from queue and move on
                     quizQueue.shift();
                     setTimeout(nextQuestion, 1000);
                 } else {
@@ -642,7 +829,6 @@
                 return;
             }
 
-            // Normal first attempt check
             const isCorrect = userText.toLowerCase() === correctAnswer.toLowerCase();
             feedback.style.display = 'block';
 
@@ -653,13 +839,11 @@
                 quizQueue.shift();
                 document.getElementById('next-btn').style.display = 'block';
             } else {
-                // First time wrong: Activate forced retry mode!
                 isRetryMode = true;
                 feedback.className = 'feedback-box feedback-incorrect';
                 feedback.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}</strong><br><span style="font-size:0.9rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
                 document.getElementById('user-answer').value = '';
                 document.getElementById('user-answer').focus();
-                // Note: We do NOT shift from quizQueue yet; it stays in queue until they successfully re-type it.
             }
         }
 
