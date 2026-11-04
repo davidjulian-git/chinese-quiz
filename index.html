@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mandarin Flashcard & Translation Trainer</title>
+    <title>Mandarin Vocabulary Trainer</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header -->
+    <!-- Header / Mode Switcher -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="text-lg font-bold text-slate-900">Mandarin Trainer</h1>
             <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-                <button id="tab-flashcard" onclick="switchMode('flashcard')" class="px-3 py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-sm">Flashcards</button>
-                <button id="tab-translation" onclick="switchMode('translation')" class="px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900">Sentences</button>
+                <button id="tab-flashcard" onclick="switchMode('flashcard')" class="px-3 py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-sm">Flashcard Quiz</button>
+                <button id="tab-translation" onclick="switchMode('translation')" class="px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900">Sentence Translation</button>
             </div>
         </div>
     </header>
@@ -22,50 +22,42 @@
     <!-- Main Container -->
     <main class="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col justify-center">
 
-        <!-- ================= FLASHCARD MODE ================= -->
+        <!-- ================= ORIGINAL FLASHCARD QUIZ MODE ================= -->
         <div id="mode-flashcard-container" class="space-y-4">
             <div class="flex justify-between items-center text-xs font-medium text-slate-400 uppercase tracking-wider px-1">
                 <span id="fc-counter">Card 1 of 4</span>
-                <span>Tap card to flip</span>
+                <span id="fc-score">Score: 0 / 0</span>
             </div>
 
-            <!-- The Flashcard -->
-            <div onclick="flipFlashcard()" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 min-h-[20rem] flex flex-col justify-between cursor-pointer transition-all hover:border-slate-300 relative">
+            <!-- The Flashcard Box -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 min-h-[22rem] flex flex-col justify-between transition-all relative">
+                
                 <div class="flex justify-between items-start">
                     <span id="fc-category" class="text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full"></span>
-                    <span class="text-xs text-indigo-600 font-medium">Flip ↺</span>
+                    <span id="fc-prompt-type" class="text-xs text-indigo-600 font-semibold uppercase tracking-wider">What does this mean?</span>
                 </div>
 
-                <!-- Card Faces -->
-                <div class="text-center my-auto py-6">
-                    <!-- Front (Chinese) -->
-                    <div id="fc-front" class="space-y-3">
-                        <h2 id="fc-chinese" class="text-4xl md:text-5xl font-bold tracking-wide text-slate-900">捷運</h2>
-                        <div class="space-y-1">
-                            <p id="fc-zhuyin" class="font-mono text-indigo-600 text-base">ㄐㄧㄝˊㄩㄣˋ</p>
-                            <p id="fc-pinyin" class="italic text-slate-500 text-sm">jiéyùn</p>
-                        </div>
-                    </div>
-                    <!-- Back (English - Hidden by default) -->
-                    <div id="fc-back" class="hidden space-y-3">
-                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">English Definition</span>
-                        <h2 id="fc-english" class="text-2xl md:text-3xl font-semibold text-slate-900">MRT (Rapid Transit)</h2>
+                <!-- Card Content Display -->
+                <div class="text-center my-auto py-6 space-y-4">
+                    <h2 id="fc-display-main" class="text-4xl md:text-5xl font-bold tracking-wide text-slate-900">捷運</h2>
+                    <div id="fc-display-phonetic" class="space-y-1">
+                        <p id="fc-zhuyin" class="font-mono text-indigo-600 text-base">ㄐㄧㄝˊㄩㄣˋ</p>
+                        <p id="fc-pinyin" class="italic text-slate-500 text-sm">jiéyùn</p>
                     </div>
                 </div>
 
-                <div class="text-center text-xs text-slate-400">
-                    Click anywhere on card to reveal definition
+                <!-- Options Grid -->
+                <div id="fc-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <!-- Dynamic Answer Buttons Injected Here -->
                 </div>
-            </div>
 
-            <!-- Flashcard Controls -->
-            <div class="grid grid-cols-2 gap-3 pt-2">
-                <button onclick="prevFlashcard()" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors shadow-sm text-sm">
-                    ➔ Previous Card
-                </button>
-                <button onclick="nextFlashcard()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm text-sm">
-                    Next Card ➔
-                </button>
+                <!-- Feedback & Next Button -->
+                <div id="fc-feedback-area" class="hidden pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <p id="fc-feedback-text" class="font-semibold text-sm"></p>
+                    <button onclick="nextFlashcardQuestion()" class="bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-5 rounded-xl transition-colors text-sm">
+                        Next Card ➔
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -74,7 +66,6 @@
         <div id="mode-translation-container" class="hidden space-y-4">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 transition-all">
                 
-                <!-- Prompt Display -->
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-3">
                         <span id="st-counter" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sentence 1 of 2</span>
@@ -82,7 +73,7 @@
                     </div>
                     
                     <h2 id="st-prompt-text" class="text-xl md:text-2xl font-semibold text-slate-900 leading-snug min-h-[4rem] flex items-center">
-                        Do you want to take the MRT together?
+                        Takeout
                     </h2>
                     
                     <div id="st-phonetic-container" class="mt-2 text-sm text-slate-500 hidden">
@@ -108,7 +99,7 @@
                     </div>
                 </div>
 
-                <!-- Feedback Box (Hidden by default) -->
+                <!-- Feedback Box -->
                 <div id="st-feedback-section" class="hidden mt-6 pt-6 border-t border-slate-100 space-y-4">
                     <div id="st-result-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></div>
                     
@@ -140,7 +131,7 @@
 
     <!-- Footer Controls -->
     <footer class="bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-400">
-        Single-file offline app • Dual Modes: Flashcards & Strict List-Only Sentences
+        Single-file offline app • Flashcard Quiz & Sentence Translation
     </footer>
 
     <script>
@@ -152,7 +143,6 @@
             { chinese: "外帶", zhuyin: "ㄨㄞˋㄉㄞˋ", pinyin: "wàidài", english: "Takeout", category: "Dining" }
         ];
 
-        // Sentences built strictly from your flashcard list vocabulary (plus foundational pronouns/particles)
         const sentencePool = [
             {
                 id: "s1",
@@ -177,7 +167,9 @@
         // ================= STATE =================
         let currentMode = "flashcard";
         let fcIndex = 0;
-        let isFlipped = false;
+        let fcScore = 0;
+        let fcTotal = 0;
+        let isAnswerLocked = false;
         let stIndex = 0;
 
         // ================= MODE SWITCHING =================
@@ -193,7 +185,7 @@
                 stContainer.classList.add("hidden");
                 tabFc.className = "px-3 py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-sm";
                 tabSt.className = "px-3 py-1.5 rounded-lg transition-all text-slate-600 hover:text-slate-900";
-                loadFlashcard();
+                loadFlashcardQuestion();
             } else {
                 fcContainer.classList.add("hidden");
                 stContainer.classList.remove("hidden");
@@ -203,45 +195,69 @@
             }
         }
 
-        // ================= FLASHCARD LOGIC =================
-        function loadFlashcard() {
+        // ================= ORIGINAL FLASHCARD QUIZ LOGIC =================
+        function loadFlashcardQuestion() {
+            isAnswerLocked = false;
             const card = flashcardList[fcIndex];
-            isFlipped = false;
             
             document.getElementById("fc-counter").innerText = `Card ${fcIndex + 1} of ${flashcardList.length}`;
+            document.getElementById("fc-score").innerText = `Score: ${fcScore} / ${fcTotal}`;
             document.getElementById("fc-category").innerText = card.category;
-            
-            document.getElementById("fc-chinese").innerText = card.chinese;
+            document.getElementById("fc-feedback-area").classList.add("hidden");
+
+            // Display Chinese on front, prompt for English meaning
+            document.getElementById("fc-display-main").innerText = card.chinese;
             document.getElementById("fc-zhuyin").innerText = card.zhuyin;
             document.getElementById("fc-pinyin").innerText = card.pinyin;
-            document.getElementById("fc-english").innerText = card.english;
+            document.getElementById("fc-display-phonetic").classList.remove("hidden");
 
-            document.getElementById("fc-front").classList.remove("hidden");
-            document.getElementById("fc-back").classList.add("hidden");
-        }
-
-        function flipFlashcard() {
-            isFlipped = !isFlipped;
-            const front = document.getElementById("fc-front");
-            const back = document.getElementById("fc-back");
-            
-            if (isFlipped) {
-                front.classList.add("hidden");
-                back.classList.remove("hidden");
-            } else {
-                front.classList.remove("hidden");
-                back.classList.add("hidden");
+            // Generate multiple choice options from flashcardList
+            let options = [card.english];
+            while (options.length < Math.min(4, flashcardList.length)) {
+                let randomCard = flashcardList[Math.floor(Math.random() * flashcardList.length)];
+                if (!options.includes(randomCard.english)) {
+                    options.push(randomCard.english);
+                }
             }
+            options.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById("fc-options-grid");
+            grid.innerHTML = "";
+            options.forEach(opt => {
+                const btn = document.createElement("button");
+                btn.className = "p-3 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 text-slate-700 font-medium text-sm transition-all text-left";
+                btn.innerText = opt;
+                btn.onclick = () => handleFlashcardAnswer(opt, card.english, btn);
+                grid.appendChild(btn);
+            });
         }
 
-        function nextFlashcard() {
+        function handleFlashcardAnswer(selected, correct, btnElement) {
+            if (isAnswerLocked) return;
+            isAnswerLocked = true;
+            fcTotal++;
+
+            const feedbackArea = document.getElementById("fc-feedback-area");
+            const feedbackText = document.getElementById("fc-feedback-text");
+            feedbackArea.classList.remove("hidden");
+
+            if (selected === correct) {
+                fcScore++;
+                btnElement.className = "p-3 rounded-xl border border-emerald-500 bg-emerald-50 text-emerald-800 font-medium text-sm text-left";
+                feedbackText.className = "font-semibold text-sm text-emerald-700";
+                feedbackText.innerText = "Correct! 太棒了！";
+            } else {
+                btnElement.className = "p-3 rounded-xl border border-rose-500 bg-rose-50 text-rose-800 font-medium text-sm text-left";
+                feedbackText.className = "font-semibold text-sm text-rose-700";
+                feedbackText.innerText = `Incorrect. Correct answer: ${correct}`;
+            }
+
+            document.getElementById("fc-score").innerText = `Score: ${fcScore} / ${fcTotal}`;
+        }
+
+        function nextFlashcardQuestion() {
             fcIndex = (fcIndex + 1) % flashcardList.length;
-            loadFlashcard();
-        }
-
-        function prevFlashcard() {
-            fcIndex = (fcIndex - 1 + flashcardList.length) % flashcardList.length;
-            loadFlashcard();
+            loadFlashcardQuestion();
         }
 
         // ================= SENTENCE TRANSLATION LOGIC =================
@@ -322,7 +338,7 @@
 
         // Initialize on load
         window.onload = function() {
-            loadFlashcard();
+            loadFlashcardQuestion();
             loadSentenceCard();
         };
     </script>
