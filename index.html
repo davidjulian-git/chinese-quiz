@@ -313,17 +313,12 @@
                 <option value="e2c">English ➔ Chinese Characters</option>
                 <option value="c2e">Chinese Characters ➔ English</option>
                 <option value="p2e">Pinyin ➔ English</option>
-                <option value="z2e">Zhuyin ➔ English</option>
             </select>
         </div>
 
         <div id="st-card-box" class="quiz-card-box">
             <div id="st-prompt-label" class="prompt-instruction">Translate the sentence:</div>
             <div id="st-prompt-text" class="prompt-display" style="font-size: 1.6rem; min-height: 4.5rem; display: flex; align-items: center; justify-content: center; line-height: 1.6; padding: 6px 0;"></div>
-            
-            <div id="st-phonetic-container" style="margin-bottom: 15px; display: none;">
-                <p id="st-phonetic-pinyin" style="color: var(--theme-color); font-style: italic; margin: 0; font-size: 1.1rem;"></p>
-            </div>
 
             <div id="st-input-section" style="text-align: left;">
                 <div class="form-group" style="margin-bottom: 18px;">
@@ -409,53 +404,53 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Dynamically constructs real-life sentences utilizing whatever words you have uploaded in localStorage
+        // Curated, fully natural conversational sentence patterns using your uploaded words
         function getSensibleSentencePool() {
             let pool = [];
 
             vocabList.forEach((word) => {
                 let lowerEng = word.english.toLowerCase();
-                let zhuyinVal = word.zhuyin || "• •";
 
-                // Contextual real-life sentence generation based on your uploaded words
+                // 1. Greetings & Politeness
                 if (lowerEng.includes("morning") || lowerEng.includes("hello") || lowerEng.includes("hi") || lowerEng.includes("thank")) {
                     pool.push({
                         english: `Good morning! Thank you for your help.`,
                         chinese: `早安！謝謝你的幫忙。`,
                         pinyin: `Zǎo'ān! Xièxie nǐ de bāngmáng.`,
-                        zhuyin: `ㄗㄠˇ ㄢ! ㄒㄧㄝˋ ㄒㄧㄝˋ ㄋㄧˇ ㄉㄜ˙ ㄅㄤ ㄇㄤˊ.`,
-                        grammarNote: `Combines the standard greeting and gratitude structure '謝謝你的幫忙' (Thank you for your help) using the possessive particle '的'.`
+                        grammarNote: `Combines standard greeting and gratitude structure '謝謝你的幫忙' (Thank you for your help) using the possessive particle '的'.`
                     });
-                } else if (lowerEng.includes("school") || lowerEng.includes("taiwan") || lowerEng.includes("station") || lowerEng.includes("store") || lowerEng.includes("house") || lowerEng.includes("mrt") || lowerEng.includes("place")) {
+                } 
+                // 2. Locations & Travel
+                else if (lowerEng.includes("school") || lowerEng.includes("taiwan") || lowerEng.includes("station") || lowerEng.includes("store") || lowerEng.includes("house") || lowerEng.includes("mrt") || lowerEng.includes("place") || lowerEng.includes("here")) {
                     pool.push({
                         english: `I am going to ${word.english} now.`,
                         chinese: `我現在要去${word.chinese}。`,
                         pinyin: `Wǒ xiànzài yào qù ${word.pinyin}.`,
-                        zhuyin: `ㄨㄛˇ ㄒㄧㄢˋ ㄗㄞˋ ㄧㄠˋ ㄑㄩˋ ${zhuyinVal}.`,
                         grammarNote: `Uses time word '現在' (now) and intent structure '要去' (going to) followed by your uploaded location noun '${word.chinese}'.`
                     });
                     pool.push({
                         english: `Where is ${word.english}?`,
                         chinese: `請問${word.chinese}在哪裡？`,
                         pinyin: `Qǐngwèn ${word.pinyin} zài nǎlǐ?`,
-                        zhuyin: `ㄑㄧㄥˇ ㄨㄣˋ ${zhuyinVal} ㄗㄞˋ ㄋㄚˇ ㄌㄧˇ?`,
                         grammarNote: `Employs politeness opener '請問' (May I ask) paired with location inquiry structure '[Place] 在哪裡？' (Where is [Place]?).`
                     });
-                } else if (lowerEng.includes("beer") || lowerEng.includes("tea") || lowerEng.includes("water") || lowerEng.includes("food") || lowerEng.includes("eat") || lowerEng.includes("drink")) {
+                } 
+                // 3. Food, Drinks & Ordering
+                else if (lowerEng.includes("beer") || lowerEng.includes("tea") || lowerEng.includes("water") || lowerEng.includes("food") || lowerEng.includes("eat") || lowerEng.includes("drink") || lowerEng.includes("coffee")) {
                     pool.push({
                         english: `I want to order ${word.english}.`,
                         chinese: `我要點${word.chinese}。`,
                         pinyin: `Wǒ yào diǎn ${word.pinyin}.`,
-                        zhuyin: `ㄨㄛˇ ㄧㄠˋ ㄉㄧㄢˇ ${zhuyinVal}.`,
                         grammarNote: `Uses active ordering verb '點' (to order food/drinks) combined with modal verb '要' (want to) and your item '${word.chinese}'.`
                     });
-                } else {
+                } 
+                // 4. General Nouns / Objects (Safe fallback structure: "I like [word]")
+                else {
                     pool.push({
                         english: `I like ${word.english}.`,
                         chinese: `我很喜歡${word.chinese}。`,
                         altChinese: [`我喜歡${word.chinese}`, `我很喜歡${word.chinese}`],
                         pinyin: `Wǒ (hěn) xǐhuān ${word.pinyin}.`,
-                        zhuyin: `ㄨㄛˇ (ㄏㄣˇ) ㄒㄧˇ ㄏㄨㄢ ${zhuyinVal}.`,
                         grammarNote: `Uses preference verb '喜歡' (to like) with your uploaded vocabulary term '${word.chinese}'.`
                     });
                 }
@@ -590,7 +585,6 @@
             let color = '#f97316'; // orange for English -> Chinese characters
             if (themeType === 'c2e') color = '#f97316'; // orange for Chinese -> English
             else if (themeType === 'p2e') color = '#38bdf8'; // blue for Pinyin -> English
-            else if (themeType === 'z2e') color = '#a855f7'; // purple for Zhuyin -> English
 
             document.documentElement.style.setProperty('--theme-color', color);
         }
@@ -601,7 +595,7 @@
             currentSentenceObj = sentencePool[randomIndex];
             
             const selectedDropdownType = document.getElementById('st-type').value;
-            const availableTypes = ['e2c', 'c2e', 'p2e', 'z2e'];
+            const availableTypes = ['e2c', 'c2e', 'p2e'];
             currentActiveSentenceType = selectedDropdownType === 'random' ? availableTypes[Math.floor(Math.random() * availableTypes.length)] : selectedDropdownType;
             
             const inputLabel = document.getElementById('st-input-label');
@@ -620,11 +614,6 @@
             } else if (currentActiveSentenceType === 'p2e') {
                 setSentenceTheme('p2e');
                 promptTextEl.innerText = currentSentenceObj.pinyin;
-                inputLabel.innerText = "Your Translation (English):";
-                document.getElementById('st-user-input').placeholder = "Type English translation here...";
-            } else if (currentActiveSentenceType === 'z2e') {
-                setSentenceTheme('z2e');
-                promptTextEl.innerText = currentSentenceObj.zhuyin;
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
             }
