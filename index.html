@@ -1,461 +1,693 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chinese Flashcard & Sentence Trainer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
+    <title>Chinese Study & Quiz App</title>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --card-dark: #1e293b;
+            --card-border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #22c55e;
+            --error: #ef4444;
+            --theme-color: #f97316;
         }
-    </script>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        header h1 {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin: 0;
+            font-weight: 500;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        nav button {
+            background-color: #334155;
+            color: var(--text-muted);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        nav button.active-tab {
+            background-color: var(--theme-color);
+            color: white;
+        }
+        button {
+            background-color: var(--theme-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button.secondary {
+            background-color: #334155;
+            color: var(--text-main);
+        }
+        button.secondary:hover {
+            background-color: #475569;
+        }
+        .tab-content {
+            display: none;
+            background: var(--card-dark);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--theme-color);
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+            font-family: monospace;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid var(--card-border);
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #0f172a;
+        }
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .progress-bar-container {
+            flex-grow: 1;
+            margin: 0 15px;
+            background: #0f172a;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: var(--success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .quiz-card-box {
+            background-color: #0f172a;
+            border: 2px solid var(--theme-color);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 16px;
+            transition: border-color 0.3s;
+        }
+        .prompt-display {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: var(--theme-color);
+            margin: 10px 0 20px 0;
+            letter-spacing: 1px;
+            word-break: break-word;
+            transition: color 0.3s;
+        }
+        .prompt-instruction {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--theme-color);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .option-btn {
+            background-color: #1e293b;
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 16px;
+            font-size: 1.4rem;
+            font-weight: 500;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .option-btn:hover {
+            background-color: #334155;
+            border-color: var(--theme-color);
+        }
+        .feedback-box {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: none;
+        }
+        .feedback-correct {
+            background-color: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        .feedback-incorrect {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+        .backup-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            gap: 10px;
+        }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+<body>
 
-    <!-- Header & Mode Switcher -->
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-10 shadow-sm">
-        <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-lg font-bold text-slate-100">Chinese Quiz App</h1>
-            <div class="flex bg-slate-800 p-1 rounded-xl text-xs font-semibold">
-                <button id="tab-flashcard" onclick="switchMode('flashcard')" class="px-3 py-1.5 rounded-lg transition-all bg-slate-700 text-white shadow-sm">Flashcard Quiz</button>
-                <button id="tab-translation" onclick="switchMode('translation')" class="px-3 py-1.5 rounded-lg transition-all text-slate-400 hover:text-white">Sentence Translation</button>
-            </div>
-        </div>
+    <header>
+        <h1>Chinese Study App</h1>
     </header>
 
-    <!-- Main Container -->
-    <main class="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col justify-center">
+    <nav>
+        <button id="nav-quiz" class="active-tab" onclick="switchTab('quiz')">Study Quiz</button>
+        <button id="nav-manage" onclick="switchTab('manage')">Manage Words</button>
+    </nav>
 
-        <!-- ================= FLASHCARD QUIZ MODE ================= -->
-        <div id="mode-flashcard-container" class="space-y-4">
-            
-            <!-- Comma-Separated List Upload Bar -->
-            <div class="bg-slate-900 rounded-2xl shadow-sm border border-slate-800 p-4 flex items-center justify-between">
-                <div>
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Vocabulary List</h2>
-                    <p id="file-name-display" class="text-sm font-medium text-slate-200">Default Built-in List</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="exportCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold py-2 px-3 rounded-xl transition-colors">
-                        Export CSV
-                    </button>
-                    <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-2 px-4 rounded-xl transition-colors shadow-sm">
-                        Upload Comma List (.txt/.csv)
-                        <input type="file" id="vocab-file-input" accept=".txt,.csv" class="hidden" onchange="handleCommaListUpload(event)">
-                    </label>
-                </div>
+    <!-- QUIZ TAB -->
+    <div id="quiz-tab" class="tab-content active">
+        <div id="quiz-setup">
+            <h2 style="margin-top:0;">Quiz Settings</h2>
+            <div class="form-group">
+                <label>Mode:</label>
+                <select id="quiz-mode">
+                    <option value="mc">Multiple Choice</option>
+                    <option value="write">Write-in Answer</option>
+                </select>
             </div>
-
-            <div class="flex justify-between items-center text-xs font-medium text-slate-400 uppercase tracking-wider px-1">
-                <span id="fc-counter">Question 1 of 4</span>
-                <span id="fc-score">Score: 0 / 0</span>
+            <div class="form-group">
+                <label>Question Type:</label>
+                <select id="quiz-type">
+                    <option value="random">🎲 Randomize All Types (Mixed)</option>
+                    <option value="c2e">Chinese Character -> English</option>
+                    <option value="c2p">Chinese Character -> Pinyin</option>
+                    <option value="p2c">Pinyin -> Chinese Character</option>
+                    <option value="e2c">English -> Chinese Character</option>
+                    <option value="p2e">Pinyin -> English</option>
+                    <option value="e2p">English -> Pinyin</option>
+                </select>
             </div>
-
-            <!-- Color-Coded Quiz Card -->
-            <div id="fc-card-box" class="bg-slate-900 rounded-2xl shadow-sm border-2 border-indigo-500 p-8 min-h-[22rem] flex flex-col justify-between transition-all relative">
-                <div class="flex justify-between items-start">
-                    <span id="fc-category" class="text-xs font-medium px-2.5 py-1 bg-slate-800 text-slate-300 rounded-full">Category</span>
-                    <span id="fc-prompt-type" class="text-xs font-semibold uppercase tracking-wider text-indigo-400">What does this mean?</span>
-                </div>
-
-                <!-- Prompt Display -->
-                <div class="text-center my-auto py-6 space-y-3">
-                    <h2 id="fc-display-main" class="text-4xl md:text-5xl font-bold tracking-wide text-slate-100">捷運</h2>
-                    <div id="fc-display-phonetic" class="space-y-1">
-                        <p id="fc-zhuyin" class="font-mono text-indigo-400 text-base">ㄐㄧㄝˊㄩㄣˋ</p>
-                        <p id="fc-pinyin" class="italic text-slate-400 text-sm">jiéyùn</p>
-                    </div>
-                </div>
-
-                <!-- Options Grid -->
-                <div id="fc-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2"></div>
-
-                <!-- Feedback & Next Button -->
-                <div id="fc-feedback-area" class="hidden pt-4 border-t border-slate-800 flex items-center justify-between">
-                    <p id="fc-feedback-text" class="font-semibold text-sm"></p>
-                    <button onclick="nextFlashcardQuestion()" class="bg-slate-100 hover:bg-white text-slate-900 font-medium py-2 px-5 rounded-xl transition-colors text-sm">
-                        Next Question ➔
-                    </button>
-                </div>
-            </div>
+            <button style="width: 100%; margin-top: 10px;" onclick="startQuiz()">Start Session</button>
         </div>
 
+        <div id="quiz-active" style="display: none;">
+            <div class="quiz-header">
+                <span id="exit-btn" style="cursor:pointer; color: var(--error);" onclick="endQuiz()">✕ Exit</span>
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <span id="progress-text">0/0</span>
+            </div>
 
-        <!-- ================= SENTENCE TRANSLATION MODE ================= -->
-        <div id="mode-translation-container" class="hidden space-y-4">
-            <div class="bg-slate-900 rounded-2xl shadow-sm border border-slate-800 p-6 md:p-8 transition-all">
+            <div class="quiz-card-box" id="quiz-card-box">
+                <div id="prompt-instruction" class="prompt-instruction">Translate this:</div>
+                <div id="prompt-text" class="prompt-display"></div>
                 
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <span id="st-counter" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sentence 1 of 2</span>
-                        <span id="st-direction-badge" class="text-xs font-medium px-2 py-0.5 bg-slate-800 text-slate-300 rounded">EN ➔ 中文</span>
-                    </div>
-                    
-                    <h2 id="st-prompt-text" class="text-xl md:text-2xl font-semibold text-slate-100 leading-snug min-h-[4rem] flex items-center">
-                        Do you want to take the MRT together?
-                    </h2>
-                    
-                    <div id="st-phonetic-container" class="mt-2 text-sm text-slate-400 hidden">
-                        <p id="st-phonetic-zhuyin" class="font-mono text-indigo-400"></p>
-                        <p id="st-phonetic-pinyin" class="italic"></p>
-                    </div>
+                <!-- Multiple Choice Container -->
+                <div id="mc-container" class="options-grid"></div>
+
+                <!-- Write-in Container -->
+                <div id="write-container" style="display: none;">
+                    <input type="text" id="user-answer" placeholder="Type your answer here..." autocomplete="off">
+                    <button id="submit-btn" style="margin-top: 12px; width: 100%;" onclick="submitWriteAnswer()">Submit Answer</button>
                 </div>
 
-                <!-- Input Area -->
-                <div id="st-input-section" class="space-y-4">
-                    <div>
-                        <label for="st-user-input" class="block text-xs font-medium text-slate-400 mb-1">Your Translation:</label>
-                        <textarea id="st-user-input" rows="3" class="w-full rounded-xl border border-slate-700 bg-slate-950 p-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base" placeholder="Type your translation here..."></textarea>
-                    </div>
-                    
-                    <div class="flex gap-3">
-                        <button onclick="checkSentenceAnswer()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm">
-                            Submit Answer
-                        </button>
-                        <button onclick="revealSentenceAnswer()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-3 px-4 rounded-xl transition-colors text-sm">
-                            Reveal
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Feedback Box -->
-                <div id="st-feedback-section" class="hidden mt-6 pt-6 border-t border-slate-800 space-y-4">
-                    <div id="st-result-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></div>
-                    
-                    <div class="bg-slate-950 p-4 rounded-xl space-y-2 text-sm border border-slate-800">
-                        <div>
-                            <span class="text-slate-400 font-medium block text-xs">Correct Target:</span>
-                            <span id="st-correct-target-text" class="text-slate-100 font-semibold text-base"></span>
-                        </div>
-                        <div id="st-user-diff-container" class="hidden">
-                            <span class="text-slate-400 font-medium block text-xs">What you wrote:</span>
-                            <span id="st-user-submitted-text" class="text-rose-400 line-through"></span>
-                        </div>
-                    </div>
-
-                    <div class="bg-indigo-950/40 border border-indigo-900/50 p-4 rounded-xl">
-                        <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-1">Grammar Breakdown</h3>
-                        <p id="st-grammar-text" class="text-sm text-indigo-200 leading-relaxed"></p>
-                    </div>
-
-                    <button onclick="nextSentenceCard()" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-medium py-3 px-4 rounded-xl transition-colors">
-                        Next Sentence ➔
-                    </button>
-                </div>
-
+                <div id="feedback-area" class="feedback-box"></div>
+                <button id="next-btn" style="margin-top: 16px; width: 100%; display: none;" onclick="nextQuestion()">Next Question</button>
             </div>
         </div>
+    </div>
 
-    </main>
+    <!-- MANAGE VOCABULARY TAB -->
+    <div id="manage-tab" class="tab-content">
+        <h2 style="margin-top:0;">Manage Vocabulary</h2>
+        
+        <!-- Bulk Import -->
+        <div style="background: #0f172a; padding: 16px; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 20px;">
+            <h3 style="margin-top:0; color:var(--text-main);">Bulk Import Words</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Paste format: <code>Chinese, Pinyin, English</code> (one word per line)</p>
+            <div class="form-group" style="margin-bottom: 10px;">
+                <textarea id="bulk-input" placeholder="台灣, Táiwān, Taiwan&#10;學校, xuéxiào, School"></textarea>
+            </div>
+            <button onclick="bulkImport()">Import List</button>
+        </div>
 
-    <!-- Footer Controls -->
-    <footer class="bg-slate-900 border-t border-slate-800 py-3 px-4 text-center text-xs text-slate-500">
-        Single-file offline app • Dark Mode • Comma-Separated List Upload & Sentence Translation
-    </footer>
+        <!-- Single Add -->
+        <details style="background: #0f172a; padding: 16px; border-radius: 12px; border: 1px solid var(--card-border);">
+            <summary style="font-weight:600; cursor:pointer; color: var(--text-muted);">Add Single Word Manually</summary>
+            <div class="form-group" style="margin-top: 12px;">
+                <label>Chinese Characters:</label>
+                <input type="text" id="input-chinese" placeholder="e.g., 台灣">
+            </div>
+            <div class="form-group">
+                <label>Pinyin:</label>
+                <input type="text" id="input-pinyin" placeholder="e.g., Táiwān">
+            </div>
+            <div class="form-group">
+                <label>English Translation:</label>
+                <input type="text" id="input-english" placeholder="e.g., Taiwan">
+            </div>
+            <button onclick="addVocab()">Add Word</button>
+        </details>
+
+        <h3 style="margin-top: 30px;">Saved Vocabulary (<span id="vocab-count">0</span>)</h3>
+        <div style="max-height: 300px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Chinese</th>
+                        <th>Pinyin</th>
+                        <th>English</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="vocab-table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="backup-section">
+            <button class="secondary" onclick="exportVocab()">Export JSON</button>
+            <button class="secondary" style="background-color: var(--error);" onclick="clearAllVocab()">Delete All</button>
+        </div>
+    </div>
 
     <script>
-        // ================= DATA =================
-        let flashcardList = [
-            { chinese: "捷運", zhuyin: "ㄐㄧㄝˊㄩㄣˋ", pinyin: "jiéyùn", english: "MRT (Mass Rapid Transit)", category: "Transportation" },
-            { chinese: "搭", zhuyin: "ㄉㄚ", pinyin: "dā", english: "To take (transportation) / to ride", category: "Verbs" },
-            { chinese: "內用", zhuyin: "ㄋㄟˋㄩㄥˋ", pinyin: "nèiyòng", english: "Dine-in", category: "Dining" },
-            { chinese: "外帶", zhuyin: "ㄨㄞˋㄉㄞˋ", pinyin: "wàidài", english: "Takeout", category: "Dining" }
+        let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [
+            { chinese: "學校", pinyin: "xuéxiào", english: "School" },
+            { chinese: "台灣", pinyin: "Táiwān", english: "Taiwan" },
+            { chinese: "謝謝", pinyin: "xièxie", english: "Thank you" },
+            { chinese: "早安", pinyin: "zǎo'ān", english: "Good morning" }
         ];
 
-        // Sentence pool built using list items + very simple foundational grammar
-        const sentencePool = [
-            {
-                id: "s1",
-                direction: "en-to-zh",
-                prompt: "Do you want to take the MRT together?",
-                answer: "你要一起搭捷運嗎？",
-                zhuyin: "ㄋㄧˇ ㄧㄠˋ ㄧㄑㄧˇ ㄉㄚ ㄐㄧㄝˊㄩㄣˋ ㄇㄚ?",
-                pinyin: "Nǐ yào yīqǐ dā jiéyùn ma?",
-                grammarNote: "Uses '要' (want to/going to) for future intent, and '一起' (together) directly preceding the verb '搭' (to take/ride transportation)."
-            },
-            {
-                id: "s2",
-                direction: "en-to-zh",
-                prompt: "Is this for dine-in or takeout?",
-                answer: "請問要內用還是外帶？",
-                zhuyin: "ㄑㄧㄥˇㄨㄣˋ ㄧㄠˋ ㄋㄟˋㄩㄥˋ ㄏㄞˊㄕˋ ㄨㄞˋㄉㄞˋ?",
-                pinyin: "Qǐngwèn yào nèiyòng háishì wàidài?",
-                grammarNote: "Uses '還是' (háishì) for 'or' in questions, contrasting '內用' (dine-in) and '外帶' (takeout) core daily restaurant terminology."
-            }
-        ];
+        let quizQueue = [];
+        let totalItemsInSession = 0;
+        let currentQuizItem = null;
+        let currentActiveType = 'c2e';
+        let isRetryMode = false; // Tracks if user is forced to re-type after a mistake
 
-        // ================= STATE =================
-        let currentMode = "flashcard";
-        let fcIndex = 0;
-        let fcScore = 0;
-        let fcTotal = 0;
-        let isAnswerLocked = false;
-        let currentQuizType = 'char-to-en';
-        let stIndex = 0;
+        function saveVocabToStorage() {
+            localStorage.setItem('chinese_vocab', JSON.stringify(vocabList));
+            updateVocabTable();
+        }
 
-        // ================= MODE SWITCHING =================
-        function switchMode(mode) {
-            currentMode = mode;
-            const fcContainer = document.getElementById("mode-flashcard-container");
-            const stContainer = document.getElementById("mode-translation-container");
-            const tabFc = document.getElementById("tab-flashcard");
-            const tabSt = document.getElementById("tab-translation");
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('nav-quiz').classList.remove('active-tab');
+            document.getElementById('nav-manage').classList.remove('active-tab');
 
-            if (mode === "flashcard") {
-                fcContainer.classList.remove("hidden");
-                stContainer.classList.add("hidden");
-                tabFc.className = "px-3 py-1.5 rounded-lg transition-all bg-slate-700 text-white shadow-sm";
-                tabSt.className = "px-3 py-1.5 rounded-lg transition-all text-slate-400 hover:text-white";
-                loadFlashcardQuestion();
+            if (tabName === 'quiz') {
+                document.getElementById('quiz-tab').classList.add('active');
+                document.getElementById('nav-quiz').classList.add('active-tab');
+                document.getElementById('quiz-setup').style.display = 'block';
+                document.getElementById('quiz-active').style.display = 'none';
             } else {
-                fcContainer.classList.add("hidden");
-                stContainer.classList.remove("hidden");
-                tabSt.className = "px-3 py-1.5 rounded-lg transition-all bg-slate-700 text-white shadow-sm";
-                tabFc.className = "px-3 py-1.5 rounded-lg transition-all text-slate-400 hover:text-white";
-                loadSentenceCard();
+                document.getElementById('manage-tab').classList.add('active');
+                document.getElementById('nav-manage').classList.add('active-tab');
+                updateVocabTable();
             }
         }
 
-        // ================= COMMA-SEPARATED LIST UPLOAD LOGIC =================
-        function handleCommaListUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function addVocab() {
+            const chinese = document.getElementById('input-chinese').value.trim();
+            const pinyin = document.getElementById('input-pinyin').value.trim();
+            const english = document.getElementById('input-english').value.trim();
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const content = e.target.result;
-                    const lines = content.split('\n');
-                    let parsedData = [];
+            if (!chinese || !pinyin || !english) {
+                alert('Please fill in all three fields.');
+                return;
+            }
 
-                    lines.forEach(line => {
-                        if (!line.trim()) return;
-                        // Parses comma-separated values: Character, Zhuyin, Pinyin, English, [Category]
-                        const parts = line.split(',');
-                        if (parts.length >= 4) {
-                            parsedData.push({
-                                chinese: parts[0].trim().replace(/^["']|["']$/g, ''),
-                                zhuyin: parts[1].trim().replace(/^["']|["']$/g, ''),
-                                pinyin: parts[2].trim().replace(/^["']|["']$/g, ''),
-                                english: parts[3].trim().replace(/^["']|["']$/g, ''),
-                                category: parts[4] ? parts[4].trim().replace(/^["']|["']$/g, '') : "Custom"
-                            });
-                        }
-                    });
+            vocabList.push({ chinese, pinyin, english });
+            saveVocabToStorage();
 
-                    if (parsedData.length > 0) {
-                        flashcardList = parsedData;
-                        fcIndex = 0;
-                        fcScore = 0;
-                        fcTotal = 0;
-                        document.getElementById("file-name-display").innerText = file.name;
-                        loadFlashcardQuestion();
-                    } else {
-                        alert("Could not parse valid rows. Ensure format is: Chinese, Zhuyin, Pinyin, English");
-                    }
-                } catch (err) {
-                    alert("Error reading file: " + err.message);
-                }
-            };
-            reader.readAsText(file);
+            document.getElementById('input-chinese').value = '';
+            document.getElementById('input-pinyin').value = '';
+            document.getElementById('input-english').value = '';
+            alert('Word added successfully!');
         }
 
-        function exportCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            flashcardList.forEach(item => {
-                csvContent += `"${item.chinese}","${item.zhuyin}","${item.pinyin}","${item.english}","${item.category}"\n`;
+        function bulkImport() {
+            const text = document.getElementById('bulk-input').value.trim();
+            if (!text) return;
+
+            const lines = text.split('\n');
+            let addedCount = 0;
+
+            lines.forEach(line => {
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 3) {
+                    vocabList.push({
+                        chinese: parts[0],
+                        pinyin: parts[1],
+                        english: parts.slice(2).join(', ')
+                    });
+                    addedCount++;
+                }
             });
-            const encodedUri = encodeURI(csvContent);
+
+            if (addedCount > 0) {
+                saveVocabToStorage();
+                document.getElementById('bulk-input').value = '';
+                alert(`Successfully imported ${addedCount} words!`);
+            } else {
+                alert('Invalid format. Use: Chinese, Pinyin, English');
+            }
+        }
+
+        function deleteVocab(index) {
+            vocabList.splice(index, 1);
+            saveVocabToStorage();
+        }
+
+        function clearAllVocab() {
+            if (confirm('Delete all saved vocabulary?')) {
+                vocabList = [];
+                saveVocabToStorage();
+            }
+        }
+
+        function exportVocab() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vocabList));
             const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", encodedUri);
-            downloadAnchor.setAttribute("download", "chinese_vocabulary.csv");
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "chinese_vocab_backup.json");
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
 
-        // ================= COLOR-CODED FLASHCARD QUIZ LOGIC =================
-        function loadFlashcardQuestion() {
-            isAnswerLocked = false;
-            const card = flashcardList[fcIndex];
+        function updateVocabTable() {
+            const tbody = document.getElementById('vocab-table-body');
+            tbody.innerHTML = '';
+            document.getElementById('vocab-count').innerText = vocabList.length;
             
-            document.getElementById("fc-counter").innerText = `Question ${fcIndex + 1} of ${flashcardList.length}`;
-            document.getElementById("fc-score").innerText = `Score: ${fcScore} / ${fcTotal}`;
-            document.getElementById("fc-category").innerText = card.category || "General";
-            document.getElementById("fc-feedback-area").classList.add("hidden");
-
-            const types = ['char-to-en', 'en-to-char', 'pinyin-to-char'];
-            currentQuizType = types[Math.floor(Math.random() * types.length)];
-
-            const cardBox = document.getElementById("fc-card-box");
-            const promptType = document.getElementById("fc-prompt-type");
-            const mainDisplay = document.getElementById("fc-display-main");
-            const phoneticDisplay = document.getElementById("fc-display-phonetic");
-
-            let correctOption = "";
-            let optionsPool = [];
-
-            if (currentQuizType === 'char-to-en') {
-                cardBox.className = "bg-slate-900 rounded-2xl shadow-sm border-2 border-indigo-500 p-8 min-h-[22rem] flex flex-col justify-between transition-all relative";
-                promptType.className = "text-xs font-semibold uppercase tracking-wider text-indigo-400";
-                promptType.innerText = "What does this mean?";
-                mainDisplay.innerText = card.chinese;
-                document.getElementById("fc-zhuyin").innerText = card.zhuyin;
-                document.getElementById("fc-pinyin").innerText = card.pinyin;
-                phoneticDisplay.classList.remove("hidden");
-
-                correctOption = card.english;
-                optionsPool = flashcardList.map(item => item.english);
-            } else if (currentQuizType === 'en-to-char') {
-                cardBox.className = "bg-slate-900 rounded-2xl shadow-sm border-2 border-emerald-500 p-8 min-h-[22rem] flex flex-col justify-between transition-all relative";
-                promptType.className = "text-xs font-semibold uppercase tracking-wider text-emerald-400";
-                promptType.innerText = "Select the Chinese Characters";
-                mainDisplay.innerText = card.english;
-                phoneticDisplay.classList.add("hidden");
-
-                correctOption = card.chinese;
-                optionsPool = flashcardList.map(item => item.chinese);
-            } else {
-                cardBox.className = "bg-slate-900 rounded-2xl shadow-sm border-2 border-amber-500 p-8 min-h-[22rem] flex flex-col justify-between transition-all relative";
-                promptType.className = "text-xs font-semibold uppercase tracking-wider text-amber-400";
-                promptType.innerText = "Select by Pronunciation";
-                mainDisplay.innerText = `${card.zhuyin} / ${card.pinyin}`;
-                phoneticDisplay.classList.add("hidden");
-
-                correctOption = card.chinese;
-                optionsPool = flashcardList.map(item => item.chinese);
-            }
-
-            let options = [correctOption];
-            while (options.length < Math.min(4, flashcardList.length)) {
-                let randomOpt = optionsPool[Math.floor(Math.random() * optionsPool.length)];
-                if (!options.includes(randomOpt)) {
-                    options.push(randomOpt);
-                }
-            }
-            options.sort(() => Math.random() - 0.5);
-
-            const grid = document.getElementById("fc-options-grid");
-            grid.innerHTML = "";
-            options.forEach(opt => {
-                const btn = document.createElement("button");
-                btn.className = "p-3 rounded-xl border border-slate-800 bg-slate-950 hover:border-slate-600 hover:bg-slate-800 text-slate-200 font-medium text-sm transition-all text-left";
-                btn.innerText = opt;
-                btn.onclick = () => handleFlashcardAnswer(opt, correctOption, btn);
-                grid.appendChild(btn);
+            vocabList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.chinese}</td>
+                    <td>${item.pinyin}</td>
+                    <td>${item.english}</td>
+                    <td><button class="secondary" style="padding: 4px 8px; background-color: var(--error);" onclick="deleteVocab(${index})">✕</button></td>
+                `;
+                tbody.appendChild(tr);
             });
         }
 
-        function handleFlashcardAnswer(selected, correct, btnElement) {
-            if (isAnswerLocked) return;
-            isAnswerLocked = true;
-            fcTotal++;
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
 
-            const feedbackArea = document.getElementById("fc-feedback-area");
-            const feedbackText = document.getElementById("fc-feedback-text");
-            feedbackArea.classList.remove("hidden");
-
-            if (selected === correct) {
-                fcScore++;
-                btnElement.className = "p-3 rounded-xl border border-emerald-500 bg-emerald-950/50 text-emerald-300 font-medium text-sm text-left";
-                feedbackText.className = "font-semibold text-sm text-emerald-400";
-                feedbackText.innerText = "Correct! 太棒了！";
-            } else {
-                btnElement.className = "p-3 rounded-xl border border-rose-500 bg-rose-950/50 text-rose-300 font-medium text-sm text-left";
-                feedbackText.className = "font-semibold text-sm text-rose-400";
-                feedbackText.innerText = `Incorrect. Correct answer: ${correct}`;
+        function startQuiz() {
+            if (vocabList.length < 4) {
+                alert('Please add at least 4 vocabulary words before starting a quiz.');
+                return;
             }
 
-            document.getElementById("fc-score").innerText = `Score: ${fcScore} / ${fcTotal}`;
-        }
+            quizQueue = shuffle([...vocabList]);
+            totalItemsInSession = quizQueue.length;
 
-        function nextFlashcardQuestion() {
-            fcIndex = (fcIndex + 1) % flashcardList.length;
-            loadFlashcardQuestion();
-        }
+            document.getElementById('quiz-setup').style.display = 'none';
+            document.getElementById('quiz-active').style.display = 'block';
 
-        // ================= SENTENCE TRANSLATION LOGIC =================
-        function loadSentenceCard() {
-            const card = sentencePool[stIndex];
-            
-            document.getElementById("st-counter").innerText = `Sentence ${stIndex + 1} of ${sentencePool.length}`;
-            
-            const badge = document.getElementById("st-direction-badge");
-            if (card.direction === "en-to-zh") {
-                badge.innerText = "EN ➔ 中文";
-                document.getElementById("st-prompt-text").innerText = card.prompt;
-                document.getElementById("st-phonetic-container").classList.add("hidden");
+            const mode = document.getElementById('quiz-mode').value;
+            if (mode === 'write') {
+                document.getElementById('mc-container').style.display = 'none';
+                document.getElementById('write-container').style.display = 'block';
             } else {
-                badge.innerText = "中文 ➔ EN";
-                document.getElementById("st-prompt-text").innerText = card.prompt;
-                document.getElementById("st-phonetic-zhuyin").innerText = card.zhuyin;
-                document.getElementById("st-phonetic-pinyin").innerText = card.pinyin;
-                document.getElementById("st-phonetic-container").classList.remove("hidden");
+                document.getElementById('mc-container').style.display = 'grid';
+                document.getElementById('write-container').style.display = 'none';
             }
 
-            document.getElementById("st-user-input").value = "";
-            document.getElementById("st-input-section").classList.remove("hidden");
-            document.getElementById("st-feedback-section").classList.add("hidden");
+            loadQuestion();
         }
 
-        function sanitize(str) {
-            return str
-                .toLowerCase()
-                .trim()
-                .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
+        function endQuiz() {
+            document.getElementById('quiz-setup').style.display = 'block';
+            document.getElementById('quiz-active').style.display = 'none';
         }
 
-        function checkSentenceAnswer() {
-            const card = sentencePool[stIndex];
-            const userText = document.getElementById("st-user-input").value;
+        function setAnswerTheme(answerCategory) {
+            let color = '#f97316'; 
+            if (answerCategory === 'chinese') color = '#f97316'; 
+            else if (answerCategory === 'pinyin') color = '#38bdf8'; 
+            else if (answerCategory === 'english') color = '#a855f7'; 
+
+            document.documentElement.style.setProperty('--theme-color', color);
+        }
+
+        function loadQuestion() {
+            if (quizQueue.length === 0) {
+                alert('🎉 Session complete! You successfully mastered all words.');
+                endQuiz();
+                return;
+            }
+
+            isRetryMode = false; // Reset retry flag for new question
+
+            const completed = totalItemsInSession - quizQueue.length;
+            const percent = (completed / totalItemsInSession) * 100;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-text').innerText = `${completed}/${totalItemsInSession}`;
+
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.style.display = 'none';
+            feedbackArea.className = 'feedback-box';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('submit-btn').disabled = false;
+
+            currentQuizItem = quizQueue[0];
+
+            let settingType = document.getElementById('quiz-type').value;
+            const allTypes = ['c2e', 'c2p', 'p2c', 'e2c', 'p2e', 'e2p'];
+            currentActiveType = settingType === 'random' ? allTypes[Math.floor(Math.random() * allTypes.length)] : settingType;
+
+            let promptText = '';
+            let promptLabel = '';
+            let correctAnswer = '';
+            let targetKey = '';
+            let answerCategory = 'english';
+
+            if (currentActiveType === 'c2e') {
+                promptLabel = "Translate to English 🇬🇧";
+                promptText = currentQuizItem.chinese;
+                correctAnswer = currentQuizItem.english;
+                targetKey = 'english';
+                answerCategory = 'english';
+            } else if (currentActiveType === 'c2p') {
+                promptLabel = "Provide the Pinyin 🔤";
+                promptText = currentQuizItem.chinese;
+                correctAnswer = currentQuizItem.pinyin;
+                targetKey = 'pinyin';
+                answerCategory = 'pinyin';
+            } else if (currentActiveType === 'p2c') {
+                promptLabel = "Provide Chinese Characters 🇨🇳";
+                promptText = currentQuizItem.pinyin;
+                correctAnswer = currentQuizItem.chinese;
+                targetKey = 'chinese';
+                answerCategory = 'chinese';
+            } else if (currentActiveType === 'e2c') {
+                promptLabel = "Provide Chinese Characters 🇨🇳";
+                promptText = currentQuizItem.english;
+                correctAnswer = currentQuizItem.chinese;
+                targetKey = 'chinese';
+                answerCategory = 'chinese';
+            } else if (currentActiveType === 'p2e') {
+                promptLabel = "Translate to English 🇬🇧";
+                promptText = currentQuizItem.pinyin;
+                correctAnswer = currentQuizItem.english;
+                targetKey = 'english';
+                answerCategory = 'english';
+            } else if (currentActiveType === 'e2p') {
+                promptLabel = "Provide the Pinyin 🔤";
+                promptText = currentQuizItem.english;
+                correctAnswer = currentQuizItem.pinyin;
+                targetKey = 'pinyin';
+                answerCategory = 'pinyin';
+            }
+
+            setAnswerTheme(answerCategory);
+
+            document.getElementById('prompt-instruction').innerText = promptLabel;
+            document.getElementById('prompt-text').innerText = promptText;
+
+            const mode = document.getElementById('quiz-mode').value;
+            if (mode === 'mc') {
+                setupMultipleChoice(correctAnswer, targetKey);
+            } else {
+                document.getElementById('user-answer').value = '';
+                document.getElementById('user-answer').focus();
+            }
+        }
+
+        function setupMultipleChoice(correctAnswer, targetKey) {
+            const container = document.getElementById('mc-container');
+            container.innerHTML = '';
+
+            let wrongOptions = vocabList
+                .filter(i => i[targetKey] !== correctAnswer)
+                .map(i => i[targetKey]);
             
-            if (!userText.trim()) return;
+            wrongOptions = shuffle(wrongOptions).slice(0, 3);
+            let choices = shuffle([correctAnswer, ...wrongOptions]);
 
-            const cleanUser = sanitize(userText);
-            const cleanCorrect = sanitize(card.answer);
-            const isCorrect = (cleanUser === cleanCorrect);
-
-            showSentenceFeedback(isCorrect, userText, card);
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = choice;
+                btn.onclick = () => checkAnswer(choice === correctAnswer, correctAnswer);
+                container.appendChild(btn);
+            });
         }
 
-        function revealSentenceAnswer() {
-            const card = sentencePool[stIndex];
-            showSentenceFeedback(false, "[Revealed without guessing]", card);
+        function getCorrectAnswerString() {
+            if (currentActiveType === 'c2e' || currentActiveType === 'p2e') return currentQuizItem.english;
+            if (currentActiveType === 'c2p' || currentActiveType === 'e2p') return currentQuizItem.pinyin;
+            return currentQuizItem.chinese;
         }
 
-        function showSentenceFeedback(isCorrect, userText, card) {
-            document.getElementById("st-input-section").classList.add("hidden");
-            document.getElementById("st-feedback-section").classList.remove("hidden");
+        function submitWriteAnswer() {
+            const userText = document.getElementById('user-answer').value.trim();
+            const feedback = document.getElementById('feedback-area');
+            const correctAnswer = getCorrectAnswerString();
 
-            const resultBadge = document.getElementById("st-result-badge");
-            const userDiffContainer = document.getElementById("st-user-diff-container");
-            
+            if (!userText) return;
+
+            // If we are already in retry mode, check if they typed it right *now*
+            if (isRetryMode) {
+                if (userText.toLowerCase() === correctAnswer.toLowerCase()) {
+                    feedback.className = 'feedback-box feedback-correct';
+                    feedback.innerHTML = '✨ Correct! Moving on...';
+                    document.getElementById('submit-btn').disabled = true;
+                    // Now that they successfully typed it correctly on retry, clear from queue and move on
+                    quizQueue.shift();
+                    setTimeout(nextQuestion, 1000);
+                } else {
+                    feedback.className = 'feedback-box feedback-incorrect';
+                    feedback.innerHTML = `❌ Incorrect. Please type the exact correct answer: <strong>${correctAnswer}</strong>`;
+                    document.getElementById('user-answer').value = '';
+                    document.getElementById('user-answer').focus();
+                }
+                return;
+            }
+
+            // Normal first attempt check
+            const isCorrect = userText.toLowerCase() === correctAnswer.toLowerCase();
+            feedback.style.display = 'block';
+
             if (isCorrect) {
-                resultBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-950 text-emerald-400 border border-emerald-800";
-                resultBadge.innerText = "Correct! 太棒了！";
-                userDiffContainer.classList.add("hidden");
+                feedback.className = 'feedback-box feedback-correct';
+                feedback.innerHTML = '✨ CORRECT!! Fantastic!';
+                document.getElementById('submit-btn').disabled = true;
+                quizQueue.shift();
+                document.getElementById('next-btn').style.display = 'block';
             } else {
-                resultBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-950 text-rose-400 border border-rose-800";
-                resultBadge.innerText = "Not Quite Right";
-                document.getElementById("st-user-submitted-text").innerText = userText;
-                userDiffContainer.classList.remove("hidden");
+                // First time wrong: Activate forced retry mode!
+                isRetryMode = true;
+                feedback.className = 'feedback-box feedback-incorrect';
+                feedback.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}</strong><br><span style="font-size:0.9rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
+                document.getElementById('user-answer').value = '';
+                document.getElementById('user-answer').focus();
+                // Note: We do NOT shift from quizQueue yet; it stays in queue until they successfully re-type it.
+            }
+        }
+
+        function checkAnswer(isCorrect, correctAnswer) {
+            const feedback = document.getElementById('feedback-area');
+            feedback.style.display = 'block';
+
+            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                feedback.className = 'feedback-box feedback-correct';
+                feedback.innerHTML = '✨ CORRECT!! Fantastic!';
+                quizQueue.shift();
+            } else {
+                feedback.className = 'feedback-box feedback-incorrect';
+                feedback.innerHTML = `❌ Incorrect. Correct: <strong>${correctAnswer}</strong>`;
+                const missedItem = quizQueue.shift();
+                quizQueue.push(missedItem);
             }
 
-            document.getElementById("st-correct-target-text").innerText = card.answer + (card.direction === "en-to-zh" ? ` (${card.pinyin})` : "");
-            document.getElementById("st-grammar-text").innerText = card.grammarNote;
+            document.getElementById('next-btn').style.display = 'block';
         }
 
-        function nextSentenceCard() {
-            stIndex = (stIndex + 1) % sentencePool.length;
-            loadSentenceCard();
+        function nextQuestion() {
+            loadQuestion();
         }
 
-        // Initialize on load
-        window.onload = function() {
-            loadFlashcardQuestion();
-            loadSentenceCard();
-        };
+        updateVocabTable();
     </script>
 </body>
 </html>
