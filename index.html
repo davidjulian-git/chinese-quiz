@@ -404,59 +404,41 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Curated, fully natural conversational sentence patterns using your uploaded words
+        // Curated, 100% natural conversational sentence bank
         function getSensibleSentencePool() {
-            let pool = [];
-
-            vocabList.forEach((word) => {
-                let lowerEng = word.english.toLowerCase();
-
-                // 1. Greetings & Politeness
-                if (lowerEng.includes("morning") || lowerEng.includes("hello") || lowerEng.includes("hi") || lowerEng.includes("thank")) {
-                    pool.push({
-                        english: `Good morning! Thank you for your help.`,
-                        chinese: `早安！謝謝你的幫忙。`,
-                        pinyin: `Zǎo'ān! Xièxie nǐ de bāngmáng.`,
-                        grammarNote: `Combines standard greeting and gratitude structure '謝謝你的幫忙' (Thank you for your help) using the possessive particle '的'.`
-                    });
-                } 
-                // 2. Locations & Travel
-                else if (lowerEng.includes("school") || lowerEng.includes("taiwan") || lowerEng.includes("station") || lowerEng.includes("store") || lowerEng.includes("house") || lowerEng.includes("mrt") || lowerEng.includes("place") || lowerEng.includes("here")) {
-                    pool.push({
-                        english: `I am going to ${word.english} now.`,
-                        chinese: `我現在要去${word.chinese}。`,
-                        pinyin: `Wǒ xiànzài yào qù ${word.pinyin}.`,
-                        grammarNote: `Uses time word '現在' (now) and intent structure '要去' (going to) followed by your uploaded location noun '${word.chinese}'.`
-                    });
-                    pool.push({
-                        english: `Where is ${word.english}?`,
-                        chinese: `請問${word.chinese}在哪裡？`,
-                        pinyin: `Qǐngwèn ${word.pinyin} zài nǎlǐ?`,
-                        grammarNote: `Employs politeness opener '請問' (May I ask) paired with location inquiry structure '[Place] 在哪裡？' (Where is [Place]?).`
-                    });
-                } 
-                // 3. Food, Drinks & Ordering
-                else if (lowerEng.includes("beer") || lowerEng.includes("tea") || lowerEng.includes("water") || lowerEng.includes("food") || lowerEng.includes("eat") || lowerEng.includes("drink") || lowerEng.includes("coffee")) {
-                    pool.push({
-                        english: `I want to order ${word.english}.`,
-                        chinese: `我要點${word.chinese}。`,
-                        pinyin: `Wǒ yào diǎn ${word.pinyin}.`,
-                        grammarNote: `Uses active ordering verb '點' (to order food/drinks) combined with modal verb '要' (want to) and your item '${word.chinese}'.`
-                    });
-                } 
-                // 4. General Nouns / Objects (Safe fallback structure: "I like [word]")
-                else {
-                    pool.push({
-                        english: `I like ${word.english}.`,
-                        chinese: `我很喜歡${word.chinese}。`,
-                        altChinese: [`我喜歡${word.chinese}`, `我很喜歡${word.chinese}`],
-                        pinyin: `Wǒ (hěn) xǐhuān ${word.pinyin}.`,
-                        grammarNote: `Uses preference verb '喜歡' (to like) with your uploaded vocabulary term '${word.chinese}'.`
-                    });
+            return shuffle([
+                {
+                    english: "Good morning! Thank you for your help.",
+                    chinese: "早安！謝謝你的幫忙。",
+                    pinyin: "Zǎo'ān! Xièxie nǐ de bāngmáng.",
+                    grammarNote: "Combines standard greeting and gratitude structure '謝謝你的幫忙' (Thank you for your help) using the possessive particle '的'."
+                },
+                {
+                    english: "I want to go to school now.",
+                    chinese: "我現在要去學校。",
+                    pinyin: "Wǒ xiànzài yào qù xuéxiào.",
+                    grammarNote: "Uses time word '現在' (now) and intent structure '要去' (going to) followed by destination noun '學校'."
+                },
+                {
+                    english: "Where is Taiwan?",
+                    chinese: "請問台灣在哪裡？",
+                    pinyin: "Qǐngwèn Táiwān zài nǎlǐ?",
+                    grammarNote: "Employs politeness opener '請問' (May I ask) paired with location inquiry structure '[Place] 在哪裡？' (Where is [Place]?)."
+                },
+                {
+                    english: "I like this place very much.",
+                    chinese: "我很喜歡這裡。",
+                    altChinese: ["我喜歡這裡", "我很喜歡這裡"],
+                    pinyin: "Wǒ hěn xǐhuān zhèlǐ.",
+                    grammarNote: "Uses degree adverb '很' (very) and preference verb '喜歡' (to like) with location term '這裡'."
+                },
+                {
+                    english: "Do you want to drink tea or coffee?",
+                    chinese: "你想喝茶還是咖啡？",
+                    pinyin: "Nǐ xiǎng hē chá háishì kāfēi?",
+                    grammarNote: "Uses modal verb '想' (want to) and '還是' (háishì) to offer an 'or' choice between two beverage nouns."
                 }
-            });
-
-            return shuffle(pool);
+            ]);
         }
 
         let currentActiveSentenceType = 'e2c';
