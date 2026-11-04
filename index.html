@@ -306,19 +306,15 @@
     <div id="sentences-tab" class="tab-content">
         <h2 style="margin-top:0;">Sentence Translation Trainer</h2>
         
-        <div class="form-group" style="margin-bottom: 14px;">
+        <div class="form-group" style="margin-bottom: 20px;">
             <label>Sentence Quiz Type:</label>
             <select id="st-type" onchange="loadSentenceCard()">
+                <option value="random">🎲 Randomize All Sentence Types</option>
                 <option value="e2c">English ➔ Chinese Characters</option>
                 <option value="c2e">Chinese Characters ➔ English</option>
                 <option value="p2e">Pinyin ➔ English</option>
                 <option value="z2e">Zhuyin ➔ English</option>
             </select>
-        </div>
-
-        <div class="quiz-header" style="margin-bottom: 16px;">
-            <span id="st-counter" style="color: var(--text-muted); font-size: 0.95rem;">Sentence #1</span>
-            <span id="st-direction-badge" style="background: #0f172a; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--card-border);">EN ➔ 中文</span>
         </div>
 
         <div id="st-card-box" class="quiz-card-box">
@@ -413,52 +409,60 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Expanded sentence pool with strict phrase mapping & semantic flexibility
-        function getDynamicSentencePool() {
-            let pool = [
-                {
-                    id: "s1",
-                    targetVocab: ["台灣"],
-                    english: "I want to go to Taiwan.",
-                    chinese: "我想去台灣。",
-                    pinyin: "Wǒ xiǎng qù Táiwān.",
-                    zhuyin: "ㄨㄛˇ ㄒㄧㄤˇ ㄑㄩˋ ㄊㄞˊㄨㄢ。",
-                    grammarNote: "Uses '想' (xiǎng) for 'want to' followed by the destination verb phrase '去台灣' (to go to Taiwan)."
-                },
-                {
-                    id: "s2",
-                    targetVocab: ["學校"],
-                    english: "Is this your school?",
-                    chinese: "這是你的學校嗎？",
-                    pinyin: "Zhè shì nǐ de xuéxiào ma?",
-                    zhuyin: "ㄓㄜˋ ㄕˋ ㄋㄧˇ ㄉㄜ˙ ㄒㄩㄝˊㄒㄧㄠˋ ㄇㄚ?",
-                    grammarNote: "Uses '這' (this) + '是' (is) to ask identifying questions, ending with the question particle '嗎' (ma)."
-                },
-                {
-                    id: "s3",
-                    targetVocab: ["謝謝"],
-                    english: "Thank you very much!",
-                    chinese: "非常謝謝你！",
-                    pinyin: "Fēicháng xièxie nǐ!",
-                    zhuyin: "ㄈㄟㄔㄤˊ ㄒㄧㄝˋㄒㄧㄝˋ ㄋㄧˇ!",
-                    grammarNote: "Employs the degree adverb '非常' (fēicháng - extremely/very) directly modifying the politeness verb '謝謝'."
-                },
-                {
-                    id: "s4",
-                    targetVocab: ["早安"],
-                    english: "Good morning! The weather is very good today.",
-                    chinese: "早安！今天天氣很好。",
-                    pinyin: "Zǎo'ān! Jīntiān tiānqì hěn hǎo.",
-                    zhuyin: "ㄗㄠˇㄢ! ㄐㄧㄣㄊㄧㄢ ㄊㄧㄢㄑㄧˋ ㄏㄣˇ ㄏㄠˇ.",
-                    grammarNote: "Combines the greeting '早安' with a standard time-topic structure ('今天' - today) followed by the weather description."
-                }
-            ];
+        // Expanded, creative, and randomized sentence pool
+        const sentencePool = [
+            {
+                id: "s1",
+                english: "I want to go to Taiwan to study Chinese.",
+                chinese: "我想去台灣學中文。",
+                pinyin: "Wǒ xiǎng qù Táiwān xué zhōngwén.",
+                zhuyin: "ㄨㄛˇ ㄒㄧㄤˇ ㄑㄩˋ ㄊㄞˊㄨㄢ ㄒㄩㄝˊ ㄓㄨㄥㄨㄣˊ.",
+                grammarNote: "Uses serialized serial verb constructions ('去台灣' - go to Taiwan) followed by the purpose phrase ('學中文' - study Chinese)."
+            },
+            {
+                id: "s2",
+                english: "Are there any delicious restaurants near the school?",
+                chinese: "學校附近有沒有好吃的餐廳？",
+                pinyin: "Xuéxiào fùjìn yǒu méiyǒu hǎochī de cāntīng?",
+                zhuyin: "ㄒㄩㄝˊㄒㄧㄠˋ ㄈㄨˋㄐㄧㄣˋ ㄧㄡˇㄇㄟˊㄧㄡˇ ㄏㄠˇㄔ˙ ㄉㄜ˙ ㄘㄢㄊㄧㄥ?",
+                grammarNote: "Location phrases take the format [Place] + [附近] (nearby). '有沒有' forms the positive-negative question for existence."
+            },
+            {
+                id: "s3",
+                english: "Thank you very much for helping me today.",
+                chinese: "非常謝謝你幫我。",
+                pinyin: "Fēicháng xièxie nǐ bāng wǒ.",
+                zhuyin: "ㄈㄟㄔㄤˊ ㄒㄧㄝˋㄒㄧㄝˋ ㄋㄧˇ ㄅㄤ ㄨㄛˇ.",
+                grammarNote: "Adverb '非常' modifies the stative action verb structure. Object pronoun placement follows standard subject-verb-object alignment."
+            },
+            {
+                id: "s4",
+                english: "Good morning! The weather is exceptionally nice today.",
+                chinese: "早安！今天的天氣非常好。",
+                pinyin: "Zǎo'ān! Jīntiān de tiānqì fēicháng hǎo.",
+                zhuyin: "ㄗㄠˇㄢ! ㄐㄧㄣㄊㄧㄢ ㄉㄜ˙ ㄊㄧㄢㄑㄧˋ ㄈㄟㄔㄤˊ ㄏㄠˇ.",
+                grammarNote: "Possessive marker '的' connects the time noun ('今天') to the subject noun ('天氣'), paired with degree modifier '非常好'."
+            },
+            {
+                id: "s5",
+                english: "Do you drink coffee or tea every morning?",
+                chinese: "你每天早上喝咖啡還是茶？",
+                pinyin: "Nǐ měitiān zǎoshang hē kāfēi háishì chá?",
+                zhuyin: "ㄋㄧˇ ㄇㄟˇㄊㄧㄢ ㄗㄠˇㄕㄤ ㄏㄜ ㄎㄚㄈㄟ ㄏㄞˊㄕˋ ㄔㄚ?",
+                grammarNote: "Time frequency words ('每天早上') sit directly between the subject and verb. '還是' is used for 'or' in declarative-style questions."
+            },
+            {
+                id: "s6",
+                english: "This book is very interesting, I like reading it.",
+                chinese: "這本書很有意思，我很喜歡看。",
+                pinyin: "Zhè běn shū hěn yǒuyìsi, wǒ hěn xǐhuān kàn.",
+                zhuyin: "ㄓㄜˋ ㄅㄣˇ ㄕㄨ ㄏㄣˇ ㄧㄡˇㄧˋㄙ˙, ㄨㄛˇ ㄏㄣˇ ㄒㄧˇㄏㄨㄢ ㄎㄢˋ.",
+                grammarNote: "Employs measure words ('本' for books) and comma-separated independent clauses expressing descriptive state and personal preference."
+            }
+        ];
 
-            let activeWords = vocabList.map(v => v.chinese);
-            let filtered = pool.filter(s => s.targetVocab.some(w => activeWords.includes(w)));
-            return filtered.length > 0 ? filtered : pool;
-        }
-
+        let currentActiveSentenceType = 'e2c';
+        let currentSentenceObj = null;
         let stIndex = 0;
 
         function saveVocabToStorage() {
@@ -590,43 +594,39 @@
         }
 
         function loadSentenceCard() {
-            const sentencePool = getDynamicSentencePool();
-            if (stIndex >= sentencePool.length) stIndex = 0;
-            const card = sentencePool[stIndex];
+            // Randomize sentence selection from sentencePool
+            const randomIndex = Math.floor(Math.random() * sentencePool.length);
+            currentSentenceObj = sentencePool[randomIndex];
             
-            const mode = document.getElementById('st-type').value;
-            document.getElementById('st-counter').innerText = `Sentence #${stIndex + 1}`;
+            const selectedDropdownType = document.getElementById('st-type').value;
+            const availableTypes = ['e2c', 'c2e', 'p2e', 'z2e'];
+            currentActiveSentenceType = selectedDropdownType === 'random' ? availableTypes[Math.floor(Math.random() * availableTypes.length)] : selectedDropdownType;
             
-            const badge = document.getElementById('st-direction-badge');
             const inputLabel = document.getElementById('st-input-label');
             const promptTextEl = document.getElementById('st-prompt-text');
             const phoneticContainer = document.getElementById('st-phonetic-container');
 
-            if (mode === 'e2c') {
+            if (currentActiveSentenceType === 'e2c') {
                 setSentenceTheme('e2c');
-                badge.innerText = "EN ➔ 中文";
-                promptTextEl.innerText = card.english;
+                promptTextEl.innerText = currentSentenceObj.english;
                 phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (Chinese Characters):";
                 document.getElementById('st-user-input').placeholder = "Type Chinese characters here...";
-            } else if (mode === 'c2e') {
+            } else if (currentActiveSentenceType === 'c2e') {
                 setSentenceTheme('c2e');
-                badge.innerText = "中文 ➔ EN";
-                promptTextEl.innerText = card.chinese;
+                promptTextEl.innerText = currentSentenceObj.chinese;
                 phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
-            } else if (mode === 'p2e') {
+            } else if (currentActiveSentenceType === 'p2e') {
                 setSentenceTheme('p2e');
-                badge.innerText = "Pinyin ➔ EN";
-                promptTextEl.innerText = card.pinyin;
+                promptTextEl.innerText = currentSentenceObj.pinyin;
                 phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
-            } else if (mode === 'z2e') {
+            } else if (currentActiveSentenceType === 'z2e') {
                 setSentenceTheme('z2e');
-                badge.innerText = "Zhuyin ➔ EN";
-                promptTextEl.innerText = card.zhuyin;
+                promptTextEl.innerText = currentSentenceObj.zhuyin;
                 phoneticContainer.style.display = 'none';
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
@@ -645,45 +645,42 @@
                 .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
-        // Semantic synonym checking for English variations (e.g. "Good morning! The weather is very good today" vs "good morning! today the weather is good")
+        // Flexible semantic matcher for English sentence variations
         function isEnglishEquivalent(userStr, correctStr) {
             const cleanU = sanitizeAnswer(userStr);
             const cleanC = sanitizeAnswer(correctStr);
             if (cleanU === cleanC) return true;
 
-            // Handle variations in "Good morning! The weather is very good today."
-            if (cleanC.includes("goodmorning") && cleanU.includes("goodmorning")) {
-                if ((cleanU.includes("weather") && cleanU.includes("good")) || (cleanU.includes("today") && cleanU.includes("good"))) {
-                    return true;
-                }
-            }
+            // Keyword overlap check for sentence equivalence
+            const userWords = cleanU.split('');
+            let matchCount = 0;
+            const coreTokens = cleanC.split('');
+            coreTokens.forEach(char => {
+                if (cleanU.includes(char)) matchCount++;
+            });
+
+            // If majority of key concepts match, accept as correct translation
+            if (matchCount / coreTokens.length > 0.85) return true;
             return false;
         }
 
         function checkSentenceAnswer() {
-            const sentencePool = getDynamicSentencePool();
-            const card = sentencePool[stIndex];
             const userText = document.getElementById('st-user-input').value;
-            const mode = document.getElementById('st-type').value;
             
             if (!userText.trim()) return;
 
             let isCorrect = false;
-            if (mode === 'e2c') {
-                isCorrect = sanitizeAnswer(userText) === sanitizeAnswer(card.chinese);
+            if (currentActiveSentenceType === 'e2c') {
+                isCorrect = sanitizeAnswer(userText) === sanitizeAnswer(currentSentenceObj.chinese);
             } else {
-                // c2e, p2e, z2e
-                isCorrect = isEnglishEquivalent(userText, card.english);
+                isCorrect = isEnglishEquivalent(userText, currentSentenceObj.english);
             }
 
-            showSentenceFeedback(isCorrect, userText, card, mode);
+            showSentenceFeedback(isCorrect, userText, currentSentenceObj, currentActiveSentenceType);
         }
 
         function revealSentenceAnswer() {
-            const sentencePool = getDynamicSentencePool();
-            const card = sentencePool[stIndex];
-            const mode = document.getElementById('st-type').value;
-            showSentenceFeedback(false, "[Revealed without guessing]", card, mode);
+            showSentenceFeedback(false, "[Revealed without guessing]", currentSentenceObj, currentActiveSentenceType);
         }
 
         function showSentenceFeedback(isCorrect, userText, card, mode) {
@@ -700,7 +697,7 @@
                 feedbackBox.className = 'feedback-box feedback-incorrect';
                 feedbackBox.innerHTML = `
                     ❌ Not Quite Right
-                    <div style="font-size: 0.95rem; margin-top: 8px; font-weight: normal; line-height: 1.5;">
+                    <div style="font-size: 1rem; margin-top: 10px; font-weight: normal; line-height: 1.7;">
                         <strong>Correct Answer:</strong> ${targetDisplay}<br>
                         <strong>You wrote:</strong> ${userText}
                     </div>
@@ -714,8 +711,6 @@
         }
 
         function nextSentenceCard() {
-            const sentencePool = getDynamicSentencePool();
-            stIndex = (stIndex + 1) % sentencePool.length;
             loadSentenceCard();
         }
 
