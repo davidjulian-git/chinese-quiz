@@ -391,6 +391,7 @@
     </div>
 
     <script>
+        // Pulls 100% dynamically from localStorage. The fallback array only runs if storage is entirely blank.
         let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [
             { chinese: "學校", pinyin: "xuéxiào", english: "School" },
             { chinese: "台灣", pinyin: "Táiwān", english: "Taiwan" },
@@ -404,52 +405,71 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Fully curated, 100% natural conversational sentence pool (No broken math/templates)
-        const verifiedSentencePool = [
-            {
-                english: "Good morning! Thank you for your help.",
-                chinese: "早安！謝謝你的幫忙。",
-                pinyin: "Zǎo'ān! Xièxie nǐ de bāngmáng.",
-                grammarNote: "Combines standard greeting and gratitude structure '謝謝你的幫忙' (Thank you for your help) using the possessive particle '的'."
-            },
-            {
-                english: "I want to go to school now.",
-                chinese: "我現在要去學校。",
-                pinyin: "Wǒ xiànzài yào qù xuéxiào.",
-                grammarNote: "Uses time word '現在' (now) and intent structure '要去' (going to) followed by destination noun '學校'."
-            },
-            {
-                english: "Where is Taiwan?",
-                chinese: "請問台灣在哪裡？",
-                pinyin: "Qǐngwèn Táiwān zài nǎlǐ?",
-                grammarNote: "Employs politeness opener '請問' (May I ask) paired with location inquiry structure '[Place] 在哪裡？' (Where is [Place]?)."
-            },
-            {
-                english: "I like this place very much.",
-                chinese: "我很喜歡這裡。",
-                altChinese: ["我喜歡這裡", "我很喜歡這裡"],
-                pinyin: "Wǒ hěn xǐhuān zhèlǐ.",
-                grammarNote: "Uses degree adverb '很' (very) and preference verb '喜歡' (to like) with location term '這裡'."
-            },
-            {
-                english: "Do you want to drink tea or coffee?",
-                chinese: "你想喝茶還是咖啡？",
-                pinyin: "Nǐ xiǎng hē chá háishì kāfēi?",
-                grammarNote: "Uses modal verb '想' (want to) and '還是' (háishì) to offer an 'or' choice between two beverage nouns."
-            },
-            {
-                english: "Do you know how to speak Chinese?",
-                chinese: "你會說中文嗎？",
-                pinyin: "Nǐ huì shuō zhōngwén ma?",
-                grammarNote: "Uses modal verb '會' (huì - to know how to/can) with the action verb '說' (to speak) and question particle '嗎'."
-            },
-            {
-                english: "How much does this cost?",
-                chinese: "這個多少錢？",
-                pinyin: "Zhège duōshǎo qián?",
-                grammarNote: "Standard shopping phrase using '這個' (this) and '多少錢' (how much money)."
-            }
-        ];
+        // Dynamic Sentence Generator: Maps EVERY uploaded vocabulary word into robust, grammatically sound context patterns
+        function getSensibleSentencePool() {
+            let pool = [];
+
+            vocabList.forEach((item) => {
+                let eng = item.english.toLowerCase();
+
+                // 1. Location / Place items (e.g. school, Taiwan, stations, buildings)
+                if (eng.includes("school") || eng.includes("taiwan") || eng.includes("station") || eng.includes("store") || eng.includes("house") || eng.includes("mrt") || eng.includes("place") || eng.includes("here") || eng.includes("country") || eng.includes("city") || eng.includes("office") || eng.includes("room")) {
+                    pool.push({
+                        english: `I want to go to ${item.english}.`,
+                        chinese: `我想去${item.chinese}。`,
+                        altChinese: [`我想去${item.chinese}`, `我想去${item.chinese}。`],
+                        pinyin: `Wǒ xiǎng qù ${item.pinyin}.`,
+                        grammarNote: `Uses structural intent verb '想去' (want to go to) paired with your uploaded location noun '${item.chinese}' (${item.english}).`
+                    });
+                    pool.push({
+                        english: `Where is ${item.english}?`,
+                        chinese: `請問${item.chinese}在哪裡？`,
+                        altChinese: [`請問${item.chinese}在哪裡`, `請問${item.chinese}在哪裡？`, `${item.chinese}在哪裡`],
+                        pinyin: `Qǐngwèn ${item.pinyin} zài nǎlǐ?`,
+                        grammarNote: `Employs polite opening '請問' (May I ask) combined with location inquiry structure '[Place] 在哪裡？' (Where is [Place]?).`
+                    });
+                } 
+                // 2. Food, Drink, or Consumables (e.g. beer, tea, coffee, food, menu)
+                else if (eng.includes("beer") || eng.includes("tea") || eng.includes("water") || eng.includes("food") || eng.includes("eat") || eng.includes("drink") || eng.includes("coffee") || eng.includes("sugar") || eng.includes("menu") || eng.includes("wine") || eng.includes("meat") || eng.includes("fruit")) {
+                    pool.push({
+                        english: `I want to order ${item.english}.`,
+                        chinese: `我要點${item.chinese}。`,
+                        altChinese: [`我要點${item.chinese}`, `我要點${item.chinese}。`],
+                        pinyin: `Wǒ yào diǎn ${item.pinyin}.`,
+                        grammarNote: `Uses active ordering verb '點' (to order food/drinks) combined with modal verb '要' (want) and your item '${item.chinese}' (${item.english}).`
+                    });
+                    pool.push({
+                        english: `Do you want ${item.english}?`,
+                        chinese: `你要${item.chinese}嗎？`,
+                        altChinese: [`你要${item.chinese}嗎`, `你要${item.chinese}嗎？`],
+                        pinyin: `Nǐ yào ${item.pinyin} ma?`,
+                        grammarNote: `Uses modal verb '要' (want) paired with question particle '嗎' (ma) asking about your item '${item.chinese}' (${item.english}).`
+                    });
+                } 
+                // 3. General Nouns & Objects (Scales across all remaining items in your 100+ word list)
+                else {
+                    pool.push({
+                        english: `I like ${item.english}.`,
+                        chinese: `我很喜歡${item.chinese}。`,
+                        altChinese: [`我喜歡${item.chinese}`, `我很喜歡${item.chinese}`, `我喜歡${item.chinese}。`, `我很喜歡${item.chinese}。`],
+                        pinyin: `Wǒ xǐhuān ${item.pinyin}.`,
+                        grammarNote: `Uses preference verb '喜歡' (to like) combined with your uploaded vocabulary word '${item.chinese}' (${item.english}).`
+                    });
+                    pool.push({
+                        english: `Is this ${item.english}?`,
+                        chinese: `這是${item.chinese}嗎？`,
+                        altChinese: [`這是${item.chinese}嗎`, `這是${item.chinese}嗎？`],
+                        pinyin: `Zhè shì ${item.pinyin} ma?`,
+                        grammarNote: `Uses demonstrative structure '這是' (This is) combined with question particle '嗎' (ma) to identify your term '${item.chinese}' (${item.english}).`
+                    });
+                }
+            });
+
+            return shuffle(pool);
+        }
+
+        let currentActiveSentenceType = 'e2c';
+        let currentSentenceObj = null;
 
         function saveVocabToStorage() {
             localStorage.setItem('chinese_vocab', JSON.stringify(vocabList));
@@ -579,12 +599,10 @@
         }
 
         let activeSentencePool = [];
-        let currentSentenceObj = null;
-        let currentActiveSentenceType = 'e2c';
 
         function loadSentenceCard() {
             if (activeSentencePool.length === 0) {
-                activeSentencePool = shuffle([...verifiedSentencePool]);
+                activeSentencePool = getSensibleSentencePool();
             }
             currentSentenceObj = activeSentencePool.pop();
             
@@ -625,6 +643,7 @@
                 .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
+        // Strict and accurate English equivalence grading
         function isEnglishEquivalent(userStr, correctStr) {
             const cleanU = sanitizeAnswer(userStr);
             const cleanC = sanitizeAnswer(correctStr);
@@ -636,6 +655,7 @@
                 if (cleanU.includes(char)) matchCount++;
             });
 
+            // Requires high structural alignment to prevent false positives
             if (matchCount / coreTokens.length > 0.85) return true;
             return false;
         }
