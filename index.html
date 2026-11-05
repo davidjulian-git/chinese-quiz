@@ -404,31 +404,43 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Dynamically builds sentences using EVERY word in your uploaded vocabulary list
+        // Dynamically samples a rich variety of structures randomly across your vocabulary list so it never repeats or spams "zhe shi"
         function getSensibleSentencePool() {
             let pool = [];
+            // Shuffle your words first so every session starts with a random mix from your list
+            let shuffledWords = shuffle([...vocabList]);
 
-            vocabList.forEach((item) => {
-                // Template 1: I like [Word]
-                pool.push({
-                    english: `I like ${item.english}.`,
-                    chinese: `我喜歡${item.chinese}。`,
-                    altChinese: [`我喜歡${item.chinese}`, `我很喜歡${item.chinese}`, `我喜歡${item.chinese}。`, `我很喜歡${item.chinese}。`],
-                    pinyin: `Wǒ xǐhuān ${item.pinyin}.`,
-                    grammarNote: `Uses the preference verb '喜歡' (to like) combined with your vocabulary word '${item.chinese}' (${item.english}).`
-                });
+            shuffledWords.forEach((item) => {
+                const patterns = [
+                    {
+                        english: `I like ${item.english}.`,
+                        chinese: `我喜歡${item.chinese}。`,
+                        altChinese: [`我喜歡${item.chinese}`, `我很喜歡${item.chinese}`, `我喜歡${item.chinese}。`, `我很喜歡${item.chinese}。`],
+                        pinyin: `Wǒ xǐhuān ${item.pinyin}.`,
+                        grammarNote: `Uses the preference verb '喜歡' (to like) combined with your vocabulary word '${item.chinese}' (${item.english}).`
+                    },
+                    {
+                        english: `I want ${item.english}.`,
+                        chinese: `我要${item.chinese}。`,
+                        altChinese: [`我要${item.chinese}`, `我要${item.chinese}。`],
+                        pinyin: `Wǒ yào ${item.pinyin}.`,
+                        grammarNote: `Uses modal verb '要' (want) combined with your vocabulary word '${item.chinese}' (${item.english}).`
+                    },
+                    {
+                        english: `Is this ${item.english}?`,
+                        chinese: `這是${item.chinese}嗎？`,
+                        altChinese: [`這是${item.chinese}嗎`, `這是${item.chinese}嗎？`],
+                        pinyin: `Zhè shì ${item.pinyin} ma?`,
+                        grammarNote: `Uses demonstrative structure '這是' (This is) combined with question particle '嗎' (ma) for your vocabulary item '${item.chinese}'.`
+                    }
+                ];
 
-                // Template 2: This is [Word]
-                pool.push({
-                    english: `This is ${item.english}.`,
-                    chinese: `這是${item.chinese}。`,
-                    altChinese: [`這是${item.chinese}`, `這是${item.chinese}。`],
-                    pinyin: `Zhè shì ${item.pinyin}.`,
-                    grammarNote: `Uses demonstrative structure '這是' (This is) to identify your vocabulary word '${item.chinese}' (${item.english}).`
-                });
+                // Randomly pick one natural pattern per word to maintain massive variety
+                let randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+                pool.push(randomPattern);
             });
 
-            return shuffle(pool);
+            return pool;
         }
 
         let currentActiveSentenceType = 'e2c';
@@ -561,10 +573,13 @@
             document.documentElement.style.setProperty('--theme-color', color);
         }
 
+        let activeSentencePool = [];
+
         function loadSentenceCard() {
-            const sentencePool = getSensibleSentencePool();
-            const randomIndex = Math.floor(Math.random() * sentencePool.length);
-            currentSentenceObj = sentencePool[randomIndex];
+            if (activeSentencePool.length === 0) {
+                activeSentencePool = getSensibleSentencePool();
+            }
+            currentSentenceObj = activeSentencePool.pop();
             
             const selectedDropdownType = document.getElementById('st-type').value;
             const availableTypes = ['e2c', 'c2e', 'p2e'];
@@ -609,7 +624,7 @@
             if (cleanU === cleanC) return true;
 
             // Flexible natural short answers
-            if (cleanU.startsWith("ilike") || cleanU.startsWith("thisis")) {
+            if (cleanU.startsWith("ilike") || cleanU.startsWith("iwant") || cleanU.startsWith("isthis")) {
                 return true;
             }
 
