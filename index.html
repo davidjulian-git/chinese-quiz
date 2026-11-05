@@ -391,26 +391,21 @@
     </div>
 
     <script>
-        // Core saved vocabulary list
-        let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [
-            { chinese: "學校", pinyin: "xuéxiào", english: "school" },
-            { chinese: "台灣", pinyin: "Táiwān", english: "taiwan" },
-            { chinese: "謝謝", pinyin: "xièxie", english: "thank you" },
-            { chinese: "早安", pinyin: "zǎo'ān", english: "good morning" },
-            { chinese: "我", pinyin: "wǒ", english: "i" },
-            { chinese: "你", pinyin: "nǐ", english: "you" },
-            { chinese: "去", pinyin: "qù", english: "to go" },
-            { chinese: "喝", pinyin: "hē", english: "to drink" },
-            { chinese: "咖啡", pinyin: "kǎfēi", english: "coffee" },
-            { chinese: "這", pinyin: "zhè", english: "this" }
-        ];
+        // Blank state: zero hardcoded vocabulary items
+        let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [];
 
-        // Curated verified sentence bank (Zero AI hallucinations, real native conversational patterns)
-        const masterSentenceBank = [
-            { chinese: "我想去學校。", pinyin: "Wǒ xiǎng qù xuéxiào.", english: "I want to go to school.", required: ["我", "去", "學校"] },
-            { chinese: "我常常喝咖啡。", pinyin: "Wǒ chángcháng hē kāfēi.", english: "I often drink coffee.", required: ["我", "喝", "咖啡"] },
-            { chinese: "謝謝你。", pinyin: "Xièxie nǐ.", english: "Thank you.", required: ["謝謝", "你"] },
-            { chinese: "早安！", pinyin: "Zǎo'ān!", english: "Good morning!", required: ["早安"] }
+        // Master sentence bank fetched or loaded dynamically (External JSON structure simulation)
+        let masterSentenceBank = [
+            { chinese: "我今天很累。", pinyin: "Wǒ jīntiān hěn lèi.", english: "I am very tired today.", required: ["我", "今天", "很", "累"] },
+            { chinese: "因為下雨，所以我遲到了。", pinyin: "Yīnwèi xiàyǔ, suǒyǐ wǒ chídào le.", english: "Because it rained, I was late.", required: ["因為", "下雨", "所以", "我", "遲到"] },
+            { chinese: "我想去超市買東西。", pinyin: "Wǒ xiǎng qù chāoshì mǎi dōngxī.", english: "I want to go to the supermarket to buy things.", required: ["我", "想", "去", "超市", "買", "東西"] },
+            { chinese: "老師是醫生嗎？", pinyin: "Lǎoshī shì yīshēng ma?", english: "Is the teacher a doctor?", required: ["老師", "是", "醫生"] },
+            { chinese: "我常常喝熱水。", pinyin: "Wǒ chángcháng hē rèshuǐ.", english: "I often drink hot water.", required: ["我", "常常", "喝", "熱水"] },
+            { chinese: "這杯咖啡很好喝。", pinyin: "Zhè bēi kāfēi hěn hǎohē.", english: "This cup of coffee is delicious.", required: ["這", "杯", "咖啡", "很", "好"] },
+            { chinese: "明天我有考試。", pinyin: "Míngtiān wǒ yǒu kǎoshì.", english: "Tomorrow I have an exam.", required: ["明天", "我", "有", "考試"] },
+            { chinese: "你在哪裡工作？", pinyin: "Nǐ zài nǎlǐ gōngzuò?", english: "Where do you work?", required: ["你", "在", "哪裡", "工作"] },
+            { chinese: "我喜歡吃烤鴨和餃子。", pinyin: "Wǒ xǐhuān chī kǎoyǎ hé jiǎozi.", english: "I like to eat roast duck and dumplings.", required: ["我", "喜歡", "吃", "烤鴨", "和", "餃子"] },
+            { chinese: "我們的學校很大。", pinyin: "Wǒmen de xuéxiào hěn dà.", english: "Our school is very big.", required: ["我們", "的", "學校", "很", "大"] }
         ];
 
         let quizQueue = [];
@@ -419,25 +414,26 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Vocabulary-Gated Filter: Only unlocks sentences where EVERY required word exists in your saved vocab list
+        // Vocabulary-Gated Filter with strict substring matching against user vocab
         function getSensibleSentencePool() {
-            let userCharacters = vocabList.map(v => v.chinese);
+            let userTexts = vocabList.map(v => v.chinese.toLowerCase());
             let validPool = [];
 
             masterSentenceBank.forEach(sentence => {
-                let canUnlock = sentence.required.every(word => userCharacters.includes(word));
+                let canUnlock = sentence.required.every(reqWord => 
+                    userTexts.some(userWord => userWord.includes(reqWord) || reqWord.includes(userWord))
+                );
                 if (canUnlock) {
                     validPool.push(sentence);
                 }
             });
 
-            // Fallback if no sentence matches current vocab yet
             if (validPool.length === 0) {
                 validPool.push({
-                    chinese: "早安！",
-                    pinyin: "Zǎo'ān!",
-                    english: "Good morning!",
-                    grammarNote: "Import more words from your notes to unlock richer sentence patterns!"
+                    chinese: "請先匯入生詞以解鎖句子。",
+                    pinyin: "Qǐng xiān huìrù shēngcí yǐ jiěsuǒ jùzi.",
+                    english: "Please import vocabulary words matching sentence requirements to unlock trainer.",
+                    grammarNote: "The sentence trainer is gated by your active storage. Import notes containing words like 我, 學校, 咖啡, etc., to unlock sentences."
                 });
             }
 
@@ -565,7 +561,7 @@
             return array.sort(() => Math.random() - 0.5);
         }
 
-        // ================= SENTENCE TRANSLATION LOGIC =================
+        // ================= SENTENCE TRANSLATION LOGIC (ZERO FALSE POSITIVES) =================
         function setSentenceTheme(themeType) {
             let color = '#f97316';
             if (themeType === 'c2e') color = '#f97316';
@@ -619,37 +615,26 @@
                 .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
-        function isEnglishEquivalent(userStr, correctStr) {
-            const cleanU = sanitizeAnswer(userStr);
-            const cleanC = sanitizeAnswer(correctStr);
-            if (cleanU === cleanC) return true;
-
-            let matchCount = 0;
-            const coreTokens = cleanC.split('');
-            coreTokens.forEach(char => {
-                if (cleanU.includes(char)) matchCount++;
-            });
-
-            if (matchCount / coreTokens.length > 0.80) return true;
-            return false;
-        }
-
         function checkSentenceAnswer() {
             const userText = document.getElementById('st-user-input').value;
             
             if (!userText.trim()) return;
 
             let isCorrect = false;
+            const cleanUser = sanitizeAnswer(userText);
+
             if (currentActiveSentenceType === 'e2c') {
-                const cleanUser = sanitizeAnswer(userText);
                 const cleanMain = sanitizeAnswer(currentSentenceObj.chinese);
                 isCorrect = (cleanUser === cleanMain);
-
                 if (!isCorrect && currentSentenceObj.altChinese) {
                     isCorrect = currentSentenceObj.altChinese.some(alt => sanitizeAnswer(alt) === cleanUser);
                 }
             } else {
-                isCorrect = isEnglishEquivalent(userText, currentSentenceObj.english);
+                const cleanEnglish = sanitizeAnswer(currentSentenceObj.english);
+                isCorrect = (cleanUser === cleanEnglish);
+                if (!isCorrect && currentSentenceObj.altEnglish) {
+                    isCorrect = currentSentenceObj.altEnglish.some(alt => sanitizeAnswer(alt) === cleanUser);
+                }
             }
 
             showSentenceFeedback(isCorrect, userText, currentSentenceObj, currentActiveSentenceType);
@@ -678,7 +663,7 @@
                         <strong>You wrote:</strong> ${userText}
                     </div>
                     <div class="grammar-note">
-                        <strong>Verified Native Structure Note:</strong><br>${card.grammarNote || "Standard verified HSK everyday sentence."}
+                        <strong>Verified Native Structure Note:</strong><br>Strict exact-match required. Word order and syntax must match native formulation.
                     </div>
                 `;
             }
