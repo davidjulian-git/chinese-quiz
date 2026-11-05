@@ -391,12 +391,12 @@
     </div>
 
     <script>
-        // Pulls 100% dynamically from localStorage. The fallback array only runs if storage is entirely blank.
+        // Minimal baseline starter set if local storage is completely empty
         let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [
-            { chinese: "學校", pinyin: "xuéxiào", english: "School" },
-            { chinese: "台灣", pinyin: "Táiwān", english: "Taiwan" },
-            { chinese: "謝謝", pinyin: "xièxie", english: "Thank you" },
-            { chinese: "早安", pinyin: "zǎo'ān", english: "Good morning" }
+            { chinese: "學校", pinyin: "xuéxiào", english: "School", categories: ["location"] },
+            { chinese: "台灣", pinyin: "Táiwān", english: "Taiwan", categories: ["location"] },
+            { chinese: "謝謝", pinyin: "xièxie", english: "Thank you", categories: ["verb"] },
+            { chinese: "早安", pinyin: "zǎo'ān", english: "Good morning", categories: ["time"] }
         ];
 
         let quizQueue = [];
@@ -405,64 +405,123 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Dynamic Sentence Generator: Maps EVERY uploaded vocabulary word into robust, grammatically sound context patterns
+        // Runtime Multi-Category Parser: Automatically evaluates incoming text strings to determine grammatical tags
+        function parseCategories(englishStr) {
+            let eng = englishStr.toLowerCase();
+            let cats = [];
+
+            // Detect multi-part or dual parts of speech
+            if (eng.includes("to ") || eng.includes("/")) {
+                cats.push("verb");
+            }
+            if (eng.includes("work") || eng.includes("exercise") || eng.includes("swim") || eng.includes("run")) {
+                if (!cats.includes("verb")) cats.push("verb");
+                if (!cats.includes("noun")) cats.push("noun");
+            }
+            if (eng.includes("where") || eng.includes("what") || eng.includes("who") || eng.includes("why") || eng.includes("how") || eng.includes("how much")) {
+                cats.push("interrogative");
+            }
+            if (eng.includes("tired") || eng.includes("hungry") || eng.includes("busy") || eng.includes("new") || eng.includes("small") || eng.includes("big") || eng.includes("beautiful") || eng.includes("delicious") || eng.includes("good looking")) {
+                cats.push("adjective");
+            }
+            if (eng.includes("supermarket") || eng.includes("bookstore") || eng.includes("bathroom") || eng.includes("station") || eng.includes("apartment") || eng.includes("room") || eng.includes("home") || eng.includes("school") || eng.includes("here") || eng.includes("store") || eng.includes("living room")) {
+                cats.push("location");
+            }
+            if (eng.includes("tea") || eng.includes("water") || eng.includes("coffee") || eng.includes("beer") || eng.includes("food") || eng.includes("rice") || eng.includes("noodles") || eng.includes("bread") || eng.includes("dumpling") || eng.includes("beef") || eng.includes("chicken") || eng.includes("fish") || eng.includes("vegetables") || eng.includes("fruit") || eng.includes("tofu") || eng.includes("hot water") || eng.includes("ice") || eng.includes("snack") || eng.includes("roast duck") || eng.includes("alcohol")) {
+                cats.push("food");
+            }
+            if (eng.includes("yesterday") || eng.includes("today") || eng.includes("tomorrow") || eng.includes("spring") || eng.includes("summer") || eng.includes("autumn") || eng.includes("winter") || eng.includes("morning") || eng.includes("midday") || eng.includes("evening")) {
+                cats.push("time");
+            }
+            if (eng.includes("because") || eng.includes("so") || eng.includes("and") || eng.includes("or") || eng.includes("during")) {
+                cats.push("conjunction");
+            }
+            if (eng.includes("often") || eng.includes("infrequently") || eng.includes("also") || eng.includes("extremely") || eng.includes("relatively")) {
+                cats.push("adverb");
+            }
+
+            // Default fallback if no specific rule matched
+            if (cats.length === 0) {
+                cats.push("noun");
+            }
+
+            return cats;
+        }
+
+        // Sentence Engine parsing dynamically across category arrays
         function getSensibleSentencePool() {
             let pool = [];
 
             vocabList.forEach((item) => {
-                let eng = item.english.toLowerCase();
+                let cats = item.categories || ["noun"];
 
-                // 1. Location / Place items (e.g. school, Taiwan, stations, buildings)
-                if (eng.includes("school") || eng.includes("taiwan") || eng.includes("station") || eng.includes("store") || eng.includes("house") || eng.includes("mrt") || eng.includes("place") || eng.includes("here") || eng.includes("country") || eng.includes("city") || eng.includes("office") || eng.includes("room")) {
-                    pool.push({
-                        english: `I want to go to ${item.english}.`,
-                        chinese: `我想去${item.chinese}。`,
-                        altChinese: [`我想去${item.chinese}`, `我想去${item.chinese}。`],
-                        pinyin: `Wǒ xiǎng qù ${item.pinyin}.`,
-                        grammarNote: `Uses structural intent verb '想去' (want to go to) paired with your uploaded location noun '${item.chinese}' (${item.english}).`
-                    });
-                    pool.push({
-                        english: `Where is ${item.english}?`,
-                        chinese: `請問${item.chinese}在哪裡？`,
-                        altChinese: [`請問${item.chinese}在哪裡`, `請問${item.chinese}在哪裡？`, `${item.chinese}在哪裡`],
-                        pinyin: `Qǐngwèn ${item.pinyin} zài nǎlǐ?`,
-                        grammarNote: `Employs polite opening '請問' (May I ask) combined with location inquiry structure '[Place] 在哪裡？' (Where is [Place]?).`
-                    });
-                } 
-                // 2. Food, Drink, or Consumables (e.g. beer, tea, coffee, food, menu)
-                else if (eng.includes("beer") || eng.includes("tea") || eng.includes("water") || eng.includes("food") || eng.includes("eat") || eng.includes("drink") || eng.includes("coffee") || eng.includes("sugar") || eng.includes("menu") || eng.includes("wine") || eng.includes("meat") || eng.includes("fruit")) {
-                    pool.push({
-                        english: `I want to order ${item.english}.`,
-                        chinese: `我要點${item.chinese}。`,
-                        altChinese: [`我要點${item.chinese}`, `我要點${item.chinese}。`],
-                        pinyin: `Wǒ yào diǎn ${item.pinyin}.`,
-                        grammarNote: `Uses active ordering verb '點' (to order food/drinks) combined with modal verb '要' (want) and your item '${item.chinese}' (${item.english}).`
-                    });
-                    pool.push({
-                        english: `Do you want ${item.english}?`,
-                        chinese: `你要${item.chinese}嗎？`,
-                        altChinese: [`你要${item.chinese}嗎`, `你要${item.chinese}嗎？`],
-                        pinyin: `Nǐ yào ${item.pinyin} ma?`,
-                        grammarNote: `Uses modal verb '要' (want) paired with question particle '嗎' (ma) asking about your item '${item.chinese}' (${item.english}).`
-                    });
-                } 
-                // 3. General Nouns & Objects (Scales across all remaining items in your 100+ word list)
-                else {
-                    pool.push({
-                        english: `I like ${item.english}.`,
-                        chinese: `我很喜歡${item.chinese}。`,
-                        altChinese: [`我喜歡${item.chinese}`, `我很喜歡${item.chinese}`, `我喜歡${item.chinese}。`, `我很喜歡${item.chinese}。`],
-                        pinyin: `Wǒ xǐhuān ${item.pinyin}.`,
-                        grammarNote: `Uses preference verb '喜歡' (to like) combined with your uploaded vocabulary word '${item.chinese}' (${item.english}).`
-                    });
-                    pool.push({
-                        english: `Is this ${item.english}?`,
-                        chinese: `這是${item.chinese}嗎？`,
-                        altChinese: [`這是${item.chinese}嗎`, `這是${item.chinese}嗎？`],
-                        pinyin: `Zhè shì ${item.pinyin} ma?`,
-                        grammarNote: `Uses demonstrative structure '這是' (This is) combined with question particle '嗎' (ma) to identify your term '${item.chinese}' (${item.english}).`
-                    });
-                }
+                cats.forEach(cat => {
+                    if (cat === "location") {
+                        pool.push({
+                            english: `I want to go to ${item.english}.`,
+                            chinese: `我想去${item.chinese}。`,
+                            altChinese: [`我想去${item.chinese}`, `我想去${item.chinese}。`],
+                            pinyin: `Wǒ xiǎng qù ${item.pinyin}.`,
+                            grammarNote: `Uses intent structure '想去' (want to go to) paired with location noun '${item.chinese}' (${item.english}).`
+                        });
+                    } else if (cat === "food") {
+                        pool.push({
+                            english: `I want to order ${item.english}.`,
+                            chinese: `我要點${item.chinese}。`,
+                            altChinese: [`我要點${item.chinese}`, `我要點${item.chinese}。`],
+                            pinyin: `Wǒ yào diǎn ${item.pinyin}.`,
+                            grammarNote: `Uses ordering verb '點' (to order) with modal verb '要' (want) and food item '${item.chinese}' (${item.english}).`
+                        });
+                    } else if (cat === "adjective") {
+                        pool.push({
+                            english: `It is very ${item.english}.`,
+                            chinese: `很${item.chinese}。`,
+                            altChinese: [`很${item.chinese}`, `這很${item.chinese}`, `很${item.chinese}。`, `這很${item.chinese}。`],
+                            pinyin: `Hěn ${item.pinyin}.`,
+                            grammarNote: `Uses descriptive state structure with degree adverb '很' (very) and adjective '${item.chinese}' (${item.english}).`
+                        });
+                    } else if (cat === "verb") {
+                        pool.push({
+                            english: `I want to ${item.english}.`,
+                            chinese: `我想${item.chinese}。`,
+                            altChinese: [`我想${item.chinese}`, `我想${item.chinese}。`],
+                            pinyin: `Wǒ xiǎng ${item.pinyin}.`,
+                            grammarNote: `Uses modal verb '想' (want to) combined with action verb '${item.chinese}' (${item.english}).`
+                        });
+                    } else if (cat === "interrogative") {
+                        pool.push({
+                            english: `What is ${item.english}?`,
+                            chinese: `這是${item.chinese}？`,
+                            altChinese: [`這是${item.chinese}`, `這是${item.chinese}？`, `${item.chinese}`],
+                            pinyin: `Zhè shì ${item.pinyin}?`,
+                            grammarNote: `Uses interrogative structure to ask or inquire about '${item.chinese}' (${item.english}).`
+                        });
+                    } else if (cat === "conjunction") {
+                        pool.push({
+                            english: `I am tired ${item.english} I want to sleep.`,
+                            chinese: `我很累${item.chinese}我想睡覺。`,
+                            altChinese: [`我很累${item.chinese}我想睡覺`, `我很累${item.chinese}我想睡覺。`],
+                            pinyin: `Wǒ hěn lèi ${item.pinyin} wǒ xiǎng shuìjiào.`,
+                            grammarNote: `Connects clauses using conjunction '${item.chinese}' (${item.english}).`
+                        });
+                    } else if (cat === "time") {
+                        pool.push({
+                            english: `I am busy ${item.english}.`,
+                            chinese: `${item.chinese}我很忙。`,
+                            altChinese: [`${item.chinese}我很忙`, `${item.chinese}我很忙。`],
+                            pinyin: `${item.pinyin} wǒ hěn máng.`,
+                            grammarNote: `Uses time word '${item.chinese}' (${item.english}) combined with state predicate '我很忙'.`
+                        });
+                    } else {
+                        pool.push({
+                            english: `I like ${item.english}.`,
+                            chinese: `我很喜歡${item.chinese}。`,
+                            altChinese: [`我喜歡${item.chinese}`, `我很喜歡${item.chinese}`, `我喜歡${item.chinese}。`, `我很喜歡${item.chinese}。`],
+                            pinyin: `Wǒ xǐhuān ${item.pinyin}.`,
+                            grammarNote: `Uses preference verb '喜歡' (to like) combined with noun item '${item.chinese}' (${item.english}).`
+                        });
+                    }
+                });
             });
 
             return shuffle(pool);
@@ -509,15 +568,17 @@
                 return;
             }
 
-            vocabList.push({ chinese, pinyin, english });
+            const categories = parseCategories(english);
+            vocabList.push({ chinese, pinyin, english, categories });
             saveVocabToStorage();
 
             document.getElementById('input-chinese').value = '';
             document.getElementById('input-pinyin').value = '';
             document.getElementById('input-english').value = '';
-            alert('Word added successfully!');
+            alert('Word added successfully with runtime categorization!');
         }
 
+        // Upgraded Bulk Importer with Runtime Auto-Parsing
         function bulkImport() {
             const text = document.getElementById('bulk-input').value.trim();
             if (!text) return;
@@ -528,10 +589,14 @@
             lines.forEach(line => {
                 const parts = line.split(',').map(p => p.trim());
                 if (parts.length >= 3) {
+                    const englishVal = parts.slice(2).join(', ');
+                    const categories = parseCategories(englishVal);
+
                     vocabList.push({
                         chinese: parts[0],
                         pinyin: parts[1],
-                        english: parts.slice(2).join(', ')
+                        english: englishVal,
+                        categories: categories
                     });
                     addedCount++;
                 }
@@ -540,7 +605,7 @@
             if (addedCount > 0) {
                 saveVocabToStorage();
                 document.getElementById('bulk-input').value = '';
-                alert(`Successfully imported ${addedCount} words!`);
+                alert(`Successfully imported ${addedCount} words with runtime classification!`);
             } else {
                 alert('Invalid format. Use: Chinese, Pinyin, English');
             }
@@ -643,7 +708,6 @@
                 .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
         }
 
-        // Strict and accurate English equivalence grading
         function isEnglishEquivalent(userStr, correctStr) {
             const cleanU = sanitizeAnswer(userStr);
             const cleanC = sanitizeAnswer(correctStr);
@@ -655,8 +719,7 @@
                 if (cleanU.includes(char)) matchCount++;
             });
 
-            // Requires high structural alignment to prevent false positives
-            if (matchCount / coreTokens.length > 0.85) return true;
+            if (matchCount / coreTokens.length > 0.80) return true;
             return false;
         }
 
