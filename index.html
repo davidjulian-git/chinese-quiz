@@ -404,43 +404,60 @@
         let currentActiveType = 'c2e';
         let isRetryMode = false;
 
-        // Dynamically samples a rich variety of structures randomly across your vocabulary list so it never repeats or spams "zhe shi"
+        // Smart Category-Aware Sentence Generator using your actual uploaded words
         function getSensibleSentencePool() {
             let pool = [];
-            // Shuffle your words first so every session starts with a random mix from your list
-            let shuffledWords = shuffle([...vocabList]);
 
-            shuffledWords.forEach((item) => {
-                const patterns = [
-                    {
+            vocabList.forEach((item) => {
+                let eng = item.english.toLowerCase();
+
+                // 1. If the word is a location or place
+                if (eng.includes("school") || eng.includes("taiwan") || eng.includes("station") || eng.includes("store") || eng.includes("house") || eng.includes("mrt") || eng.includes("place") || eng.includes("here") || eng.includes("country") || eng.includes("city")) {
+                    pool.push({
+                        english: `I want to go to ${item.english}.`,
+                        chinese: `我想去${item.chinese}。`,
+                        altChinese: [`我想去${item.chinese}`, `我想去${item.chinese}。`],
+                        pinyin: `Wǒ xiǎng qù ${item.pinyin}.`,
+                        grammarNote: `Uses '想去' (want to go to) paired with location noun '${item.chinese}' (${item.english}).`
+                    });
+                    pool.push({
+                        english: `Where is ${item.english}?`,
+                        chinese: `請問${item.chinese}在哪裡？`,
+                        altChinese: [`請問${item.chinese}在哪裡`, `請問${item.chinese}在哪裡？`, `${item.chinese}在哪裡`],
+                        pinyin: `Qǐngwèn ${item.pinyin} zài nǎlǐ?`,
+                        grammarNote: `Employs politeness opener '請問' (May I ask) with location inquiry structure '[Place] 在哪裡？' (Where is [Place]?).`
+                    });
+                } 
+                // 2. If the word is food, drink, or consumable
+                else if (eng.includes("beer") || eng.includes("tea") || eng.includes("water") || eng.includes("food") || eng.includes("eat") || eng.includes("drink") || eng.includes("coffee") || eng.includes("sugar") || eng.includes("menu")) {
+                    pool.push({
+                        english: `I want to order ${item.english}.`,
+                        chinese: `我要點${item.chinese}。`,
+                        altChinese: [`我要點${item.chinese}`, `我要點${item.chinese}。`],
+                        pinyin: `Wǒ yào diǎn ${item.pinyin}.`,
+                        grammarNote: `Uses ordering verb '點' (to order) combined with modal verb '要' (want) and item '${item.chinese}' (${item.english}).`
+                    });
+                } 
+                // 3. General descriptive objects and nouns
+                else {
+                    pool.push({
                         english: `I like ${item.english}.`,
-                        chinese: `我喜歡${item.chinese}。`,
+                        chinese: `我很喜歡${item.chinese}。`,
                         altChinese: [`我喜歡${item.chinese}`, `我很喜歡${item.chinese}`, `我喜歡${item.chinese}。`, `我很喜歡${item.chinese}。`],
                         pinyin: `Wǒ xǐhuān ${item.pinyin}.`,
-                        grammarNote: `Uses the preference verb '喜歡' (to like) combined with your vocabulary word '${item.chinese}' (${item.english}).`
-                    },
-                    {
-                        english: `I want ${item.english}.`,
-                        chinese: `我要${item.chinese}。`,
-                        altChinese: [`我要${item.chinese}`, `我要${item.chinese}。`],
-                        pinyin: `Wǒ yào ${item.pinyin}.`,
-                        grammarNote: `Uses modal verb '要' (want) combined with your vocabulary word '${item.chinese}' (${item.english}).`
-                    },
-                    {
-                        english: `Is this ${item.english}?`,
-                        chinese: `這是${item.chinese}嗎？`,
-                        altChinese: [`這是${item.chinese}嗎`, `這是${item.chinese}嗎？`],
-                        pinyin: `Zhè shì ${item.pinyin} ma?`,
-                        grammarNote: `Uses demonstrative structure '這是' (This is) combined with question particle '嗎' (ma) for your vocabulary item '${item.chinese}'.`
-                    }
-                ];
-
-                // Randomly pick one natural pattern per word to maintain massive variety
-                let randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
-                pool.push(randomPattern);
+                        grammarNote: `Uses preference verb '喜歡' (to like) combined with vocabulary word '${item.chinese}' (${item.english}).`
+                    });
+                    pool.push({
+                        english: `Do you want ${item.english}?`,
+                        chinese: `你要${item.chinese}嗎？`,
+                        altChinese: [`你要${item.chinese}嗎`, `你要${item.chinese}嗎？`],
+                        pinyin: `Nǐ yào ${item.pinyin} ma?`,
+                        grammarNote: `Uses modal verb '要' (want) with question particle '嗎' (ma) asking about '${item.chinese}' (${item.english}).`
+                    });
+                }
             });
 
-            return pool;
+            return shuffle(pool);
         }
 
         let currentActiveSentenceType = 'e2c';
@@ -566,9 +583,9 @@
 
         // ================= SENTENCE TRANSLATION LOGIC =================
         function setSentenceTheme(themeType) {
-            let color = '#f97316'; // orange for English -> Chinese characters
-            if (themeType === 'c2e') color = '#f97316'; // orange for Chinese -> English
-            else if (themeType === 'p2e') color = '#38bdf8'; // blue for Pinyin -> English
+            let color = '#f97316';
+            if (themeType === 'c2e') color = '#f97316';
+            else if (themeType === 'p2e') color = '#38bdf8';
 
             document.documentElement.style.setProperty('--theme-color', color);
         }
@@ -623,8 +640,8 @@
             const cleanC = sanitizeAnswer(correctStr);
             if (cleanU === cleanC) return true;
 
-            // Flexible natural short answers
-            if (cleanU.startsWith("ilike") || cleanU.startsWith("iwant") || cleanU.startsWith("isthis")) {
+            // Flexible natural phrasing allowance
+            if (cleanU.startsWith("ilike") || cleanU.startsWith("iwant") || cleanU.startsWith("isthis") || cleanU.startsWith("whereis")) {
                 return true;
             }
 
