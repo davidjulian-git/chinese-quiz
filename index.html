@@ -347,7 +347,7 @@
         
         <div class="form-group" style="margin-bottom: 12px;">
             <label>Listening Mode:</label>
-            <select id="listening-mode" onchange="loadListeningCard()">
+            <select id="listening-mode">
                 <option value="comprehension">🎧 Audio ➔ English Comprehension</option>
                 <option value="dictation">✍️ Audio ➔ Chinese Dictation (听写)</option>
             </select>
@@ -470,7 +470,7 @@
             { chinese: "我在客廳看書。", pinyin: "Wǒ zài kètīng kàn shū.", english: "I am reading a book in the living room.", altEnglish: ["i am reading in the living room"], required: ["我", "在", "客廳", "看", "書"] },
             { chinese: "他是我的中文老師。", pinyin: "Tā shì wǒ de zhōngwén lǎoshī.", english: "He is my Chinese teacher.", altEnglish: ["he is my mandarin teacher"], required: ["他", "是", "我", "老師"] },
             { chinese: "這件衣服非常好看。", pinyin: "Zhè jiàn yīfu fēicháng hǎokān.", english: "This piece of clothing looks extremely nice.", altEnglish: ["this clothes looks extremely good"], required: ["這", "非常", "好看"] },
-            { chinese: "我明天想去書店。", pinyin: "Wǒ míngtiān xiǎng qù shūdiàn.", english: "I want to go to the bookstore tomorrow.", altEnglish: ["tomorrow i want to go to the bookstore"], required: ["我", "明天", "想", "去", "書店"] },
+            { chinese: "我明天想去書店。", pinyin: "Wǒ míngtiān xiǎng qù shūdiàn.", english: "I want to go to the bookstore tomorrow.", altEnglish: ["tomorrow i want to go to the bookstore"], required: ["I", "明天", "想", "去", "書店"] },
             { chinese: "你喝茶還是喝咖啡？", pinyin: "Nǐ hē chá háishì hē kāfēi?", english: "Do you drink tea or coffee?", altEnglish: ["would you like tea or coffee"], required: ["你", "喝", "茶", "還是", "咖啡"] },
             { chinese: "外面正在下雨。", pinyin: "Wàimiàn zhèngzài xiàyǔ.", english: "It is currently raining outside.", altEnglish: ["it is raining outside"], required: ["下雨"] },
             { chinese: "這個字是什麼意思？", pinyin: "Zhège zì shì shénme yìsi?", english: "What is the meaning of this character?", altEnglish: ["what does this character mean"], required: ["這", "什麼"] },
@@ -490,33 +490,55 @@
             { chinese: "我下午要去超市。", pinyin: "Wǒ xiàwǔ yào qù chāoshì.", english: "I am going to the supermarket this afternoon.", altEnglish: ["i will go to the supermarket this afternoon"], required: ["我", "午", "要", "去", "超市"] }
         ];
 
-        // ================= NATIVE MALE TEXT-TO-SPEECH AUDIO ENGINE =================
+        // ================= BULLETPROOF MOBILE SAFARI AUDIO ENGINE =================
+        let isAudioUnlocked = false;
+
+        function unlockAudioEngine() {
+            if (isAudioUnlocked) return;
+            if ('speechSynthesis' in window) {
+                let dummy = new SpeechSynthesisUtterance('');
+                dummy.volume = 0;
+                window.speechSynthesis.speak(dummy);
+                isAudioUnlocked = true;
+            }
+        }
+
         function speakChinese(text) {
             if (!('speechSynthesis' in window)) {
                 alert('Text-to-speech is not supported by your browser.');
                 return;
             }
-            window.speechSynthesis.cancel(); // Stop any ongoing speech
+
+            unlockAudioEngine();
+            window.speechSynthesis.cancel();
+
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'zh-CN';
-            utterance.rate = 0.9; // Slightly slower for shadowing practice
+            utterance.rate = 0.85;
 
             let voices = window.speechSynthesis.getVoices();
-            // Prioritize Mandarin voices, specifically attempting to locate a male voice
             let mandarinVoices = voices.filter(v => v.lang.includes('zh') || v.lang.includes('cmn'));
-            let selectedVoice = mandarinVoices.find(v => v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('yating') || v.name.toLowerCase().includes('sin-ji') || v.name.toLowerCase().includes('yunxi'));
             
+            // Prioritize male Mandarin voices
+            let selectedVoice = mandarinVoices.find(v => 
+                v.name.toLowerCase().includes('male') || 
+                v.name.toLowerCase().includes('yunxi') || 
+                v.name.toLowerCase().includes('sin-ji') || 
+                v.name.toLowerCase().includes('yating')
+            );
+
             if (!selectedVoice && mandarinVoices.length > 0) {
-                selectedVoice = mandarinVoices[0]; // Fallback to first available Chinese voice
+                selectedVoice = mandarinVoices[0];
             }
             if (selectedVoice) {
                 utterance.voice = selectedVoice;
             }
 
-            window.speechSynthesis.speak(utterance);
+            setTimeout(() => {
+                window.speechSynthesis.speak(utterance);
+            }, 50);
         }
 
-        // Ensure voices load asynchronously on mobile browsers
         if ('speechSynthesis' in window) {
             window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
         }
@@ -579,6 +601,7 @@
         }
 
         function addVocab() {
+            unlockAudioEngine();
             const chinese = document.getElementById('input-chinese').value.trim();
             const pinyin = document.getElementById('input-pinyin').value.trim();
             const english = document.getElementById('input-english').value.trim();
@@ -598,6 +621,7 @@
         }
 
         function bulkImport() {
+            unlockAudioEngine();
             const text = document.getElementById('bulk-input').value.trim();
             if (!text) return;
 
@@ -710,12 +734,10 @@
                 labelEl.innerText = "Type the Chinese characters you heard (听写):";
                 document.getElementById('listening-user-input').placeholder = "e.g., 我今天很累。";
             }
-
-            // Auto-play audio on card load
-            speakChinese(currentListeningItem.chinese);
         }
 
         function checkListeningAnswer() {
+            unlockAudioEngine();
             const userText = document.getElementById('listening-user-input').value.trim();
             if (!userText) return;
 
@@ -825,6 +847,7 @@
         }
 
         function checkSentenceAnswer() {
+            unlockAudioEngine();
             const userText = document.getElementById('st-user-input').value;
             if (!userText.trim()) return;
 
@@ -855,6 +878,7 @@
         }
 
         function revealSentenceAnswer() {
+            unlockAudioEngine();
             showSentenceFeedback(false, "[Revealed without guessing]", currentSentenceObj, currentActiveSentenceType);
         }
 
@@ -968,9 +992,6 @@
             let promptLabel = showChinese ? currentToneItem.chinese : currentToneItem.english;
             document.getElementById('tone-prompt').innerText = `${promptLabel} (${showChinese ? 'Chinese' : 'English'})`;
 
-            // Auto-speak audio for tone challenge
-            speakChinese(currentToneItem.chinese);
-
             let choices = generateToneDistractors(currentToneItem.pinyin);
 
             choices.forEach(choice => {
@@ -985,6 +1006,7 @@
         }
 
         function checkToneAnswer(isCorrect, correctPinyin) {
+            unlockAudioEngine();
             const feedback = document.getElementById('tone-feedback');
             feedback.style.display = 'block';
 
@@ -1009,6 +1031,7 @@
         let isRetryMode = false;
 
         function startQuiz() {
+            unlockAudioEngine();
             if (vocabList.length < 4) {
                 alert('Please add at least 4 vocabulary words before starting a quiz.');
                 return;
@@ -1120,9 +1143,6 @@
             document.getElementById('prompt-instruction').innerText = promptLabel;
             document.getElementById('prompt-text').innerText = promptText;
 
-            // Automatically read vocab aloud on quiz load for immersion
-            speakChinese(currentQuizItem.chinese);
-
             const mode = document.getElementById('quiz-mode').value;
             if (mode === 'mc') {
                 setupMultipleChoice(correctAnswer, targetKey);
@@ -1161,6 +1181,7 @@
         }
 
         function submitWriteAnswer() {
+            unlockAudioEngine();
             const userText = document.getElementById('user-answer').value.trim();
             const feedback = document.getElementById('feedback-area');
             const correctAnswer = getCorrectAnswerString();
@@ -1202,6 +1223,7 @@
         }
 
         function checkAnswer(isCorrect, correctAnswer) {
+            unlockAudioEngine();
             const feedback = document.getElementById('feedback-area');
             feedback.style.display = 'block';
 
@@ -1239,11 +1261,15 @@
             document.getElementById('speak-sentence-btn').addEventListener('click', () => speakChinese(currentSentenceObj.chinese));
             document.getElementById('speak-vocab-btn').addEventListener('click', () => speakChinese(currentQuizItem.chinese));
 
-            document.getElementById('listen-audio-btn').addEventListener('click', () => speakChinese(currentListeningItem.chinese));
+            document.getElementById('listen-audio-btn').addEventListener('click', () => {
+                if (currentListeningItem) speakChinese(currentListeningItem.chinese);
+            });
             document.getElementById('listening-submit-btn').addEventListener('click', checkListeningAnswer);
             document.getElementById('listening-next-btn').addEventListener('click', loadListeningCard);
 
-            document.getElementById('speak-tone-btn').addEventListener('click', () => speakChinese(currentToneItem.chinese));
+            document.getElementById('speak-tone-btn').addEventListener('click', () => {
+                if (currentToneItem) speakChinese(currentToneItem.chinese);
+            });
             document.getElementById('tone-next-btn').addEventListener('click', loadToneCard);
 
             document.getElementById('bulk-import-btn').addEventListener('click', bulkImport);
