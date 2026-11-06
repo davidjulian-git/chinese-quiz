@@ -36,7 +36,7 @@
         nav {
             display: flex;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
             margin-bottom: 12px;
             flex-wrap: wrap;
         }
@@ -44,10 +44,10 @@
             background-color: #334155;
             color: var(--text-muted);
             border: none;
-            padding: 8px 10px;
+            padding: 8px 8px;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
         }
         nav button.active-tab {
@@ -162,7 +162,7 @@
             transition: border-color 0.3s;
         }
         .prompt-display {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: bold;
             color: var(--theme-color);
             margin: 10px 0 15px 0;
@@ -246,8 +246,9 @@
     <nav>
         <button id="nav-quiz" class="active-tab">Study Quiz</button>
         <button id="nav-sentences">Sentences</button>
-        <button id="nav-tones">Tone Practice</button>
-        <button id="nav-manage">Manage Words</button>
+        <button id="nav-listening">Listening</button>
+        <button id="nav-tones">Tones</button>
+        <button id="nav-manage">Manage</button>
     </nav>
 
     <!-- QUIZ TAB -->
@@ -288,6 +289,7 @@
             <div class="quiz-card-box" id="quiz-card-box">
                 <div id="prompt-instruction" class="prompt-instruction">Translate this:</div>
                 <div id="prompt-text" class="prompt-display"></div>
+                <button id="speak-vocab-btn" class="secondary" style="margin-bottom: 12px; padding: 6px 12px; font-size: 0.85rem;">🔊 Listen / Replay</button>
                 
                 <div id="mc-container" class="options-grid"></div>
 
@@ -320,6 +322,7 @@
         <div id="st-card-box" class="quiz-card-box">
             <div id="st-prompt-label" class="prompt-instruction">Translate the sentence:</div>
             <div id="st-prompt-text" class="prompt-display" style="min-height: 3.5rem; display: flex; align-items: center; justify-content: center; padding: 4px 0;"></div>
+            <button id="speak-sentence-btn" class="secondary" style="margin-bottom: 12px; padding: 6px 12px; font-size: 0.85rem;">🔊 Listen / Replay Audio</button>
 
             <div id="st-input-section" style="text-align: left;">
                 <div class="form-group" style="margin-bottom: 10px;">
@@ -338,12 +341,42 @@
         </div>
     </div>
 
+    <!-- LISTENING PRACTICE TAB -->
+    <div id="listening-tab" class="tab-content">
+        <h2 style="margin-top:0; font-size: 1.2rem;">Listening & Shadowing Practice</h2>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+            <label>Listening Mode:</label>
+            <select id="listening-mode" onchange="loadListeningCard()">
+                <option value="comprehension">🎧 Audio ➔ English Comprehension</option>
+                <option value="dictation">✍️ Audio ➔ Chinese Dictation (听写)</option>
+            </select>
+        </div>
+
+        <div class="quiz-card-box">
+            <div class="prompt-instruction">Listen & Practice:</div>
+            <button id="listen-audio-btn" style="font-size: 1.2rem; padding: 14px 24px; margin: 15px 0; background-color: #38bdf8; color: #0f172a; width: 100%;">🔊 Play Native Audio (Male Voice)</button>
+            
+            <div id="listening-input-section">
+                <div class="form-group" style="text-align: left; margin-bottom: 10px;">
+                    <label id="listening-input-label">What did you hear / mean?</label>
+                    <input type="text" id="listening-user-input" placeholder="Type your answer here..." autocomplete="off">
+                </div>
+                <button id="listening-submit-btn" style="width: 100%;">Submit Answer</button>
+            </div>
+
+            <div id="listening-feedback-box" class="feedback-box"></div>
+            <button id="listening-next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Audio ➔</button>
+        </div>
+    </div>
+
     <!-- TONE PRACTICE TAB -->
     <div id="tones-tab" class="tab-content">
         <h2 style="margin-top:0; font-size: 1.2rem;">Tone & Sound Practice</h2>
         <div class="quiz-card-box">
             <div class="prompt-instruction">Identify the correct pinyin:</div>
             <div id="tone-prompt" class="prompt-display">--</div>
+            <button id="speak-tone-btn" class="secondary" style="margin-bottom: 12px; padding: 6px 12px; font-size: 0.85rem;">🔊 Listen to Audio First</button>
             <div id="tone-options" class="options-grid"></div>
             <div id="tone-feedback" class="feedback-box"></div>
             <button id="tone-next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Word ➔</button>
@@ -449,13 +482,44 @@
             { chinese: "你的手機在哪裡？", pinyin: "Nǐ de shǒujī zài nǎlǐ?", english: "Where is your cell phone?", altEnglish: ["where is your mobile phone"], required: ["你", "手機"] },
             { chinese: "這杯水太冰了。", pinyin: "Zhè bēi shuǐ tài bīng le.", english: "This glass of water is too iced.", altEnglish: ["this cup of water is too cold"], required: ["這", "杯", "水", "冰"] },
             { chinese: "冬天的時候會下雪。", pinyin: "Dōngtiān de shíhòu huì xiàxuě.", english: "It snows during winter.", altEnglish: ["it will snow in winter"], required: ["冬天", "的時候"] },
-            { chinese: "我喜歡秋天的天氣。", pinyin: "Wǒ xǐhuān qiūtiān de tiānqì.", english: "I like autumn weather.", altEnglish: ["i like fall weather"], required: ["I", "喜歡"] },
+            { chinese: "我喜歡秋天的天氣。", pinyin: "Wǒ xǐhuān qiūtiān de tiānqì.", english: "I like autumn weather.", altEnglish: ["i like fall weather"], required: ["我", "喜歡"] },
             { chinese: "我們一起去跑步吧。", pinyin: "Wǒmen yīqǐ qù pǎobù ba.", english: "Let's go running together.", altEnglish: ["let us go jog together"], required: ["我們", "去", "跑步"] },
             { chinese: "這個漢堡很好吃。", pinyin: "Zhège hànbǎo hěn hǎochī.", english: "This hamburger is delicious.", altEnglish: ["this burger tastes very good"], required: ["這", "好吃"] },
             { chinese: "他每天都去工作。", pinyin: "Tā měitiān dōu qù gōngzuò.", english: "He goes to work every day.", altEnglish: ["he goes to work everyday"], required: ["tā", "去", "工作"] },
             { chinese: "別吃太多冰淇淋。", pinyin: "Bié chī tài duō bīngqílín.", english: "Don't eat too much ice cream.", altEnglish: ["do not eat too much ice cream"], required: ["吃"] },
             { chinese: "我下午要去超市。", pinyin: "Wǒ xiàwǔ yào qù chāoshì.", english: "I am going to the supermarket this afternoon.", altEnglish: ["i will go to the supermarket this afternoon"], required: ["我", "午", "要", "去", "超市"] }
         ];
+
+        // ================= NATIVE MALE TEXT-TO-SPEECH AUDIO ENGINE =================
+        function speakChinese(text) {
+            if (!('speechSynthesis' in window)) {
+                alert('Text-to-speech is not supported by your browser.');
+                return;
+            }
+            window.speechSynthesis.cancel(); // Stop any ongoing speech
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.9; // Slightly slower for shadowing practice
+
+            let voices = window.speechSynthesis.getVoices();
+            // Prioritize Mandarin voices, specifically attempting to locate a male voice
+            let mandarinVoices = voices.filter(v => v.lang.includes('zh') || v.lang.includes('cmn'));
+            let selectedVoice = mandarinVoices.find(v => v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('yating') || v.name.toLowerCase().includes('sin-ji') || v.name.toLowerCase().includes('yunxi'));
+            
+            if (!selectedVoice && mandarinVoices.length > 0) {
+                selectedVoice = mandarinVoices[0]; // Fallback to first available Chinese voice
+            }
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Ensure voices load asynchronously on mobile browsers
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+        }
 
         function getSensibleSentencePool() {
             let userWords = vocabList.map(v => v.chinese.toLowerCase().trim());
@@ -486,6 +550,7 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('nav-quiz').classList.remove('active-tab');
             document.getElementById('nav-sentences').classList.remove('active-tab');
+            document.getElementById('nav-listening').classList.remove('active-tab');
             document.getElementById('nav-tones').classList.remove('active-tab');
             document.getElementById('nav-manage').classList.remove('active-tab');
 
@@ -498,6 +563,10 @@
                 document.getElementById('sentences-tab').classList.add('active');
                 document.getElementById('nav-sentences').classList.add('active-tab');
                 loadSentenceCard();
+            } else if (tabName === 'listening') {
+                document.getElementById('listening-tab').classList.add('active');
+                document.getElementById('nav-listening').classList.add('active-tab');
+                loadListeningCard();
             } else if (tabName === 'tones') {
                 document.getElementById('tones-tab').classList.add('active');
                 document.getElementById('nav-tones').classList.add('active-tab');
@@ -616,6 +685,79 @@
             document.documentElement.style.setProperty('--theme-color', color);
         }
 
+        // ================= LISTENING PRACTICE LOGIC =================
+        let currentListeningItem = null;
+
+        function loadListeningCard() {
+            const feedbackBox = document.getElementById('listening-feedback-box');
+            const inputSection = document.getElementById('listening-input-section');
+            const nextBtn = document.getElementById('listening-next-btn');
+            
+            feedbackBox.style.display = 'none';
+            inputSection.style.display = 'block';
+            nextBtn.style.display = 'none';
+            document.getElementById('listening-user-input').value = '';
+
+            let pool = activeSentencePool.length > 0 ? activeSentencePool : masterSentenceBank;
+            currentListeningItem = pool[Math.floor(Math.random() * pool.length)];
+
+            let mode = document.getElementById('listening-mode').value;
+            let labelEl = document.getElementById('listening-input-label');
+            if (mode === 'comprehension') {
+                labelEl.innerText = "Type the English meaning you heard:";
+                document.getElementById('listening-user-input').placeholder = "e.g., I am very tired today";
+            } else {
+                labelEl.innerText = "Type the Chinese characters you heard (听写):";
+                document.getElementById('listening-user-input').placeholder = "e.g., 我今天很累。";
+            }
+
+            // Auto-play audio on card load
+            speakChinese(currentListeningItem.chinese);
+        }
+
+        function checkListeningAnswer() {
+            const userText = document.getElementById('listening-user-input').value.trim();
+            if (!userText) return;
+
+            const mode = document.getElementById('listening-mode').value;
+            let isCorrect = false;
+            const cleanUser = sanitizeAnswer(userText);
+
+            if (mode === 'comprehension') {
+                const cleanEnglish = sanitizeAnswer(currentListeningItem.english);
+                isCorrect = (cleanUser === cleanEnglish);
+                if (!isCorrect && currentListeningItem.altEnglish) {
+                    isCorrect = currentListeningItem.altEnglish.some(alt => sanitizeAnswer(alt) === cleanUser);
+                }
+            } else {
+                const cleanChinese = sanitizeAnswer(currentListeningItem.chinese);
+                isCorrect = (cleanUser === cleanChinese);
+            }
+
+            const feedbackBox = document.getElementById('listening-feedback-box');
+            document.getElementById('listening-input-section').style.display = 'none';
+            feedbackBox.style.display = 'block';
+
+            let targetDisplay = `${currentListeningItem.chinese} (${currentListeningItem.pinyin}) - ${currentListeningItem.english}`;
+
+            if (isCorrect) {
+                feedbackBox.className = 'feedback-box feedback-correct';
+                feedbackBox.innerHTML = `✨ Correct! 太棒了！<div class="grammar-note"><strong>Target:</strong> ${targetDisplay}</div>`;
+            } else {
+                feedbackBox.className = 'feedback-box feedback-incorrect';
+                feedbackBox.innerHTML = `
+                    ❌ Not Quite Right
+                    <div style="font-size: 0.9rem; margin-top: 6px; font-weight: normal; line-height: 1.4;">
+                        <strong>Correct Target:</strong> ${targetDisplay}<br>
+                        <strong>You wrote:</strong> ${userText}
+                    </div>
+                `;
+            }
+
+            document.getElementById('listening-next-btn').style.display = 'block';
+        }
+
+        // ================= SENTENCE TRANSLATION LOGIC =================
         function loadSentenceCard() {
             if (activeSentencePool.length === 0) {
                 activeSentencePool = getSensibleSentencePool();
@@ -633,9 +775,11 @@
                 feedbackBox.className = 'feedback-box feedback-incorrect';
                 feedbackBox.innerHTML = `Your active vocabulary list has ${vocabList.length} words. Import required vocabulary in the <strong>Manage Words</strong> tab to unlock sentences.`;
                 document.getElementById('st-next-btn').style.display = 'none';
+                document.getElementById('speak-sentence-btn').style.display = 'none';
                 return;
             }
 
+            document.getElementById('speak-sentence-btn').style.display = 'inline-block';
             inputSection.style.display = 'block';
             feedbackBox.style.display = 'none';
             currentSentenceObj = activeSentencePool.pop();
@@ -732,26 +876,19 @@
                         <strong>Correct Answer:</strong> ${targetDisplay}<br>
                         <strong>You wrote:</strong> ${userText}
                     </div>
-                    <div class="grammar-note">
-                        <strong>Verified Native Structure Note:</strong><br>Strict exact-match required. Word order and syntax must match native formulation.
-                    </div>
                 `;
             }
 
             document.getElementById('st-next-btn').style.display = 'block';
         }
 
-        // ================= BULLETPROOF PURE TONE VARIATION ENGINE =================
+        // ================= TONE PRACTICE LOGIC =================
         let currentToneItem = null;
 
         function generateToneDistractors(correctPinyin) {
-            let cleanTarget = correctPinyin.toLowerCase().trim();
-            // Remove trailing punctuation from pinyin if any
-            cleanTarget = cleanTarget.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
-            
+            let cleanTarget = correctPinyin.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
             let options = [cleanTarget];
 
-            // Tone transformation map for standard pinyin vowels
             const toneMaps = {
                 'a': ['ā', 'á', 'ǎ', 'à'],
                 'e': ['ē', 'é', 'ě', 'è'],
@@ -761,7 +898,6 @@
                 'ü': ['ǖ', 'ǘ', 'ǚ', 'ǜ']
             };
 
-            // Strip existing tone marks to get the bare base syllable
             let base = cleanTarget
                 .replace(/[āáǎà]/g, 'a')
                 .replace(/[ēéěè]/g, 'e')
@@ -770,7 +906,6 @@
                 .replace(/[ūúǔù]/g, 'u')
                 .replace(/[ǖǘǚǚ]/g, 'ü');
 
-            // Find which vowel gets the tone mark in this base syllable
             let targetVowel = 'a';
             for (let v of ['a', 'e', 'o', 'i', 'u', 'ü']) {
                 if (base.includes(v)) {
@@ -779,7 +914,6 @@
                 }
             }
 
-            // Generate all 4 tone permutations for this exact syllable
             if (toneMaps[targetVowel]) {
                 toneMaps[targetVowel].forEach(toneChar => {
                     let variant = base.replace(targetVowel, toneChar);
@@ -789,7 +923,6 @@
                 });
             }
 
-            // Add consonant confusion swaps if we need more options (e.g. z vs zh, c vs ch, s vs sh)
             let soundAlike = cleanTarget
                 .replace(/^zh/i, 'z').replace(/^z(?![h])/i, 'zh')
                 .replace(/^ch/i, 'c').replace(/^c(?![h])/i, 'ch')
@@ -799,7 +932,6 @@
                 options.push(soundAlike);
             }
 
-            // Absolute fallback for multi-word or edge cases
             let suffix = 1;
             while (options.length < 4) {
                 let fallbackOption = base + suffix;
@@ -826,13 +958,18 @@
                 feedback.style.display = 'block';
                 feedback.className = 'feedback-box feedback-incorrect';
                 feedback.innerHTML = `Please add at least 4 words in the <strong>Manage Words</strong> tab to start Tone Practice.`;
+                document.getElementById('speak-tone-btn').style.display = 'none';
                 return;
             }
 
+            document.getElementById('speak-tone-btn').style.display = 'inline-block';
             currentToneItem = vocabList[Math.floor(Math.random() * vocabList.length)];
             let showChinese = Math.random() > 0.5;
             let promptLabel = showChinese ? currentToneItem.chinese : currentToneItem.english;
             document.getElementById('tone-prompt').innerText = `${promptLabel} (${showChinese ? 'Chinese' : 'English'})`;
+
+            // Auto-speak audio for tone challenge
+            speakChinese(currentToneItem.chinese);
 
             let choices = generateToneDistractors(currentToneItem.pinyin);
 
@@ -983,6 +1120,9 @@
             document.getElementById('prompt-instruction').innerText = promptLabel;
             document.getElementById('prompt-text').innerText = promptText;
 
+            // Automatically read vocab aloud on quiz load for immersion
+            speakChinese(currentQuizItem.chinese);
+
             const mode = document.getElementById('quiz-mode').value;
             if (mode === 'mc') {
                 setupMultipleChoice(correctAnswer, targetKey);
@@ -1084,6 +1224,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('nav-quiz').addEventListener('click', () => switchTab('quiz'));
             document.getElementById('nav-sentences').addEventListener('click', () => switchTab('sentences'));
+            document.getElementById('nav-listening').addEventListener('click', () => switchTab('listening'));
             document.getElementById('nav-tones').addEventListener('click', () => switchTab('tones'));
             document.getElementById('nav-manage').addEventListener('click', () => switchTab('manage'));
 
@@ -1095,7 +1236,14 @@
             document.getElementById('st-submit-btn').addEventListener('click', checkSentenceAnswer);
             document.getElementById('st-reveal-btn').addEventListener('click', revealSentenceAnswer);
             document.getElementById('st-next-btn').addEventListener('click', loadSentenceCard);
+            document.getElementById('speak-sentence-btn').addEventListener('click', () => speakChinese(currentSentenceObj.chinese));
+            document.getElementById('speak-vocab-btn').addEventListener('click', () => speakChinese(currentQuizItem.chinese));
 
+            document.getElementById('listen-audio-btn').addEventListener('click', () => speakChinese(currentListeningItem.chinese));
+            document.getElementById('listening-submit-btn').addEventListener('click', checkListeningAnswer);
+            document.getElementById('listening-next-btn').addEventListener('click', loadListeningCard);
+
+            document.getElementById('speak-tone-btn').addEventListener('click', () => speakChinese(currentToneItem.chinese));
             document.getElementById('tone-next-btn').addEventListener('click', loadToneCard);
 
             document.getElementById('bulk-import-btn').addEventListener('click', bulkImport);
