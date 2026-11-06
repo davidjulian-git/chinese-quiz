@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chinese Study & Quiz App</title>
+    <title>Chinese Study App</title>
     <style>
         :root {
             --bg-dark: #090d16;
@@ -392,10 +392,8 @@
     </div>
 
     <script>
-        // Clean blank initial state loaded strictly from localStorage
         let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [];
 
-        // Expanded High-Volume Master Sentence Bank (Native Verified HSK Corpus)
         const masterSentenceBank = [
             { chinese: "我今天很累。", pinyin: "Wǒ jīntiān hěn lèi.", english: "I am very tired today.", altEnglish: ["today i am very tired"], required: ["我", "今天", "很", "累"] },
             { chinese: "因為下雨，所以我遲到了。", pinyin: "Yīnwèi xiàyǔ, suǒyǐ wǒ chídào le.", english: "Because it rained, I was late.", altEnglish: ["because it was raining i was late"], required: ["因為", "下雨", "所以", "我", "遲到"] },
@@ -449,13 +447,6 @@
             { chinese: "我下午要去超市。", pinyin: "Wǒ xiàwǔ yào qù chāoshì.", english: "I am going to the supermarket this afternoon.", altEnglish: ["i will go to the supermarket this afternoon"], required: ["我", "午", "要", "去", "超市"] }
         ];
 
-        let quizQueue = [];
-        let totalItemsInSession = 0;
-        let currentQuizItem = null;
-        let currentActiveType = 'c2e';
-        let isRetryMode = false;
-
-        // Strict Vocabulary-Gated Filter: Every required word must exist whole and exact in user vocab storage
         function getSensibleSentencePool() {
             let userWords = vocabList.map(v => v.chinese.toLowerCase().trim());
             let validPool = [];
@@ -472,6 +463,7 @@
             return shuffle(validPool);
         }
 
+        let activeSentencePool = [];
         let currentActiveSentenceType = 'e2c';
         let currentSentenceObj = null;
 
@@ -482,7 +474,6 @@
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            
             document.getElementById('nav-quiz').classList.remove('active-tab');
             document.getElementById('nav-sentences').classList.remove('active-tab');
             document.getElementById('nav-manage').classList.remove('active-tab');
@@ -515,7 +506,6 @@
 
             vocabList.push({ chinese, pinyin, english });
             saveVocabToStorage();
-
             document.getElementById('input-chinese').value = '';
             document.getElementById('input-pinyin').value = '';
             document.getElementById('input-english').value = '';
@@ -597,16 +587,12 @@
             return array.sort(() => Math.random() - 0.5);
         }
 
-        // ================= SENTENCE TRANSLATION LOGIC =================
         function setSentenceTheme(themeType) {
             let color = '#f97316';
             if (themeType === 'c2e') color = '#f97316';
             else if (themeType === 'p2e' || themeType === 'e2p') color = '#38bdf8';
-
             document.documentElement.style.setProperty('--theme-color', color);
         }
-
-        let activeSentencePool = [];
 
         function loadSentenceCard() {
             if (activeSentencePool.length === 0) {
@@ -623,7 +609,7 @@
                 inputSection.style.display = 'none';
                 feedbackBox.style.display = 'block';
                 feedbackBox.className = 'feedback-box feedback-incorrect';
-                feedbackBox.innerHTML = `Your vocabulary list has ${vocabList.length} words. Import required vocabulary in the <strong>Manage Words</strong> tab to unlock sentences.`;
+                feedbackBox.innerHTML = `Your active vocabulary list has ${vocabList.length} words. Import required vocabulary in the <strong>Manage Words</strong> tab to unlock sentences.`;
                 document.getElementById('st-next-btn').style.display = 'none';
                 return;
             }
@@ -674,7 +660,6 @@
 
         function checkSentenceAnswer() {
             const userText = document.getElementById('st-user-input').value;
-            
             if (!userText.trim()) return;
 
             let isCorrect = false;
@@ -738,7 +723,12 @@
             loadSentenceCard();
         }
 
-        // ================= STUDY QUIZ LOGIC =================
+        let quizQueue = [];
+        let totalItemsInSession = 0;
+        let currentQuizItem = null;
+        let currentActiveType = 'c2e';
+        let isRetryMode = false;
+
         function startQuiz() {
             if (vocabList.length < 4) {
                 alert('Please add at least 4 vocabulary words before starting a quiz.');
@@ -773,7 +763,6 @@
             if (answerCategory === 'chinese') color = '#f97316'; 
             else if (answerCategory === 'pinyin') color = '#38bdf8'; 
             else if (answerCategory === 'english') color = '#a855f7'; 
-
             document.documentElement.style.setProperty('--theme-color', color);
         }
 
@@ -903,7 +892,7 @@
                     setTimeout(nextQuestion, 1000);
                 } else {
                     feedback.className = 'feedback-box feedback-incorrect';
-                    feedback.innerHTML = `❌ Incorrect. Please type exact correct answer: <strong>${correctAnswer}</strong>`;
+                    feedback.innerHTML = `❌ Incorrect. Type exact correct answer: <strong>${correctAnswer}</strong>`;
                     document.getElementById('user-answer').value = '';
                     document.getElementById('user-answer').focus();
                 }
@@ -922,7 +911,7 @@
             } else {
                 isRetryMode = true;
                 feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}</strong><br><span style="font-size:0.85rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
+                feedback.innerHTML = `❌ Incorrect. Correct answer: <strong>${correctAnswer}</strong><br><span style="font-size:0.85rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
                 document.getElementById('user-answer').value = '';
                 document.getElementById('user-answer').focus();
             }
