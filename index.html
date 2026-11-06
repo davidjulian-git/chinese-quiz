@@ -296,7 +296,7 @@
                 <div id="prompt-instruction" class="prompt-instruction">Translate this:</div>
                 <div id="prompt-text" class="prompt-display"></div>
                 <button id="speak-vocab-btn" class="secondary" style="margin-bottom: 6px; padding: 6px 12px; font-size: 0.85rem;">🔊 Listen / Replay Audio</button>
-                <div id="audio-status">Audio Engine: Ready</div>
+                <div id="audio-status">Audio Engine: HTML5 Stream Ready</div>
                 
                 <div id="mc-container" class="options-grid" style="margin-top: 10px;"></div>
 
@@ -468,7 +468,7 @@
             { chinese: "我昨天去了火車站。", pinyin: "Wǒ zuótiān qù le huǒchēzhàn.", english: "I went to the train station yesterday.", altEnglish: ["yesterday i went to the train station"], required: ["我", "昨天", "去", "火車站"] },
             { chinese: "桌子上有一個手機。", pinyin: "Zhuōzi shàng yǒu yīgè shǒujī.", english: "There is a cell phone on the table.", altEnglish: ["there is a mobile phone on the table"], required: ["有", "手機"] },
             { chinese: "春天的時候天氣很好。", pinyin: "Chūntiān de shíhòu tiānqì hěn hǎo.", english: "The weather is very good during spring.", altEnglish: ["spring weather is very good"], required: ["春天", "的時候", "好"] },
-            { chinese: "我不喜歡喝冰水。", pinyin: "Wǒ bù xǐhuān hē bīng shuǐ.", english: "I do not like drinking ice water.", altEnglish: ["i don't like cold water"], required: ["I", "喜歡", "喝", "冰", "水"] },
+            { chinese: "我不喜歡喝冰水。", pinyin: "Wǒ bù xǐhuān hē bīng shuǐ.", english: "I do not like drinking ice water.", altEnglish: ["i don't like cold water"], required: ["我", "喜歡", "喝", "冰", "水"] },
             { chinese: "他是我的好朋友。", pinyin: "Tā shì wǒ de hǎo péngyǒu.", english: "He is my good friend.", altEnglish: ["he's my good friend"], required: ["他", "是", "我", "朋友"] },
             { chinese: "你喜歡打籃球還是網球？", pinyin: "Nǐ xǐhuān dǎ lánqiú háishì wǎngqiú?", english: "Do you like playing basketball or tennis?", altEnglish: ["do you like basketball or tennis"], required: ["你", "喜歡", "籃球", "還是"] },
             { chinese: "這家飯店的菜很好吃。", pinyin: "Zhè jiā fàndiàn de cài hěn hǎochī.", english: "The dishes at this restaurant are delicious.", altEnglish: ["the food at this restaurant is delicious"], required: ["這", "家", "好吃"] },
@@ -494,80 +494,25 @@
             { chinese: "這個漢堡很好吃。", pinyin: "Zhège hànbǎo hěn hǎochī.", english: "This hamburger is delicious.", altEnglish: ["this burger tastes very good"], required: ["這", "好吃"] },
             { chinese: "他每天都去工作。", pinyin: "Tā měitiān dōu qù gōngzuò.", english: "He goes to work every day.", altEnglish: ["he goes to work everyday"], required: ["tā", "去", "工作"] },
             { chinese: "別吃太多冰淇淋。", pinyin: "Bié chī tài duō bīngqílín.", english: "Don't eat too much ice cream.", altEnglish: ["do not eat too much ice cream"], required: ["吃"] },
-            { chinese: "我下午要去超市。", pinyin: "Wǒ xiàwǔ yào qù chāoshì.", english: "I am going to the supermarket this afternoon.", altEnglish: ["i will go to the supermarket this afternoon"], required: ["`我`", "午", "要", "去", "超市"] }
+            { chinese: "我下午要去超市。", pinyin: "Wǒ xiàwǔ yào qù chāoshì.", english: "I am going to the supermarket this afternoon.", altEnglish: ["i will go to the supermarket this afternoon"], required: ["我", "午", "要", "去", "超市"] }
         ];
 
-        // ================= MOBILE SAFARI / CHROME AUDIO UNLOCK & TTS =================
-        let globalAudioCtx = null;
-
-        function unlockMobileAudioContext() {
-            try {
-                if (!globalAudioCtx) {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContext) {
-                        globalAudioCtx = new AudioContext();
-                    }
-                }
-                if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
-                    globalAudioCtx.resume();
-                }
-            } catch (e) {
-                console.log("AudioContext resume error:", e);
-            }
-        }
-
+        // ================= FOOLPROOF HTML5 AUDIO STREAMING ENGINE =================
         function speakChinese(text) {
-            unlockMobileAudioContext();
-            
             const statusEl = document.getElementById('audio-status');
-            if (!('speechSynthesis' in window)) {
-                if (statusEl) statusEl.innerText = "Audio Error: Not supported";
-                return;
-            }
+            if (statusEl) statusEl.innerText = "Audio Status: Streaming Audio...";
 
-            // iOS WebKit quirk: cancel previous queue to prevent deadlocks
-            window.speechSynthesis.cancel();
+            // Use Google Translate's public TTS endpoint to stream native audio natively on mobile devices
+            const encodedText = encodeURIComponent(text);
+            const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
 
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-CN';
-            utterance.rate = 0.85;
-
-            let voices = window.speechSynthesis.getVoices();
-            let mandarinVoices = voices.filter(v => v.lang.includes('zh') || v.lang.includes('cmn') || v.lang.includes('CN'));
-            
-            let selectedVoice = mandarinVoices.find(v => 
-                v.name.toLowerCase().includes('male') || 
-                v.name.toLowerCase().includes('yunxi') || 
-                v.name.toLowerCase().includes('sin-ji') || 
-                v.name.toLowerCase().includes('yating') ||
-                v.name.toLowerCase().includes('ting-ting')
-            );
-
-            if (!selectedVoice && mandarinVoices.length > 0) {
-                selectedVoice = mandarinVoices[0];
-            }
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-            }
-
-            utterance.onstart = () => {
-                if (statusEl) statusEl.innerText = "Audio Status: Speaking...";
-            };
-            utterance.onend = () => {
-                if (statusEl) statusEl.innerText = "Audio Status: Ready";
-            };
-            utterance.onerror = (e) => {
-                if (statusEl) statusEl.innerText = "Audio Status: Check volume / silent switch";
-            };
-
-            // Small timeout allows WebKit thread to release lock before speaking
-            setTimeout(() => {
-                window.speechSynthesis.speak(utterance);
-            }, 50);
-        }
-
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+            let audio = new Audio(audioUrl);
+            audio.play().then(() => {
+                if (statusEl) statusEl.innerText = "Audio Status: Playing";
+            }).catch(error => {
+                console.error("Audio playback error:", error);
+                if (statusEl) statusEl.innerText = "Audio Status: Error playing stream";
+            });
         }
 
         function getSensibleSentencePool() {
@@ -596,7 +541,6 @@
         }
 
         function switchTab(tabName) {
-            unlockMobileAudioContext();
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('nav-quiz').classList.remove('active-tab');
             document.getElementById('nav-sentences').classList.remove('active-tab');
@@ -629,7 +573,6 @@
         }
 
         function addVocab() {
-            unlockMobileAudioContext();
             const chinese = document.getElementById('input-chinese').value.trim();
             const pinyin = document.getElementById('input-pinyin').value.trim();
             const english = document.getElementById('input-english').value.trim();
@@ -649,7 +592,6 @@
         }
 
         function bulkImport() {
-            unlockMobileAudioContext();
             const text = document.getElementById('bulk-input').value.trim();
             if (!text) return;
 
@@ -765,7 +707,6 @@
         }
 
         function checkListeningAnswer() {
-            unlockMobileAudioContext();
             const userText = document.getElementById('listening-user-input').value.trim();
             if (!userText) return;
 
@@ -875,7 +816,6 @@
         }
 
         function checkSentenceAnswer() {
-            unlockMobileAudioContext();
             const userText = document.getElementById('st-user-input').value;
             if (!userText.trim()) return;
 
@@ -906,7 +846,6 @@
         }
 
         function revealSentenceAnswer() {
-            unlockMobileAudioContext();
             showSentenceFeedback(false, "[Revealed without guessing]", currentSentenceObj, currentActiveSentenceType);
         }
 
@@ -1027,7 +966,6 @@
                 btn.className = 'option-btn';
                 btn.innerText = choice;
                 btn.addEventListener('click', () => {
-                    unlockMobileAudioContext();
                     checkToneAnswer(choice.toLowerCase().trim() === currentToneItem.pinyin.toLowerCase().trim(), currentToneItem.pinyin);
                 });
                 optionsContainer.appendChild(btn);
@@ -1035,7 +973,6 @@
         }
 
         function checkToneAnswer(isCorrect, correctPinyin) {
-            unlockMobileAudioContext();
             const feedback = document.getElementById('tone-feedback');
             feedback.style.display = 'block';
 
@@ -1060,7 +997,6 @@
         let isRetryMode = false;
 
         function startQuiz() {
-            unlockMobileAudioContext();
             if (vocabList.length < 4) {
                 alert('Please add at least 4 vocabulary words before starting a quiz.');
                 return;
@@ -1197,7 +1133,6 @@
                 btn.className = 'option-btn';
                 btn.innerText = choice;
                 btn.addEventListener('click', () => {
-                    unlockMobileAudioContext();
                     checkAnswer(choice === correctAnswer, correctAnswer);
                 });
                 container.appendChild(btn);
@@ -1211,7 +1146,6 @@
         }
 
         function submitWriteAnswer() {
-            unlockMobileAudioContext();
             const userText = document.getElementById('user-answer').value.trim();
             const feedback = document.getElementById('feedback-area');
             const correctAnswer = getCorrectAnswerString();
@@ -1253,7 +1187,6 @@
         }
 
         function checkAnswer(isCorrect, correctAnswer) {
-            unlockMobileAudioContext();
             const feedback = document.getElementById('feedback-area');
             feedback.style.display = 'block';
 
