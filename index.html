@@ -244,10 +244,10 @@
     </header>
 
     <nav>
-        <button id="nav-quiz" class="active-tab" onclick="switchTab('quiz')">Study Quiz</button>
-        <button id="nav-sentences" onclick="switchTab('sentences')">Sentences</button>
-        <button id="nav-tones" onclick="switchTab('tones')">Tone Practice</button>
-        <button id="nav-manage" onclick="switchTab('manage')">Manage Words</button>
+        <button id="nav-quiz" class="active-tab">Study Quiz</button>
+        <button id="nav-sentences">Sentences</button>
+        <button id="nav-tones">Tone Practice</button>
+        <button id="nav-manage">Manage Words</button>
     </nav>
 
     <!-- QUIZ TAB -->
@@ -273,12 +273,12 @@
                     <option value="e2p">English -> Pinyin</option>
                 </select>
             </div>
-            <button style="width: 100%; margin-top: 5px;" onclick="startQuiz()">Start Session</button>
+            <button id="start-quiz-btn" style="width: 100%; margin-top: 5px;">Start Session</button>
         </div>
 
         <div id="quiz-active" style="display: none;">
             <div class="quiz-header">
-                <span id="exit-btn" style="cursor:pointer; color: var(--error);" onclick="endQuiz()">✕ Exit</span>
+                <span id="exit-btn" style="cursor:pointer; color: var(--error);">✕ Exit</span>
                 <div class="progress-bar-container">
                     <div id="progress-bar" class="progress-bar"></div>
                 </div>
@@ -293,11 +293,11 @@
 
                 <div id="write-container" style="display: none;">
                     <input type="text" id="user-answer" placeholder="Type your answer here..." autocomplete="off">
-                    <button id="submit-btn" style="margin-top: 8px; width: 100%;" onclick="submitWriteAnswer()">Submit Answer</button>
+                    <button id="submit-btn" style="margin-top: 8px; width: 100%;">Submit Answer</button>
                 </div>
 
                 <div id="feedback-area" class="feedback-box"></div>
-                <button id="next-btn" style="margin-top: 10px; width: 100%; display: none;" onclick="nextQuestion()">Next Question ➔</button>
+                <button id="next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Question ➔</button>
             </div>
         </div>
     </div>
@@ -308,7 +308,7 @@
         
         <div class="form-group" style="margin-bottom: 12px;">
             <label>Sentence Quiz Type:</label>
-            <select id="st-type" onchange="loadSentenceCard()">
+            <select id="st-type">
                 <option value="random">🎲 Randomize All Types (Mixed)</option>
                 <option value="e2c">English ➔ Chinese Characters</option>
                 <option value="c2e">Chinese Characters ➔ English</option>
@@ -327,14 +327,14 @@
                     <textarea id="st-user-input" placeholder="Type your translation here..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                    <button style="flex: 1; padding: 8px;" onclick="checkSentenceAnswer()">Submit</button>
-                    <button class="secondary" style="padding: 8px;" onclick="revealSentenceAnswer()">Reveal</button>
+                    <button id="st-submit-btn" style="flex: 1; padding: 8px;">Submit</button>
+                    <button id="st-reveal-btn" class="secondary" style="padding: 8px;">Reveal</button>
                 </div>
             </div>
 
             <div id="st-feedback-box" class="feedback-box"></div>
             
-            <button id="st-next-btn" style="margin-top: 10px; width: 100%; display: none;" onclick="nextSentenceCard()">Next Sentence ➔</button>
+            <button id="st-next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Sentence ➔</button>
         </div>
     </div>
 
@@ -346,7 +346,7 @@
             <div id="tone-prompt" class="prompt-display">--</div>
             <div id="tone-options" class="options-grid"></div>
             <div id="tone-feedback" class="feedback-box"></div>
-            <button id="tone-next-btn" style="margin-top: 10px; width: 100%; display: none;" onclick="loadToneCard()">Next Word ➔</button>
+            <button id="tone-next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Word ➔</button>
         </div>
     </div>
 
@@ -360,7 +360,7 @@
             <div class="form-group" style="margin-bottom: 8px;">
                 <textarea id="bulk-input" placeholder="台灣, Táiwān, Taiwan&#10;學校, xuéxiào, School"></textarea>
             </div>
-            <button onclick="bulkImport()">Import List</button>
+            <button id="bulk-import-btn">Import List</button>
         </div>
 
         <details style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border);">
@@ -377,7 +377,7 @@
                 <label>English:</label>
                 <input type="text" id="input-english" placeholder="e.g., Taiwan">
             </div>
-            <button onclick="addVocab()">Add Word</button>
+            <button id="add-vocab-btn">Add Word</button>
         </details>
 
         <h3 style="margin-top: 20px; font-size: 1rem;">Saved Vocabulary (<span id="vocab-count">0</span>)</h3>
@@ -396,8 +396,8 @@
         </div>
 
         <div class="backup-section">
-            <button class="secondary" style="padding: 8px 12px; font-size: 0.85rem;" onclick="exportVocab()">Export JSON</button>
-            <button class="secondary" style="background-color: var(--error); padding: 8px 12px; font-size: 0.85rem;" onclick="clearAllVocab()">Delete All</button>
+            <button id="export-btn" class="secondary" style="padding: 8px 12px; font-size: 0.85rem;">Export JSON</button>
+            <button id="clear-btn" class="secondary" style="background-color: var(--error); padding: 8px 12px; font-size: 0.85rem;">Delete All</button>
         </div>
     </div>
 
@@ -417,7 +417,7 @@
             { chinese: "我們的學校很大。", pinyin: "Wǒmen de xuéxiào hěn dà.", english: "Our school is very big.", altEnglish: ["our school is huge"], required: ["我們", "的", "學校", "很", "大"] },
             { chinese: "他常常去書店看書。", pinyin: "Tā chángcháng qù shūdiàn kàn shū.", english: "He often goes to the bookstore to read books.", altEnglish: ["he frequently goes to the bookstore to read"], required: ["他", "常常", "去", "書店", "看", "書"] },
             { chinese: "今天天氣非常熱。", pinyin: "Jīntiān tiānqì fēicháng rè.", english: "Today's weather is extremely hot.", altEnglish: ["today weather is extremely hot"], required: ["今天", "非常"] },
-            { chinese: "我有一個兒子和一個女兒。", pinyin: "Wǒ yǒu yīgè érzi hé yīgè nǚ'ér.", english: "I have a son and a daughter.", altEnglish: ["i have one son and one daughter"], required: ["I", "有", "一個", "兒子", "和", "女兒"] },
+            { chinese: "我有一個兒子和一個女兒。", pinyin: "Wǒ yǒu yīgè érzi hé yīgè nǚ'ér.", english: "I have a son and a daughter.", altEnglish: ["i have one son and one daughter"], required: ["我", "有", "一個", "兒子", "和", "女兒"] },
             { chinese: "洗手間在哪裡？", pinyin: "Xǐshǒujiān zài nǎlǐ?", english: "Where is the bathroom?", altEnglish: ["where is the restroom", "where is the toilet"], required: ["洗手間", "在哪裡"] },
             { chinese: "火車快要到了。", pinyin: "Huǒchē kuàiyào dào le.", english: "The train is about to arrive.", altEnglish: ["the train is arriving soon"], required: ["火車"] },
             { chinese: "我想要一杯冰啤酒。", pinyin: "Wǒ xiǎng yào yībēi bīng píjiǔ.", english: "I want a glass of iced beer.", altEnglish: ["i would like a glass of cold beer"], required: ["我", "想", "要", "一杯", "冰", "啤酒"] },
@@ -446,7 +446,7 @@
             { chinese: "這家書店有很多書。", pinyin: "Zhè jiā shūdiàn yǒu hěnduō shū.", english: "This bookstore has a lot of books.", altEnglish: ["this bookstore has many books"], required: ["這", "書店", "有", "書"] },
             { chinese: "我媽媽會做中國菜。", pinyin: "Wǒ māmā huì zuò zhōngguó cài.", english: "My mother can cook Chinese food.", altEnglish: ["my mom can make chinese food"], required: ["我", "做"] },
             { chinese: "火車票已經買好了。", pinyin: "Huǒchēpiào yǐjīng mǎihǎo le.", english: "The train ticket has already been bought.", altEnglish: ["the train ticket is already bought"], required: ["火車", "買"] },
-            { chinese: "你的手機在哪裡？", pinyin: "Nǐ de shǒujī zài nǎlǐ?", english: "Where is your cell phone?", altEnglish: ["where is your mobile phone"], required: ["你", "手機"] },
+            { chinese: "你的手機在哪裡？", pinyin: "Nǐ de shǒujī zài nǎlǐ?", english: "Where is your cell phone?", altEnglish: ["where is your mobile phone"], required: ["Nǐ", "手機"] },
             { chinese: "這杯水太冰了。", pinyin: "Zhè bēi shuǐ tài bīng le.", english: "This glass of water is too iced.", altEnglish: ["this cup of water is too cold"], required: ["這", "杯", "水", "冰"] },
             { chinese: "冬天的時候會下雪。", pinyin: "Dōngtiān de shíhòu huì xiàxuě.", english: "It snows during winter.", altEnglish: ["it will snow in winter"], required: ["冬天", "的時候"] },
             { chinese: "我喜歡秋天的天氣。", pinyin: "Wǒ xǐhuān qiūtiān de tiānqì.", english: "I like autumn weather.", altEnglish: ["i like fall weather"], required: ["我", "喜歡"] },
@@ -561,6 +561,7 @@
             vocabList.splice(index, 1);
             saveVocabToStorage();
             activeSentencePool = [];
+            updateVocabTable();
         }
 
         function clearAllVocab() {
@@ -592,9 +593,16 @@
                     <td>${item.chinese}</td>
                     <td>${item.pinyin}</td>
                     <td>${item.english}</td>
-                    <td><button class="secondary" style="padding: 2px 6px; font-size: 0.8rem; background-color: var(--error);" onclick="deleteVocab(${index})">✕</button></td>
+                    <td><button class="secondary delete-row-btn" data-index="${index}" style="padding: 2px 6px; font-size: 0.8rem; background-color: var(--error);">✕</button></td>
                 `;
                 tbody.appendChild(tr);
+            });
+
+            // Bind dynamic delete buttons
+            document.querySelectorAll('.delete-row-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    deleteVocab(parseInt(e.target.getAttribute('data-index')));
+                });
             });
         }
 
@@ -602,109 +610,12 @@
             return array.sort(() => Math.random() - 0.5);
         }
 
-        // ================= TONE PRACTICE LOGIC =================
-        let currentToneItem = null;
-
-        function generateToneDistractors(correctPinyin) {
-            let options = [correctPinyin];
-            
-            // Helper to mutate tones or similar initials/finals for challenge
-            let mutated1 = correctPinyin.replace(/ā/g, 'á').replace(/ē/g, 'é').replace(/ī/g, 'í').replace(/ō/g, 'ó').replace(/ū/g, 'ú');
-            let mutated2 = correctPinyin.replace(/á/g, 'à').replace(/é/g, 'è').replace(/í/g, 'ì').replace(/ó/g, 'ò').replace(/ú/g, 'ù');
-            let mutated3 = correctPinyin.replace(/à/g, 'ā').replace(/è/g, 'ē').replace(/ì/g, 'ī').replace(/ò/g, 'ō').replace(/ù/g, 'ū');
-
-            if (mutated1 !== correctPinyin && !options.includes(mutated1)) options.push(mutated1);
-            if (mutated2 !== correctPinyin && !options.includes(mutated2)) options.push(mutated2);
-            if (mutated3 !== correctPinyin && !options.includes(mutated3)) options.push(mutated3);
-
-            // Add soundalike initial swaps if available
-            let soundAlike = correctPinyin
-                .replace(/^zh/i, 'z').replace(/^z(?![h])/i, 'zh')
-                .replace(/^ch/i, 'c').replace(/^c(?![h])/i, 'ch')
-                .replace(/^sh/i, 's').replace(/^s(?![h])/i, 'sh')
-                .replace(/^x/i, 'sh').replace(/^q/i, 'j');
-
-            if (soundAlike !== correctPinyin && !options.includes(soundAlike)) {
-                options.push(soundAlike);
-            }
-
-            // Fill up to 4 choices safely from other vocab list items if short
-            while (options.length < 4 && vocabList.length > options.length) {
-                let randomVocab = vocabList[Math.floor(Math.random() * vocabList.length)];
-                if (!options.includes(randomVocab.pinyin)) {
-                    options.push(randomVocab.pinyin);
-                }
-            }
-
-            // Fallback generic tone shifts if list is small
-            while (options.length < 4) {
-                options.push(correctPinyin + (options.length));
-            }
-
-            return shuffle(options.slice(0, 4));
-        }
-
-        function loadToneCard() {
-            const feedback = document.getElementById('tone-feedback');
-            const nextBtn = document.getElementById('tone-next-btn');
-            const optionsContainer = document.getElementById('tone-options');
-            
-            feedback.style.display = 'none';
-            nextBtn.style.display = 'none';
-            optionsContainer.innerHTML = '';
-
-            if (vocabList.length < 4) {
-                document.getElementById('tone-prompt').innerText = "Need 4+ Words";
-                feedback.style.display = 'block';
-                feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `Please add at least 4 words in the <strong>Manage Words</strong> tab to start Tone Practice.`;
-                return;
-            }
-
-            currentToneItem = vocabList[Math.floor(Math.random() * vocabList.length)];
-            
-            // Prompt displays either Chinese character or English translation randomly
-            let showChinese = Math.random() > 0.5;
-            let promptLabel = showChinese ? currentToneItem.chinese : currentToneItem.english;
-            document.getElementById('tone-prompt').innerText = `${promptLabel} (${showChinese ? 'Chinese' : 'English'})`;
-
-            let choices = generateToneDistractors(currentToneItem.pinyin);
-
-            choices.forEach(choice => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerText = choice;
-                btn.onclick = () => checkToneAnswer(choice === currentToneItem.pinyin, currentToneItem.pinyin);
-                optionsContainer.appendChild(btn);
-            });
-        }
-
-        function checkToneAnswer(isCorrect, correctPinyin) {
-            const feedback = document.getElementById('tone-feedback');
-            feedback.style.display = 'block';
-
-            document.querySelectorAll('#tone-options .option-btn').forEach(btn => btn.disabled = true);
-
-            if (isCorrect) {
-                feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = `✨ Correct! Perfect tone and sound selection.`;
-            } else {
-                feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Not Quite Right. The correct pinyin is: <strong>${correctPinyin}</strong>`;
-            }
-
-            document.getElementById('tone-next-btn').style.display = 'block';
-        }
-
-        // ================= SENTENCE TRANSLATION LOGIC =================
         function setSentenceTheme(themeType) {
             let color = '#f97316';
             if (themeType === 'c2e') color = '#f97316';
             else if (themeType === 'p2e' || themeType === 'e2p') color = '#38bdf8';
             document.documentElement.style.setProperty('--theme-color', color);
         }
-
-        let activeSentencePool = [];
 
         function loadSentenceCard() {
             if (activeSentencePool.length === 0) {
@@ -831,8 +742,93 @@
             document.getElementById('st-next-btn').style.display = 'block';
         }
 
-        function nextSentenceCard() {
-            loadSentenceCard();
+        // ================= TONE PRACTICE LOGIC =================
+        let currentToneItem = null;
+
+        function generateToneDistractors(correctPinyin) {
+            let options = [correctPinyin];
+            let mutated1 = correctPinyin.replace(/ā/g, 'á').replace(/ē/g, 'é').replace(/ī/g, 'í').replace(/ō/g, 'ó').replace(/ū/g, 'ú');
+            let mutated2 = correctPinyin.replace(/á/g, 'à').replace(/é/g, 'è').replace(/í/g, 'ì').replace(/ó/g, 'ò').replace(/ú/g, 'ù');
+            let mutated3 = correctPinyin.replace(/à/g, 'ā').replace(/è/g, 'ē').replace(/ì/g, 'ī').replace(/ò/g, 'ō').replace(/ù/g, 'ū');
+
+            if (mutated1 !== correctPinyin && !options.includes(mutated1)) options.push(mutated1);
+            if (mutated2 !== correctPinyin && !options.includes(mutated2)) options.push(mutated2);
+            if (mutated3 !== correctPinyin && !options.includes(mutated3)) options.push(mutated3);
+
+            let soundAlike = correctPinyin
+                .replace(/^zh/i, 'z').replace(/^z(?![h])/i, 'zh')
+                .replace(/^ch/i, 'c').replace(/^c(?![h])/i, 'ch')
+                .replace(/^sh/i, 's').replace(/^s(?![h])/i, 'sh')
+                .replace(/^x/i, 'sh').replace(/^q/i, 'j');
+
+            if (soundAlike !== correctPinyin && !options.includes(soundAlike)) {
+                options.push(soundAlike);
+            }
+
+            while (options.length < 4 && vocabList.length > options.length) {
+                let randomVocab = vocabList[Math.floor(Math.random() * vocabList.length)];
+                if (!options.includes(randomVocab.pinyin)) {
+                    options.push(randomVocab.pinyin);
+                }
+            }
+
+            while (options.length < 4) {
+                options.push(correctPinyin + options.length);
+            }
+
+            return shuffle(options.slice(0, 4));
+        }
+
+        function loadToneCard() {
+            const feedback = document.getElementById('tone-feedback');
+            const nextBtn = document.getElementById('tone-next-btn');
+            const optionsContainer = document.getElementById('tone-options');
+            
+            feedback.style.display = 'none';
+            nextBtn.style.display = 'none';
+            optionsContainer.innerHTML = '';
+
+            if (vocabList.length < 4) {
+                document.getElementById('tone-prompt').innerText = "Need 4+ Words";
+                feedback.style.display = 'block';
+                feedback.className = 'feedback-box feedback-incorrect';
+                feedback.innerHTML = `Please add at least 4 words in the <strong>Manage Words</strong> tab to start Tone Practice.`;
+                return;
+            }
+
+            currentToneItem = vocabList[Math.floor(Math.random() * vocabList.length)];
+            let showChinese = Math.random() > 0.5;
+            let promptLabel = showChinese ? currentToneItem.chinese : currentToneItem.english;
+            document.getElementById('tone-prompt').innerText = `${promptLabel} (${showChinese ? 'Chinese' : 'English'})`;
+
+            let choices = generateToneDistractors(currentToneItem.pinyin);
+
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = choice;
+                btn.addEventListener('click', () => {
+                    checkToneAnswer(choice === currentToneItem.pinyin, currentToneItem.pinyin);
+                });
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkToneAnswer(isCorrect, correctPinyin) {
+            const feedback = document.getElementById('tone-feedback');
+            feedback.style.display = 'block';
+
+            document.querySelectorAll('#tone-options .option-btn').forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                feedback.className = 'feedback-box feedback-correct';
+                feedback.innerHTML = `✨ Correct! Perfect tone and sound selection.`;
+            } else {
+                feedback.className = 'feedback-box feedback-incorrect';
+                feedback.innerHTML = `❌ Not Quite Right. Correct pinyin: <strong>${correctPinyin}</strong>`;
+            }
+
+            document.getElementById('tone-next-btn').style.display = 'block';
         }
 
         // ================= STUDY QUIZ LOGIC =================
@@ -978,7 +974,9 @@
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = choice;
-                btn.onclick = () => checkAnswer(choice === correctAnswer, correctAnswer);
+                btn.addEventListener('click', () => {
+                    checkAnswer(choice === correctAnswer, correctAnswer);
+                });
                 container.appendChild(btn);
             });
         }
@@ -1002,7 +1000,7 @@
                     feedback.innerHTML = '✨ Correct! Moving on...';
                     document.getElementById('submit-btn').disabled = true;
                     quizQueue.shift();
-                    setTimeout(nextQuestion, 1000);
+                    setTimeout(loadQuestion, 1000);
                 } else {
                     feedback.className = 'feedback-box feedback-incorrect';
                     feedback.innerHTML = `❌ Incorrect. Type exact correct answer: <strong>${correctAnswer}</strong>`;
@@ -1034,7 +1032,7 @@
             const feedback = document.getElementById('feedback-area');
             feedback.style.display = 'block';
 
-            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+            document.querySelectorAll('#mc-container .option-btn').forEach(btn => btn.disabled = true);
 
             if (isCorrect) {
                 feedback.className = 'feedback-box feedback-correct';
@@ -1050,11 +1048,37 @@
             document.getElementById('next-btn').style.display = 'block';
         }
 
-        function nextQuestion() {
-            loadQuestion();
-        }
+        // ================= EVENT LISTENER BINDING (GUARANTEED BUTTON EXECUTION) =================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navigation Tabs
+            document.getElementById('nav-quiz').addEventListener('click', () => switchTab('quiz'));
+            document.getElementById('nav-sentences').addEventListener('click', () => switchTab('sentences'));
+            document.getElementById('nav-tones').addEventListener('click', () => switchTab('tones'));
+            document.getElementById('nav-manage').addEventListener('click', () => switchTab('manage'));
 
-        updateVocabTable();
+            // Quiz Buttons
+            document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+            document.getElementById('exit-btn').addEventListener('click', endQuiz);
+            document.getElementById('submit-btn').addEventListener('click', submitWriteAnswer);
+            document.getElementById('next-btn').addEventListener('click', loadQuestion);
+
+            // Sentence Trainer Buttons
+            document.getElementById('st-submit-btn').addEventListener('click', checkSentenceAnswer);
+            document.getElementById('st-reveal-btn').addEventListener('click', revealSentenceAnswer);
+            document.getElementById('st-next-btn').addEventListener('click', loadSentenceCard);
+
+            // Tone Practice Next Button
+            document.getElementById('tone-next-btn').addEventListener('click', loadToneCard);
+
+            // Manage Vocab Buttons
+            document.getElementById('bulk-import-btn').addEventListener('click', bulkImport);
+            document.getElementById('add-vocab-btn').addEventListener('click', addVocab);
+            document.getElementById('export-btn').addEventListener('click', exportVocab);
+            document.getElementById('clear-btn').addEventListener('click', clearAllVocab);
+
+            // Initial Table Populate
+            updateVocabTable();
+        });
     </script>
 </body>
 </html>
