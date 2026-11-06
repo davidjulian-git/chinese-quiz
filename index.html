@@ -21,14 +21,14 @@
             color: var(--text-main);
             max-width: 600px;
             margin: 0 auto;
-            padding: 16px;
+            padding: 10px;
         }
         header {
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
         header h1 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--text-muted);
             margin: 0;
             font-weight: 500;
@@ -36,17 +36,17 @@
         nav {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         nav button {
             background-color: #334155;
             color: var(--text-muted);
             border: none;
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 8px 12px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
         }
         nav button.active-tab {
@@ -57,10 +57,10 @@
             background-color: var(--theme-color);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
+            padding: 10px 16px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             transition: background 0.2s;
         }
@@ -77,51 +77,53 @@
         .tab-content {
             display: none;
             background: var(--card-dark);
-            padding: 24px;
-            border-radius: 20px;
+            padding: 16px;
+            border-radius: 16px;
             border: 1px solid var(--card-border);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.3);
         }
         .tab-content.active {
             display: block;
         }
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 12px;
         }
         label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             font-weight: 600;
+            font-size: 0.9rem;
             color: var(--text-muted);
         }
         input, select, textarea {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             background-color: #0f172a;
             border: 1px solid var(--card-border);
-            border-radius: 10px;
+            border-radius: 8px;
             color: var(--text-main);
-            font-size: 1rem;
+            font-size: 0.95rem;
             box-sizing: border-box;
         }
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--theme-color);
-            box-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
+            box-shadow: 0 0 6px rgba(249, 115, 22, 0.3);
         }
         textarea {
             resize: vertical;
-            height: 100px;
+            height: 70px;
             font-family: monospace;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
+            font-size: 0.9rem;
         }
         th, td {
             border: 1px solid var(--card-border);
-            padding: 10px;
+            padding: 8px;
             text-align: left;
         }
         th {
@@ -131,16 +133,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
             color: var(--text-muted);
         }
         .progress-bar-container {
             flex-grow: 1;
-            margin: 0 15px;
+            margin: 0 10px;
             background: #0f172a;
-            height: 8px;
-            border-radius: 4px;
+            height: 6px;
+            border-radius: 3px;
             overflow: hidden;
         }
         .progress-bar {
@@ -152,45 +154,43 @@
         .quiz-card-box {
             background-color: #0f172a;
             border: 2px solid var(--theme-color);
-            border-radius: 16px;
-            padding: 28px 24px;
+            border-radius: 12px;
+            padding: 16px;
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
             transition: border-color 0.3s;
         }
         .prompt-display {
-            font-size: 2rem;
+            font-size: 1.4rem;
             font-weight: bold;
             color: var(--theme-color);
-            margin: 15px 0 25px 0;
+            margin: 10px 0 15px 0;
             letter-spacing: 0.5px;
             word-break: break-word;
-            transition: color 0.3s;
-            line-height: 1.5;
+            line-height: 1.3;
         }
         .prompt-instruction {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: bold;
             color: var(--theme-color);
-            margin-bottom: 12px;
+            margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: color 0.3s;
         }
         .options-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 12px;
-            margin-top: 15px;
+            gap: 8px;
+            margin-top: 10px;
         }
         .option-btn {
             background-color: #1e293b;
             color: var(--text-main);
             border: 1px solid var(--card-border);
-            padding: 16px;
-            font-size: 1.4rem;
+            padding: 12px;
+            font-size: 1.1rem;
             font-weight: 500;
-            border-radius: 10px;
+            border-radius: 8px;
             text-align: center;
             cursor: pointer;
         }
@@ -199,14 +199,14 @@
             border-color: var(--theme-color);
         }
         .feedback-box {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 12px;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
             font-weight: bold;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             display: none;
             text-align: left;
-            line-height: 1.7;
+            line-height: 1.5;
         }
         .feedback-correct {
             background-color: rgba(34, 197, 94, 0.15);
@@ -219,20 +219,20 @@
             border: 1px solid var(--error);
         }
         .grammar-note {
-            margin-top: 16px;
-            padding-top: 16px;
+            margin-top: 10px;
+            padding-top: 10px;
             border-top: 1px dashed rgba(255,255,255,0.25);
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: normal;
             color: var(--text-main);
-            line-height: 1.8;
+            line-height: 1.4;
         }
         .backup-section {
-            margin-top: 30px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 15px;
             border-top: 1px solid var(--card-border);
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
     </style>
 </head>
@@ -251,7 +251,7 @@
     <!-- QUIZ TAB -->
     <div id="quiz-tab" class="tab-content active">
         <div id="quiz-setup">
-            <h2 style="margin-top:0;">Quiz Settings</h2>
+            <h2 style="margin-top:0; font-size: 1.2rem;">Quiz Settings</h2>
             <div class="form-group">
                 <label>Mode:</label>
                 <select id="quiz-mode">
@@ -271,7 +271,7 @@
                     <option value="e2p">English -> Pinyin</option>
                 </select>
             </div>
-            <button style="width: 100%; margin-top: 10px;" onclick="startQuiz()">Start Session</button>
+            <button style="width: 100%; margin-top: 5px;" onclick="startQuiz()">Start Session</button>
         </div>
 
         <div id="quiz-active" style="display: none;">
@@ -293,69 +293,70 @@
                 <!-- Write-in Container -->
                 <div id="write-container" style="display: none;">
                     <input type="text" id="user-answer" placeholder="Type your answer here..." autocomplete="off">
-                    <button id="submit-btn" style="margin-top: 12px; width: 100%;" onclick="submitWriteAnswer()">Submit Answer</button>
+                    <button id="submit-btn" style="margin-top: 8px; width: 100%;" onclick="submitWriteAnswer()">Submit Answer</button>
                 </div>
 
                 <div id="feedback-area" class="feedback-box"></div>
-                <button id="next-btn" style="margin-top: 20px; width: 100%; display: none;" onclick="nextQuestion()">Next Question</button>
+                <button id="next-btn" style="margin-top: 10px; width: 100%; display: none;" onclick="nextQuestion()">Next Question ➔</button>
             </div>
         </div>
     </div>
 
     <!-- SENTENCE TRANSLATION TAB -->
     <div id="sentences-tab" class="tab-content">
-        <h2 style="margin-top:0;">Sentence Translation Trainer</h2>
+        <h2 style="margin-top:0; font-size: 1.2rem;">Sentence Trainer</h2>
         
-        <div class="form-group" style="margin-bottom: 24px;">
+        <div class="form-group" style="margin-bottom: 12px;">
             <label>Sentence Quiz Type:</label>
             <select id="st-type" onchange="loadSentenceCard()">
-                <option value="random">🎲 Randomize All Sentence Types</option>
+                <option value="random">🎲 Randomize All Types (Mixed)</option>
                 <option value="e2c">English ➔ Chinese Characters</option>
                 <option value="c2e">Chinese Characters ➔ English</option>
                 <option value="p2e">Pinyin ➔ English</option>
+                <option value="e2p">English ➔ Pinyin</option>
             </select>
         </div>
 
         <div id="st-card-box" class="quiz-card-box">
             <div id="st-prompt-label" class="prompt-instruction">Translate the sentence:</div>
-            <div id="st-prompt-text" class="prompt-display" style="font-size: 1.6rem; min-height: 4.5rem; display: flex; align-items: center; justify-content: center; line-height: 1.6; padding: 6px 0;"></div>
+            <div id="st-prompt-text" class="prompt-display" style="min-height: 3.5rem; display: flex; align-items: center; justify-content: center; padding: 4px 0;"></div>
 
             <div id="st-input-section" style="text-align: left;">
-                <div class="form-group" style="margin-bottom: 18px;">
+                <div class="form-group" style="margin-bottom: 10px;">
                     <label id="st-input-label">Your Translation:</label>
-                    <textarea id="st-user-input" placeholder="Type your translation here..." style="height: 100px; line-height: 1.6;"></textarea>
+                    <textarea id="st-user-input" placeholder="Type your translation here..."></textarea>
                 </div>
-                <div style="display: flex; gap: 12px;">
-                    <button style="flex: 1;" onclick="checkSentenceAnswer()">Submit Answer</button>
-                    <button class="secondary" onclick="revealSentenceAnswer()">Reveal</button>
+                <div style="display: flex; gap: 8px;">
+                    <button style="flex: 1; padding: 8px;" onclick="checkSentenceAnswer()">Submit</button>
+                    <button class="secondary" style="padding: 8px;" onclick="revealSentenceAnswer()">Reveal</button>
                 </div>
             </div>
 
             <div id="st-feedback-box" class="feedback-box"></div>
             
-            <button id="st-next-btn" style="margin-top: 20px; width: 100%; display: none;" onclick="nextSentenceCard()">Next Sentence ➔</button>
+            <button id="st-next-btn" style="margin-top: 10px; width: 100%; display: none;" onclick="nextSentenceCard()">Next Sentence ➔</button>
         </div>
     </div>
 
     <!-- MANAGE VOCABULARY TAB -->
     <div id="manage-tab" class="tab-content">
-        <h2 style="margin-top:0;">Manage Vocabulary</h2>
+        <h2 style="margin-top:0; font-size: 1.2rem;">Manage Vocabulary</h2>
         
         <!-- Bulk Import -->
-        <div style="background: #0f172a; padding: 16px; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 20px;">
-            <h3 style="margin-top:0; color:var(--text-main);">Bulk Import Words</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Paste format: <code>Chinese, Pinyin, English</code> (one word per line)</p>
-            <div class="form-group" style="margin-bottom: 10px;">
+        <div style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 15px;">
+            <h3 style="margin-top:0; font-size: 1rem; color:var(--text-main);">Bulk Import Words</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 8px 0;">Format: <code>Chinese, Pinyin, English</code> (one per line)</p>
+            <div class="form-group" style="margin-bottom: 8px;">
                 <textarea id="bulk-input" placeholder="台灣, Táiwān, Taiwan&#10;學校, xuéxiào, School"></textarea>
             </div>
             <button onclick="bulkImport()">Import List</button>
         </div>
 
         <!-- Single Add -->
-        <details style="background: #0f172a; padding: 16px; border-radius: 12px; border: 1px solid var(--card-border);">
-            <summary style="font-weight:600; cursor:pointer; color: var(--text-muted);">Add Single Word Manually</summary>
-            <div class="form-group" style="margin-top: 12px;">
-                <label>Chinese Characters:</label>
+        <details style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border);">
+            <summary style="font-weight:600; cursor:pointer; font-size: 0.9rem; color: var(--text-muted);">Add Single Word Manually</summary>
+            <div class="form-group" style="margin-top: 8px;">
+                <label>Chinese:</label>
                 <input type="text" id="input-chinese" placeholder="e.g., 台灣">
             </div>
             <div class="form-group">
@@ -363,14 +364,14 @@
                 <input type="text" id="input-pinyin" placeholder="e.g., Táiwān">
             </div>
             <div class="form-group">
-                <label>English Translation:</label>
+                <label>English:</label>
                 <input type="text" id="input-english" placeholder="e.g., Taiwan">
             </div>
             <button onclick="addVocab()">Add Word</button>
         </details>
 
-        <h3 style="margin-top: 30px;">Saved Vocabulary (<span id="vocab-count">0</span>)</h3>
-        <div style="max-height: 300px; overflow-y: auto;">
+        <h3 style="margin-top: 20px; font-size: 1rem;">Saved Vocabulary (<span id="vocab-count">0</span>)</h3>
+        <div style="max-height: 200px; overflow-y: auto;">
             <table>
                 <thead>
                     <tr>
@@ -385,8 +386,8 @@
         </div>
 
         <div class="backup-section">
-            <button class="secondary" onclick="exportVocab()">Export JSON</button>
-            <button class="secondary" style="background-color: var(--error);" onclick="clearAllVocab()">Delete All</button>
+            <button class="secondary" style="padding: 8px 12px; font-size: 0.85rem;" onclick="exportVocab()">Export JSON</button>
+            <button class="secondary" style="background-color: var(--error); padding: 8px 12px; font-size: 0.85rem;" onclick="clearAllVocab()">Delete All</button>
         </div>
     </div>
 
@@ -394,7 +395,7 @@
         // Clean blank initial state loaded strictly from localStorage
         let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [];
 
-        // High-Volume Master Sentence Bank with explicit whole-word requirements & English synonyms
+        // Expanded High-Volume Master Sentence Bank (Native Verified HSK Corpus)
         const masterSentenceBank = [
             { chinese: "我今天很累。", pinyin: "Wǒ jīntiān hěn lèi.", english: "I am very tired today.", altEnglish: ["today i am very tired"], required: ["我", "今天", "很", "累"] },
             { chinese: "因為下雨，所以我遲到了。", pinyin: "Yīnwèi xiàyǔ, suǒyǐ wǒ chídào le.", english: "Because it rained, I was late.", altEnglish: ["because it was raining i was late"], required: ["因為", "下雨", "所以", "我", "遲到"] },
@@ -518,7 +519,7 @@
             document.getElementById('input-chinese').value = '';
             document.getElementById('input-pinyin').value = '';
             document.getElementById('input-english').value = '';
-            activeSentencePool = []; // Reset cache to evaluate newly unlocked items
+            activeSentencePool = [];
             alert('Word added successfully!');
         }
 
@@ -544,7 +545,7 @@
             if (addedCount > 0) {
                 saveVocabToStorage();
                 document.getElementById('bulk-input').value = '';
-                activeSentencePool = []; // Reset cache for newly unlocked sentences
+                activeSentencePool = [];
                 alert(`Successfully imported ${addedCount} words! Sentences unlocked accordingly.`);
             } else {
                 alert('Invalid format. Use: Chinese, Pinyin, English');
@@ -586,7 +587,7 @@
                     <td>${item.chinese}</td>
                     <td>${item.pinyin}</td>
                     <td>${item.english}</td>
-                    <td><button class="secondary" style="padding: 4px 8px; background-color: var(--error);" onclick="deleteVocab(${index})">✕</button></td>
+                    <td><button class="secondary" style="padding: 2px 6px; font-size: 0.8rem; background-color: var(--error);" onclick="deleteVocab(${index})">✕</button></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -600,7 +601,7 @@
         function setSentenceTheme(themeType) {
             let color = '#f97316';
             if (themeType === 'c2e') color = '#f97316';
-            else if (themeType === 'p2e') color = '#38bdf8';
+            else if (themeType === 'p2e' || themeType === 'e2p') color = '#38bdf8';
 
             document.documentElement.style.setProperty('--theme-color', color);
         }
@@ -622,7 +623,7 @@
                 inputSection.style.display = 'none';
                 feedbackBox.style.display = 'block';
                 feedbackBox.className = 'feedback-box feedback-incorrect';
-                feedbackBox.innerHTML = `Your active vocabulary list has ${vocabList.length} words. Sentences remain locked until you import the exact required vocabulary words in the <strong>Manage Words</strong> tab.`;
+                feedbackBox.innerHTML = `Your vocabulary list has ${vocabList.length} words. Import required vocabulary in the <strong>Manage Words</strong> tab to unlock sentences.`;
                 document.getElementById('st-next-btn').style.display = 'none';
                 return;
             }
@@ -632,7 +633,7 @@
             currentSentenceObj = activeSentencePool.pop();
             
             const selectedDropdownType = document.getElementById('st-type').value;
-            const availableTypes = ['e2c', 'c2e', 'p2e'];
+            const availableTypes = ['e2c', 'c2e', 'p2e', 'e2p'];
             currentActiveSentenceType = selectedDropdownType === 'random' ? availableTypes[Math.floor(Math.random() * availableTypes.length)] : selectedDropdownType;
             
             const inputLabel = document.getElementById('st-input-label');
@@ -653,6 +654,11 @@
                 promptTextEl.innerText = currentSentenceObj.pinyin;
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
+            } else if (currentActiveSentenceType === 'e2p') {
+                setSentenceTheme('e2p');
+                promptTextEl.innerText = currentSentenceObj.english;
+                inputLabel.innerText = "Your Translation (Pinyin):";
+                document.getElementById('st-user-input').placeholder = "Type Pinyin here...";
             }
 
             document.getElementById('st-user-input').value = '';
@@ -680,6 +686,12 @@
                 if (!isCorrect && currentSentenceObj.altChinese) {
                     isCorrect = currentSentenceObj.altChinese.some(alt => sanitizeAnswer(alt) === cleanUser);
                 }
+            } else if (currentActiveSentenceType === 'e2p' || currentActiveSentenceType === 'p2e') {
+                const cleanTarget = sanitizeAnswer(currentActiveSentenceType === 'e2p' ? currentSentenceObj.pinyin : currentSentenceObj.english);
+                isCorrect = (cleanUser === cleanTarget);
+                if (!isCorrect && currentSentenceObj.altEnglish && currentActiveSentenceType === 'p2e') {
+                    isCorrect = currentSentenceObj.altEnglish.some(alt => sanitizeAnswer(alt) === cleanUser);
+                }
             } else {
                 const cleanEnglish = sanitizeAnswer(currentSentenceObj.english);
                 isCorrect = (cleanUser === cleanEnglish);
@@ -700,7 +712,7 @@
             const feedbackBox = document.getElementById('st-feedback-box');
             feedbackBox.style.display = 'block';
 
-            let targetDisplay = mode === 'e2c' ? `${card.chinese} (${card.pinyin})` : `${card.english} (${card.chinese} - ${card.pinyin})`;
+            let targetDisplay = mode === 'e2c' ? `${card.chinese} (${card.pinyin})` : mode === 'e2p' ? `${card.pinyin}` : `${card.english} (${card.chinese} - ${card.pinyin})`;
 
             if (isCorrect) {
                 feedbackBox.className = 'feedback-box feedback-correct';
@@ -709,7 +721,7 @@
                 feedbackBox.className = 'feedback-box feedback-incorrect';
                 feedbackBox.innerHTML = `
                     ❌ Not Quite Right
-                    <div style="font-size: 1.05rem; margin-top: 10px; font-weight: normal; line-height: 1.7;">
+                    <div style="font-size: 0.9rem; margin-top: 6px; font-weight: normal; line-height: 1.4;">
                         <strong>Correct Answer:</strong> ${targetDisplay}<br>
                         <strong>You wrote:</strong> ${userText}
                     </div>
@@ -891,7 +903,7 @@
                     setTimeout(nextQuestion, 1000);
                 } else {
                     feedback.className = 'feedback-box feedback-incorrect';
-                    feedback.innerHTML = `❌ Incorrect. Please type the exact correct answer: <strong>${correctAnswer}</strong>`;
+                    feedback.innerHTML = `❌ Incorrect. Please type exact correct answer: <strong>${correctAnswer}</strong>`;
                     document.getElementById('user-answer').value = '';
                     document.getElementById('user-answer').focus();
                 }
@@ -910,7 +922,7 @@
             } else {
                 isRetryMode = true;
                 feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}</strong><br><span style="font-size:0.9rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
+                feedback.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}</strong><br><span style="font-size:0.85rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
                 document.getElementById('user-answer').value = '';
                 document.getElementById('user-answer').focus();
             }
