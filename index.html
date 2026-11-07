@@ -36,7 +36,7 @@
         nav {
             display: flex;
             justify-content: center;
-            gap: 5px;
+            gap: 6px;
             margin-bottom: 12px;
             flex-wrap: wrap;
         }
@@ -44,10 +44,10 @@
             background-color: #334155;
             color: var(--text-muted);
             border: none;
-            padding: 8px 8px;
+            padding: 8px 10px;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
         }
         nav button.active-tab {
@@ -162,7 +162,7 @@
             transition: border-color 0.3s;
         }
         .prompt-display {
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             font-weight: bold;
             color: var(--theme-color);
             margin: 10px 0 15px 0;
@@ -246,9 +246,8 @@
     <nav>
         <button id="nav-quiz" class="active-tab">Study Quiz</button>
         <button id="nav-sentences">Sentences</button>
-        <button id="nav-listening">Listening</button>
-        <button id="nav-tones">Tones</button>
-        <button id="nav-manage">Manage</button>
+        <button id="nav-tones">Tone Practice</button>
+        <button id="nav-manage">Manage Words</button>
     </nav>
 
     <!-- QUIZ TAB -->
@@ -290,7 +289,7 @@
                 <div id="prompt-instruction" class="prompt-instruction">Translate this:</div>
                 <div id="prompt-text" class="prompt-display"></div>
                 
-                <div id="mc-container" class="options-grid" style="margin-top: 10px;"></div>
+                <div id="mc-container" class="options-grid"></div>
 
                 <div id="write-container" style="display: none;">
                     <input type="text" id="user-answer" placeholder="Type your answer here..." autocomplete="off">
@@ -336,35 +335,6 @@
             <div id="st-feedback-box" class="feedback-box"></div>
             
             <button id="st-next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Sentence ➔</button>
-        </div>
-    </div>
-
-    <!-- LISTENING PRACTICE TAB -->
-    <div id="listening-tab" class="tab-content">
-        <h2 style="margin-top:0; font-size: 1.2rem;">Listening Dictation (听写)</h2>
-        
-        <div class="form-group" style="margin-bottom: 12px;">
-            <label>Practice Focus:</label>
-            <select id="listening-mode">
-                <option value="comprehension">🎧 Chinese ➔ English Comprehension</option>
-                <option value="dictation">✍️ Chinese Character Dictation</option>
-            </select>
-        </div>
-
-        <div class="quiz-card-box">
-            <div class="prompt-instruction">Target Prompt:</div>
-            <div id="listening-prompt-display" class="prompt-display">--</div>
-            
-            <div id="listening-input-section">
-                <div class="form-group" style="text-align: left; margin-bottom: 10px;">
-                    <label id="listening-input-label">Type your answer:</label>
-                    <input type="text" id="listening-user-input" placeholder="Type answer here..." autocomplete="off">
-                </div>
-                <button id="listening-submit-btn" style="width: 100%;">Submit Answer</button>
-            </div>
-
-            <div id="listening-feedback-box" class="feedback-box"></div>
-            <button id="listening-next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Prompt ➔</button>
         </div>
     </div>
 
@@ -516,7 +486,6 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('nav-quiz').classList.remove('active-tab');
             document.getElementById('nav-sentences').classList.remove('active-tab');
-            document.getElementById('nav-listening').classList.remove('active-tab');
             document.getElementById('nav-tones').classList.remove('active-tab');
             document.getElementById('nav-manage').classList.remove('active-tab');
 
@@ -529,10 +498,6 @@
                 document.getElementById('sentences-tab').classList.add('active');
                 document.getElementById('nav-sentences').classList.add('active-tab');
                 loadSentenceCard();
-            } else if (tabName === 'listening') {
-                document.getElementById('listening-tab').classList.add('active');
-                document.getElementById('nav-listening').classList.add('active-tab');
-                loadListeningCard();
             } else if (tabName === 'tones') {
                 document.getElementById('tones-tab').classList.add('active');
                 document.getElementById('nav-tones').classList.add('active-tab');
@@ -649,79 +614,6 @@
             if (themeType === 'c2e') color = '#f97316';
             else if (themeType === 'p2e' || themeType === 'e2p') color = '#38bdf8';
             document.documentElement.style.setProperty('--theme-color', color);
-        }
-
-        // ================= LISTENING PRACTICE LOGIC =================
-        let currentListeningItem = null;
-
-        function loadListeningCard() {
-            const feedbackBox = document.getElementById('listening-feedback-box');
-            const inputSection = document.getElementById('listening-input-section');
-            const nextBtn = document.getElementById('listening-next-btn');
-            
-            feedbackBox.style.display = 'none';
-            inputSection.style.display = 'block';
-            nextBtn.style.display = 'none';
-            document.getElementById('listening-user-input').value = '';
-
-            let pool = activeSentencePool.length > 0 ? activeSentencePool : masterSentenceBank;
-            currentListeningItem = pool[Math.floor(Math.random() * pool.length)];
-
-            let mode = document.getElementById('listening-mode').value;
-            let labelEl = document.getElementById('listening-input-label');
-            let promptEl = document.getElementById('listening-prompt-display');
-
-            if (mode === 'comprehension') {
-                promptEl.innerText = currentListeningItem.chinese + " (" + currentListeningItem.pinyin + ")";
-                labelEl.innerText = "Type the English meaning:";
-                document.getElementById('listening-user-input').placeholder = "e.g., I am very tired today";
-            } else {
-                promptEl.innerText = currentListeningItem.english;
-                labelEl.innerText = "Type the Chinese characters (听写):";
-                document.getElementById('listening-user-input').placeholder = "e.g., 我今天很累。";
-            }
-        }
-
-        function checkListeningAnswer() {
-            const userText = document.getElementById('listening-user-input').value.trim();
-            if (!userText) return;
-
-            const mode = document.getElementById('listening-mode').value;
-            let isCorrect = false;
-            const cleanUser = sanitizeAnswer(userText);
-
-            if (mode === 'comprehension') {
-                const cleanEnglish = sanitizeAnswer(currentListeningItem.english);
-                isCorrect = (cleanUser === cleanEnglish);
-                if (!isCorrect && currentListeningItem.altEnglish) {
-                    isCorrect = currentListeningItem.altEnglish.some(alt => sanitizeAnswer(alt) === cleanUser);
-                }
-            } else {
-                const cleanChinese = sanitizeAnswer(currentListeningItem.chinese);
-                isCorrect = (cleanUser === cleanChinese);
-            }
-
-            const feedbackBox = document.getElementById('listening-feedback-box');
-            document.getElementById('listening-input-section').style.display = 'none';
-            feedbackBox.style.display = 'block';
-
-            let targetDisplay = `${currentListeningItem.chinese} (${currentListeningItem.pinyin}) - ${currentListeningItem.english}`;
-
-            if (isCorrect) {
-                feedbackBox.className = 'feedback-box feedback-correct';
-                feedbackBox.innerHTML = `✨ Correct! 太棒了！<div class="grammar-note"><strong>Target:</strong> ${targetDisplay}</div>`;
-            } else {
-                feedbackBox.className = 'feedback-box feedback-incorrect';
-                feedbackBox.innerHTML = `
-                    ❌ Not Quite Right
-                    <div style="font-size: 0.9rem; margin-top: 6px; font-weight: normal; line-height: 1.4;">
-                        <strong>Correct Target:</strong> ${targetDisplay}<br>
-                        <strong>You wrote:</strong> ${userText}
-                    </div>
-                `;
-            }
-
-            document.getElementById('listening-next-btn').style.display = 'block';
         }
 
         // ================= SENTENCE TRANSLATION LOGIC =================
@@ -1181,7 +1073,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('nav-quiz').addEventListener('click', () => switchTab('quiz'));
             document.getElementById('nav-sentences').addEventListener('click', () => switchTab('sentences'));
-            document.getElementById('nav-listening').addEventListener('click', () => switchTab('listening'));
             document.getElementById('nav-tones').addEventListener('click', () => switchTab('tones'));
             document.getElementById('nav-manage').addEventListener('click', () => switchTab('manage'));
 
@@ -1193,9 +1084,6 @@
             document.getElementById('st-submit-btn').addEventListener('click', checkSentenceAnswer);
             document.getElementById('st-reveal-btn').addEventListener('click', revealSentenceAnswer);
             document.getElementById('st-next-btn').addEventListener('click', loadSentenceCard);
-
-            document.getElementById('listening-submit-btn').addEventListener('click', checkListeningAnswer);
-            document.getElementById('listening-next-btn').addEventListener('click', loadListeningCard);
 
             document.getElementById('tone-next-btn').addEventListener('click', loadToneCard);
 
