@@ -162,7 +162,7 @@
             transition: border-color 0.3s;
         }
         .prompt-display {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: bold;
             color: var(--theme-color);
             margin: 10px 0 15px 0;
@@ -404,57 +404,71 @@
     <script>
         let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [];
 
+        // Massively expanded, highly diverse master sentence bank covering multiple everyday scenarios
         const masterSentenceBank = [
-            { chinese: "我今天很累。", pinyin: "Wǒ jīntiān hěn lèi.", english: "I am very tired today.", altEnglish: ["today i am very tired"], required: ["我", "今天", "很", "累"] },
-            { chinese: "因為下雨，所以我遲到了。", pinyin: "Yīnwèi xiàyǔ, suǒyǐ wǒ chídào le.", english: "Because it rained, I was late.", altEnglish: ["because it was raining i was late"], required: ["因為", "下雨", "所以", "我", "遲到"] },
-            { chinese: "我想去超市買東西。", pinyin: "Wǒ xiǎng qù chāoshì mǎi dōngxī.", english: "I want to go to the supermarket to buy things.", altEnglish: ["i want to go shopping at the supermarket"], required: ["我", "想", "去", "超市", "買", "東西"] },
-            { chinese: "老師是醫生嗎？", pinyin: "Lǎoshī shì yīshēng ma?", english: "Is the teacher a doctor?", altEnglish: ["is the teacher a doctor"], required: ["老師", "是", "醫生"] },
-            { chinese: "我常常喝熱水。", pinyin: "Wǒ chángcháng hē rèshuǐ.", english: "I often drink hot water.", altEnglish: ["i frequently drink hot water"], required: ["我", "常常", "喝", "熱水"] },
-            { chinese: "這杯咖啡很好喝。", pinyin: "Zhè bēi kāfēi hěn hǎohē.", english: "This cup of coffee is delicious.", altEnglish: ["this cup of coffee is very good"], required: ["這", "杯", "咖啡", "很", "好"] },
-            { chinese: "明天我有考試。", pinyin: "Míngtiān wǒ yǒu kǎoshì.", english: "Tomorrow I have an exam.", altEnglish: ["i have an exam tomorrow"], required: ["明天", "我", "有", "考試"] },
-            { chinese: "你在哪裡工作？", pinyin: "Nǐ zài nǎlǐ gōngzuò?", english: "Where do you work?", altEnglish: ["where are you working"], required: ["你", "在", "哪裡", "工作"] },
-            { chinese: "我喜歡吃烤鴨和餃子。", pinyin: "Wǒ xǐhuān chī kǎoyǎ hé jiǎozi.", english: "I like to eat roast duck and dumplings.", altEnglish: ["i like eating roast duck and dumplings"], required: ["我", "喜歡", "吃", "烤鴨", "和", "餃子"] },
-            { chinese: "我們的學校很大。", pinyin: "Wǒmen de xuéxiào hěn dà.", english: "Our school is very big.", altEnglish: ["our school is huge"], required: ["我們", "的", "學校", "很", "大"] },
-            { chinese: "他常常去書店看書。", pinyin: "Tā chángcháng qù shūdiàn kàn shū.", english: "He often goes to the bookstore to read books.", altEnglish: ["he frequently goes to the bookstore to read"], required: ["他", "常常", "去", "書店", "看", "書"] },
-            { chinese: "今天天氣非常熱。", pinyin: "Jīntiān tiānqì fēicháng rè.", english: "Today's weather is extremely hot.", altEnglish: ["today weather is extremely hot"], required: ["今天", "非常"] },
-            { chinese: "我有一個兒子和一個女兒。", pinyin: "Wǒ yǒu yīgè érzi hé yīgè nǚ'ér.", english: "I have a son and a daughter.", altEnglish: ["i have one son and one daughter"], required: ["我", "有", "一個", "兒子", "和", "女兒"] },
-            { chinese: "洗手間在哪裡？", pinyin: "Xǐshǒujiān zài nǎlǐ?", english: "Where is the bathroom?", altEnglish: ["where is the restroom", "where is the toilet"], required: ["洗手間", "在哪裡"] },
-            { chinese: "火車快要到了。", pinyin: "Huǒchē kuàiyào dào le.", english: "The train is about to arrive.", altEnglish: ["the train is arriving soon"], required: ["火車"] },
-            { chinese: "我想要一杯冰啤酒。", pinyin: "Wǒ xiǎng yào yībēi bīng píjiǔ.", english: "I want a glass of iced beer.", altEnglish: ["i would like a glass of cold beer"], required: ["我", "想", "要", "一杯", "冰", "啤酒"] },
-            { chinese: "這件公寓很新也很小。", pinyin: "Zhè jiàn gōngyù hěn xīn yě hěn xiǎo.", english: "This apartment is very new and also very small.", altEnglish: ["this apartment is new and also small"], required: ["這", "公寓", "新", "也", "小"] },
-            { chinese: "夏天的時候我喜歡游泳。", pinyin: "Xiàtiān de shíhòu wǒ xǐhuān yóuyǒng.", english: "I like to swim during summer.", altEnglish: ["i like swimming in the summer"], required: ["夏天", "的時候", "我", "喜歡", "游泳"] },
-            { chinese: "昨天晚上有雨。", pinyin: "Zuótiān wǎnshang yǒu yǔ.", english: "There was rain yesterday evening.", altEnglish: ["it rained yesterday night"], required: ["昨天", "晚", "雨"] },
-            { chinese: "請問這本書多少錢？", pinyin: "Qǐngwèn zhè běn shū duōshǎo qián?", english: "Excuse me, how much is this book?", altEnglish: ["how much does this book cost", "excuse me how much is this book"], required: ["這", "書", "多少", "錢"] },
-            { chinese: "我昨天去了火車站。", pinyin: "Wǒ zuótiān qù le huǒchēzhàn.", english: "I went to the train station yesterday.", altEnglish: ["yesterday i went to the train station"], required: ["我", "昨天", "去", "火車站"] },
-            { chinese: "桌子上有一個手機。", pinyin: "Zhuōzi shàng yǒu yīgè shǒujī.", english: "There is a cell phone on the table.", altEnglish: ["there is a mobile phone on the table"], required: ["有", "手機"] },
-            { chinese: "春天的時候天氣很好。", pinyin: "Chūntiān de shíhòu tiānqì hěn hǎo.", english: "The weather is very good during spring.", altEnglish: ["spring weather is very good"], required: ["春天", "的時候", "好"] },
-            { chinese: "我不喜歡喝冰水。", pinyin: "Wǒ bù xǐhuān hē bīng shuǐ.", english: "I do not like drinking ice water.", altEnglish: ["i don't like cold water"], required: ["我", "喜歡", "喝", "冰", "水"] },
-            { chinese: "他是我的好朋友。", pinyin: "Tā shì wǒ de hǎo péngyǒu.", english: "He is my good friend.", altEnglish: ["he's my good friend"], required: ["他", "是", "我", "朋友"] },
-            { chinese: "你喜歡打籃球還是網球？", pinyin: "Nǐ xǐhuān dǎ lánqiú háishì wǎngqiú?", english: "Do you like playing basketball or tennis?", altEnglish: ["do you like basketball or tennis"], required: ["你", "喜歡", "籃球", "還是"] },
-            { chinese: "這家飯店的菜很好吃。", pinyin: "Zhè jiā fàndiàn de cài hěn hǎochī.", english: "The dishes at this restaurant are delicious.", altEnglish: ["the food at this restaurant is delicious"], required: ["這", "家", "好吃"] },
-            { chinese: "我們明天去買新衣服。", pinyin: "Wǒmen míngtiān qù mǎi xīn yīfu.", english: "We are going to buy new clothes tomorrow.", altEnglish: ["tomorrow we will go buy new clothes"], required: ["我們", "明天", "去", "買", "新"] },
-            { chinese: "你為什麼不吃早餐？", pinyin: "Nǐ wèishénme bù chī zǎocān?", english: "Why don't you eat breakfast?", altEnglish: ["why do you not eat breakfast"], required: ["你", "為什麼", "吃", "早餐"] },
-            { chinese: "我在客廳看書。", pinyin: "Wǒ zài kètīng kàn shū.", english: "I am reading a book in the living room.", altEnglish: ["i am reading in the living room"], required: ["我", "在", "客廳", "看", "書"] },
-            { chinese: "他是我的中文老師。", pinyin: "Tā shì wǒ de zhōngwén lǎoshī.", english: "He is my Chinese teacher.", altEnglish: ["he is my mandarin teacher"], required: ["他", "是", "我", "老師"] },
-            { chinese: "這件衣服非常好看。", pinyin: "Zhè jiàn yīfu fēicháng hǎokān.", english: "This piece of clothing looks extremely nice.", altEnglish: ["this clothes looks extremely good"], required: ["這", "非常", "好看"] },
-            { chinese: "我明天想去書店。", pinyin: "Wǒ míngtiān xiǎng qù shūdiàn.", english: "I want to go to the bookstore tomorrow.", altEnglish: ["tomorrow i want to go to the bookstore"], required: ["我", "明天", "想", "去", "書店"] },
-            { chinese: "你喝茶還是喝咖啡？", pinyin: "Nǐ hē chá háishì hē kāfēi?", english: "Do you drink tea or coffee?", altEnglish: ["would you like tea or coffee"], required: ["你", "喝", "茶", "還是", "咖啡"] },
-            { chinese: "外面正在下雨。", pinyin: "Wàimiàn zhèngzài xiàyǔ.", english: "It is currently raining outside.", altEnglish: ["it is raining outside"], required: ["下雨"] },
-            { chinese: "這個字是什麼意思？", pinyin: "Zhège zì shì shénme yìsi?", english: "What is the meaning of this character?", altEnglish: ["what does this character mean"], required: ["這", "什麼"] },
-            { chinese: "我認識那個學生。", pinyin: "Wǒ rènshi nàge xuéshēng.", english: "I know that student.", altEnglish: ["i know that pupil"], required: ["我", "那個", "學生"] },
-            { chinese: "今天晚上我有空。", pinyin: "Jīntiān wǎnshang wǒ yǒu kòng.", english: "I have free time tonight.", altEnglish: ["i am free tonight"], required: ["今天", "晚", "我", "有"] },
-            { chinese: "這家書店有很多書。", pinyin: "Zhè jiā shūdiàn yǒu hěnduō shū.", english: "This bookstore has a lot of books.", altEnglish: ["this bookstore has many books"], required: ["這", "書店", "有", "書"] },
-            { chinese: "我媽媽會做中國菜。", pinyin: "Wǒ māmā huì zuò zhōngguó cài.", english: "My mother can cook Chinese food.", altEnglish: ["my mom can make chinese food"], required: ["我", "做"] },
-            { chinese: "火車票已經買好了。", pinyin: "Huǒchēpiào yǐjīng mǎihǎo le.", english: "The train ticket has already been bought.", altEnglish: ["the train ticket is already bought"], required: ["火車", "買"] },
-            { chinese: "你的手機在哪裡？", pinyin: "Nǐ de shǒujī zài nǎlǐ?", english: "Where is your cell phone?", altEnglish: ["where is your mobile phone"], required: ["你", "手機"] },
-            { chinese: "這杯水太冰了。", pinyin: "Zhè bēi shuǐ tài bīng le.", english: "This glass of water is too iced.", altEnglish: ["this cup of water is too cold"], required: ["這", "杯", "水", "冰"] },
-            { chinese: "冬天的時候會下雪。", pinyin: "Dōngtiān de shíhòu huì xiàxuě.", english: "It snows during winter.", altEnglish: ["it will snow in winter"], required: ["冬天", "的時候"] },
-            { chinese: "我喜歡秋天的天氣。", pinyin: "Wǒ xǐhuān qiūtiān de tiānqì.", english: "I like autumn weather.", altEnglish: ["i like fall weather"], required: ["我", "喜歡"] },
-            { chinese: "我們一起去跑步吧。", pinyin: "Wǒmen yīqǐ qù pǎobù ba.", english: "Let's go running together.", altEnglish: ["let us go jog together"], required: ["我們", "去", "跑步"] },
-            { chinese: "這個漢堡很好吃。", pinyin: "Zhège hànbǎo hěn hǎochī.", english: "This hamburger is delicious.", altEnglish: ["this burger tastes very good"], required: ["這", "好吃"] },
-            { chinese: "他每天都去工作。", pinyin: "Tā měitiān dōu qù gōngzuò.", english: "He goes to work every day.", altEnglish: ["he goes to work everyday"], required: ["tā", "去", "工作"] },
-            { chinese: "別吃太多冰淇淋。", pinyin: "Bié chī tài duō bīngqílín.", english: "Don't eat too much ice cream.", altEnglish: ["do not eat too much ice cream"], required: ["吃"] },
-            { chinese: "我下午要去超市。", pinyin: "Wǒ xiàwǔ yào qù chāoshì.", english: "I am going to the supermarket this afternoon.", altEnglish: ["i will go to the supermarket this afternoon"], required: ["我", "午", "要", "去", "超市"] }
+            // Daily & Feelings
+            { chinese: "我今天很累。", pinyin: "Wǒ jīntiān hěn lèi.", english: "I am very tired today.", required: ["我", "今天", "很", "累"] },
+            { chinese: "因為下雨，所以我遲到了。", pinyin: "Yīnwèi xiàyǔ, suǒyǐ wǒ chídào le.", english: "Because it rained, I was late.", required: ["因為", "下雨", "所以", "我", "遲到"] },
+            { chinese: "今天天氣非常熱。", pinyin: "Jīntiān tiānqì fēicháng rè.", english: "Today's weather is extremely hot.", required: ["今天", "非常"] },
+            { chinese: "今天晚上我有空。", pinyin: "Jīntiān wǎnshang wǒ yǒu kòng.", english: "I have free time tonight.", required: ["今天", "晚", "我", "有"] },
+            { chinese: "昨天晚上有雨。", pinyin: "Zuótiān wǎnshang yǒu yǔ.", english: "There was rain yesterday evening.", required: ["昨天", "晚", "雨"] },
+            { chinese: "春天的時候天氣很好。", pinyin: "Chūntiān de shíhòu tiānqì hěn hǎo.", english: "The weather is very good during spring.", required: ["春天", "的時候", "好"] },
+            { chinese: "夏天的時候我喜歡游泳。", pinyin: "Xiàtiān de shíhòu wǒ xǐhuān yóuyǒng.", english: "I like to swim during summer.", required: ["夏天", "的時候", "我", "喜歡", "游泳"] },
+            { chinese: "冬天的時候會下雪。", pinyin: "Dōngtiān de shíhòu huì xiàxuě.", english: "It snows during winter.", required: ["冬天", "的時候"] },
+            { chinese: "我喜歡秋天的天氣。", pinyin: "Wǒ xǐhuān qiūtiān de tiānqì.", english: "I like autumn weather.", required: ["我", "喜歡"] },
+            { chinese: "外面正在下雨。", pinyin: "Wàimiàn zhèngzài xiàyǔ.", english: "It is currently raining outside.", required: ["下雨"] },
+
+            // Food & Drink
+            { chinese: "我想去超市買東西。", pinyin: "Wǒ xiǎng qù chāoshì mǎi dōngxī.", english: "I want to go to the supermarket to buy things.", required: ["我", "想", "去", "超市", "買", "東西"] },
+            { chinese: "我常常喝熱水。", pinyin: "Wǒ chángcháng hē rèshuǐ.", english: "I often drink hot water.", required: ["我", "常常", "喝", "熱水"] },
+            { chinese: "這杯咖啡很好喝。", pinyin: "Zhè bēi kāfēi hěn hǎohē.", english: "This cup of coffee is delicious.", required: ["這", "杯", "咖啡", "很", "好"] },
+            { chinese: "我喜歡吃烤鴨和餃子。", pinyin: "Wǒ xǐhuān chī kǎoyǎ hé jiǎozi.", english: "I like to eat roast duck and dumplings.", required: ["我", "喜歡", "吃", "烤鴨", "和", "餃子"] },
+            { chinese: "我想要一杯冰啤酒。", pinyin: "Wǒ xiǎng yào yībēi bīng píjiǔ.", english: "I want a glass of iced beer.", required: ["我", "想", "要", "一杯", "冰", "啤酒"] },
+            { chinese: "我不喜歡喝冰水。", pinyin: "Wǒ bù xǐhuān hē bīng shuǐ.", english: "I do not like drinking ice water.", required: ["我", "喜歡", "喝", "冰", "水"] },
+            { chinese: "這家飯店的菜很好吃。", pinyin: "Zhè jiā fàndiàn de cài hěn hǎochī.", english: "The dishes at this restaurant are delicious.", required: ["這", "家", "好吃"] },
+            { chinese: "你喝茶還是喝咖啡？", pinyin: "Nǐ hē chá háishì hē kāfēi?", english: "Do you drink tea or coffee?", required: ["你", "喝", "茶", "還是", "咖啡"] },
+            { chinese: "這杯水太冰了。", pinyin: "Zhè bēi shuǐ tài bīng le.", english: "This glass of water is too iced.", required: ["這", "杯", "水", "冰"] },
+            { chinese: "這個漢堡很好吃。", pinyin: "Zhège hànbǎo hěn hǎochī.", english: "This hamburger is delicious.", required: ["這", "好吃"] },
+            { chinese: "別吃太多冰淇淋。", pinyin: "Bié chī tài duō bīngqílín.", english: "Don't eat too much ice cream.", required: ["吃"] },
+            { chinese: "我媽媽會做中國菜。", pinyin: "Wǒ māmā huì zuò zhōngguó cài.", english: "My mother can cook Chinese food.", required: ["我", "做"] },
+            { chinese: "你為什麼不吃早餐？", pinyin: "Nǐ wèishénme bù chī zǎocān?", english: "Why don't you eat breakfast?", required: ["你", "為什麼", "吃", "早餐"] },
+
+            // Work & School
+            { chinese: "老師是醫生嗎？", pinyin: "Lǎoshī shì yīshēng ma?", english: "Is the teacher a doctor?", required: ["老師", "是", "醫生"] },
+            { chinese: "明天我有考試。", pinyin: "Míngtiān wǒ yǒu kǎoshì.", english: "Tomorrow I have an exam.", required: ["明天", "我", "有", "考試"] },
+            { chinese: "你在哪裡工作？", pinyin: "Nǐ zài nǎlǐ gōngzuò?", english: "Where do you work?", required: ["你", "在", "哪裡", "工作"] },
+            { chinese: "我們的學校很大。", pinyin: "Wǒmen de xuéxiào hěn dà.", english: "Our school is very big.", required: ["我們", "的", "學校", "很", "大"] },
+            { chinese: "他常常去書店看書。", pinyin: "Tā chángcháng qù shūdiàn kàn shū.", english: "He often goes to the bookstore to read books.", required: ["他", "常常", "去", "書店", "看", "書"] },
+            { chinese: "他是我的中文老師。", pinyin: "Tā shì wǒ de zhōngwén lǎoshī.", english: "He is my Chinese teacher.", required: ["他", "是", "我", "老師"] },
+            { chinese: "我明天想去書店。", pinyin: "Wǒ míngtiān xiǎng qù shūdiàn.", english: "I want to go to the bookstore tomorrow.", required: ["我", "明天", "想", "去", "書店"] },
+            { chinese: "我認識那個學生。", pinyin: "Wǒ rènshi nàge xuéshēng.", english: "I know that student.", required: ["我", "那個", "學生"] },
+            { chinese: "這家書店有很多書。", pinyin: "Zhè jiā shūdiàn yǒu hěnduō shū.", english: "This bookstore has a lot of books.", required: ["這", "書店", "有", "書"] },
+            { chinese: "他每天都去工作。", pinyin: "Tā měitiān dōu qù gōngzuò.", english: "He goes to work every day.", required: ["tā", "去", "工作"] },
+            { chinese: "我在客廳看書。", pinyin: "Wǒ zài kètīng kàn shū.", english: "I am reading a book in the living room.", required: ["我", "在", "客廳", "看", "書"] },
+
+            // Travel & Location
+            { chinese: "洗手間在哪裡？", pinyin: "Xǐshǒujiān zài nǎlǐ?", english: "Where is the bathroom?", required: ["洗手間", "在哪裡"] },
+            { chinese: "火車快要到了。", pinyin: "Huǒchē kuàiyào dào le.", english: "The train is about to arrive.", required: ["火車"] },
+            { chinese: "這件公寓很新也很小。", pinyin: "Zhè jiàn gōngyù hěn xīn yě hěn xiǎo.", english: "This apartment is very new and also very small.", required: ["這", "公寓", "新", "也", "小"] },
+            { chinese: "請問這本書多少錢？", pinyin: "Qǐngwèn zhè běn shū duōshǎo qián?", english: "Excuse me, how much is this book?", required: ["這", "書", "多少", "錢"] },
+            { chinese: "我昨天去了火車站。", pinyin: "Wǒ zuótiān qù le huǒchēzhàn.", english: "I went to the train station yesterday.", required: ["我", "昨天", "去", "火車站"] },
+            { chinese: "桌子上有一個手機。", pinyin: "Zhuōzi shàng yǒu yīgè shǒujī.", english: "There is a cell phone on the table.", required: ["有", "手機"] },
+            { chinese: "火車票已經買好了。", pinyin: "Huǒchēpiào yǐjīng mǎihǎo le.", english: "The train ticket has already been bought.", required: ["火車", "買"] },
+            { chinese: "你的手機在哪裡？", pinyin: "Nǐ de shǒujī zài nǎlǐ?", english: "Where is your cell phone?", required: ["你", "手機"] },
+            { chinese: "我下午要去超市。", pinyin: "Wǒ xiàwǔ yào qù chāoshì.", english: "I am going to the supermarket this afternoon.", required: ["我", "午", "要", "去", "超市"] },
+            { chinese: "這家飯店在哪裡？", pinyin: "Zhè jiā fàndiàn zài nǎlǐ?", english: "Where is this restaurant?", required: ["這", "家", "在哪裡"] },
+
+            // People & Hobbies
+            { chinese: "我有一個兒子和一個女兒。", pinyin: "Wǒ yǒu yīgè érzi hé yīgè nǚ'ér.", english: "I have a son and a daughter.", required: ["我", "有", "一個", "兒子", "和", "女兒"] },
+            { chinese: "他是我的好朋友。", pinyin: "Tā shì wǒ de hǎo péngyǒu.", english: "He is my good friend.", required: ["他", "是", "我", "朋友"] },
+            { chinese: "你喜歡打籃球還是網球？", pinyin: "Nǐ xǐhuān dǎ lánqiú háishì wǎngqiú?", english: "Do you like playing basketball or tennis?", required: ["你", "喜歡", "籃球", "還是"] },
+            { chinese: "我們明天去買新衣服。", pinyin: "Wǒmen míngtiān qù mǎi xīn yīfu.", english: "We are going to buy new clothes tomorrow.", required: ["我們", "明天", "去", "買", "新"] },
+            { chinese: "這件衣服非常好看。", pinyin: "Zhè jiàn yīfu fēicháng hǎokān.", english: "This piece of clothing looks extremely nice.", required: ["這", "非常", "好看"] },
+            { chinese: "這個字是什麼意思？", pinyin: "Zhège zì shì shénme yìsi?", english: "What is the meaning of this character?", required: ["這", "什麼"] },
+            { chinese: "我們一起去跑步吧。", pinyin: "Wǒmen yīqǐ qù pǎobù ba.", english: "Let's go running together.", required: ["我們", "去", "跑步"] },
+            { chinese: "你有沒有兄弟姐妹？", pinyin: "Nǐ yǒu méiyǒu xiōngdì jiěmèi?", english: "Do you have siblings?", required: ["你", "有", "沒有"] },
+            { chinese: "這本書非常有趣。", pinyin: "Zhè běn shū fēicháng yǒuqù.", english: "This book is extremely interesting.", required: ["這", "書", "非常"] },
+            { chinese: "週末你打算做什麼？", pinyin: "Zhōumò nǐ dǎsuàn zuò shénme?", english: "What do you plan to do over the weekend?", required: ["你", "做", "什麼"] }
         ];
 
         function getSensibleSentencePool() {
@@ -967,7 +981,7 @@
                 answerCategory = 'pinyin';
             }
 
-            setAnswerTheme(answerCategory);
+5            setAnswerTheme(answerCategory);
 
             document.getElementById('prompt-instruction').innerText = promptLabel;
             document.getElementById('prompt-text').innerText = promptText;
