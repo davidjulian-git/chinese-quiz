@@ -1083,7 +1083,7 @@
             document.getElementById('next-btn').style.display = 'block';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        function initApp() {
             document.getElementById('nav-quiz').addEventListener('click', () => switchTab('quiz'));
             document.getElementById('nav-sentences').addEventListener('click', () => switchTab('sentences'));
             document.getElementById('nav-tones').addEventListener('click', () => switchTab('tones'));
@@ -1106,7 +1106,13 @@
             document.getElementById('clear-btn').addEventListener('click', clearAllVocab);
 
             updateVocabTable();
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
     </script>
 </body>
 </html>
