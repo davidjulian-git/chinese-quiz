@@ -404,7 +404,6 @@
     <script>
         let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [];
 
-        // Massively expanded, highly diverse master sentence bank covering multiple everyday scenarios
         const masterSentenceBank = [
             // Daily & Feelings
             { chinese: "我今天很累。", pinyin: "Wǒ jīntiān hěn lèi.", english: "I am very tired today.", required: ["我", "今天", "很", "累"] },
@@ -443,7 +442,7 @@
             { chinese: "我明天想去書店。", pinyin: "Wǒ míngtiān xiǎng qù shūdiàn.", english: "I want to go to the bookstore tomorrow.", required: ["我", "明天", "想", "去", "書店"] },
             { chinese: "我認識那個學生。", pinyin: "Wǒ rènshi nàge xuéshēng.", english: "I know that student.", required: ["我", "那個", "學生"] },
             { chinese: "這家書店有很多書。", pinyin: "Zhè jiā shūdiàn yǒu hěnduō shū.", english: "This bookstore has a lot of books.", required: ["這", "書店", "有", "書"] },
-            { chinese: "他每天都去工作。", pinyin: "Tā měitiān dōu qù gōngzuò.", english: "He goes to work every day.", required: ["tā", "去", "工作"] },
+            { chinese: "他每天都去工作。", pinyin: "Tā měitiān dōu qù gōngzuò.", english: "He goes to work every day.", required: ["他", "去", "工作"] },
             { chinese: "我在客廳看書。", pinyin: "Wǒ zài kètīng kàn shū.", english: "I am reading a book in the living room.", required: ["我", "在", "客廳", "看", "書"] },
 
             // Travel & Location
@@ -981,7 +980,7 @@
                 answerCategory = 'pinyin';
             }
 
-5            setAnswerTheme(answerCategory);
+            setAnswerTheme(answerCategory);
 
             document.getElementById('prompt-instruction').innerText = promptLabel;
             document.getElementById('prompt-text').innerText = promptText;
