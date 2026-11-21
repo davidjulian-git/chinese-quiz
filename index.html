@@ -131,6 +131,26 @@
         th {
             background-color: #0f172a;
         }
+        .skill-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px 6px;
+            min-width: 150px;
+        }
+        .skill-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .skill-item select {
+            width: auto;
+            padding: 2px 4px;
+            font-size: 0.72rem;
+            border-radius: 6px;
+        }
         .quiz-header {
             display: flex;
             justify-content: space-between;
@@ -351,7 +371,7 @@
             </div>
 
             <div class="quiz-card-box" id="quiz-card-box">
-                <div id="quiz-mastery-badge" class="mastery-badge">Confidence: Unfamiliar</div>
+                <div id="quiz-mastery-badge" class="mastery-badge">Char: 0: Unfamiliar</div>
                 <div id="prompt-instruction" class="prompt-instruction">Translate this:</div>
                 <div id="prompt-text" class="prompt-display"></div>
                 
@@ -365,7 +385,7 @@
                 <div id="feedback-area" class="feedback-box"></div>
 
                 <div class="confidence-panel">
-                    <div class="confidence-label">How well do you know this word?</div>
+                    <div id="quiz-conf-label" class="confidence-label">How well do you know this word (Characters)?</div>
                     <div class="confidence-buttons">
                         <button type="button" class="conf-btn" data-level="0">0: New</button>
                         <button type="button" class="conf-btn" data-level="1">1: Shaky</button>
@@ -419,7 +439,7 @@
     <div id="tones-tab" class="tab-content">
         <h2 style="margin-top:0; font-size: 1.2rem;">Tone & Sound Practice</h2>
         <div class="quiz-card-box">
-            <div id="tone-mastery-badge" class="mastery-badge">Confidence: Unfamiliar</div>
+            <div id="tone-mastery-badge" class="mastery-badge">Tone: 0: Unfamiliar</div>
             <div class="prompt-instruction">Identify the correct pinyin:</div>
             <div id="tone-prompt" class="prompt-display">--</div>
             <div id="tone-options" class="options-grid"></div>
@@ -459,14 +479,14 @@
         </details>
 
         <h3 style="margin-top: 20px; font-size: 1rem;">Saved Vocabulary (<span id="vocab-count">0</span>)</h3>
-        <div style="max-height: 240px; overflow-y: auto;">
+        <div style="max-height: 260px; overflow-y: auto;">
             <table>
                 <thead>
                     <tr>
                         <th>Chinese</th>
                         <th>Pinyin</th>
                         <th>English</th>
-                        <th>Confidence</th>
+                        <th>Skills (0–3)</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -538,11 +558,41 @@
             3: "3: Solid"
         };
 
+        const SKILL_NAMES = {
+            char: "Characters",
+            pinyin: "Pinyin",
+            recall: "Recall",
+            tone: "Tone"
+        };
+
+        function getSkillForQuizType(quizType) {
+            if (quizType === 'c2e' || quizType === 'c2p') return 'char';
+            if (quizType === 'p2e') return 'pinyin';
+            if (quizType === 'p2c' || quizType === 'e2c' || quizType === 'e2p') return 'recall';
+            return 'char';
+        }
+
+        function normalizeConfidence(item) {
+            const fallback = typeof item.confidence === 'number' ? item.confidence : 0;
+            const existing = item.confidenceBySkill || {};
+            return {
+                char: typeof existing.char === 'number' ? existing.char : fallback,
+                pinyin: typeof existing.pinyin === 'number' ? existing.pinyin : fallback,
+                recall: typeof existing.recall === 'number' ? existing.recall : fallback,
+                tone: typeof existing.tone === 'number' ? existing.tone : fallback
+            };
+        }
+
+        function getLowestSkillLevel(item) {
+            const c = normalizeConfidence(item);
+            return Math.min(c.char, c.pinyin, c.recall, c.tone);
+        }
+
         let vocabList = (JSON.parse(localStorage.getItem('chinese_vocab')) || []).map(item => ({
             chinese: item.chinese,
             pinyin: item.pinyin,
             english: item.english,
-            confidence: typeof item.confidence === 'number' ? item.confidence : 0
+            confidenceBySkill: normalizeConfidence(item)
         }));
 
         let sentenceBank = JSON.parse(localStorage.getItem('chinese_sentences')) || [];
@@ -664,7 +714,15 @@
             return [...array].sort(() => Math.random() - 0.5);
         }
 
-        function weightedSampleVocab(items, count, prioritizeWeak = true) {
+        function getWordLevelForContext(item, skillKey, useLowestAcrossSkills = false) {
+            const c = normalizeConfidence(item);
+            if (useLowestAcrossSkills) {
+                return Math.min(c.char, c.pinyin, c.recall, c.tone);
+            }
+            return c[skillKey] ?? 0;
+        }
+
+        function weightedSampleVocab(items, count, prioritizeWeak = true, skillKey = 'char', useLowestAcrossSkills = false) {
             if (!prioritizeWeak || items.length === 0) {
                 return shuffle(items).slice(0, count);
             }
@@ -679,7 +737,7 @@
             const targetCount = Math.min(count, pool.length);
 
             for (let i = 0; i < targetCount; i++) {
-                const weights = pool.map(w => weightForLevel(w.confidence ?? 0));
+                const weights = pool.map(w => weightForLevel(getWordLevelForContext(w, skillKey, useLowestAcrossSkills)));
                 const totalWeight = weights.reduce((a, b) => a + b, 0);
                 let r = Math.random() * totalWeight;
                 let chosenIdx = 0;
@@ -696,18 +754,27 @@
             return picked;
         }
 
-        function setWordConfidence(wordObj, newLevel) {
+        function setWordSkillConfidence(wordObj, skillKey, newLevel) {
             if (!wordObj) return;
+            const c = normalizeConfidence(wordObj);
             const clamped = Math.max(0, Math.min(3, parseInt(newLevel, 10) || 0));
-            wordObj.confidence = clamped;
+            c[skillKey] = clamped;
+            wordObj.confidenceBySkill = c;
             saveVocabToStorage();
-            syncConfidenceUI(clamped);
+            return clamped;
         }
 
-        function syncConfidenceUI(level, badgeId = 'quiz-mastery-badge') {
+        function syncSkillConfidenceUI(level, skillKey, badgeId = 'quiz-mastery-badge', labelId = 'quiz-conf-label') {
             const badge = document.getElementById(badgeId);
+            const skillTitle = SKILL_NAMES[skillKey] || "Confidence";
             if (badge) {
-                badge.innerText = `Confidence: ${CONFIDENCE_LABELS[level] || CONFIDENCE_LABELS[0]}`;
+                badge.innerText = `${skillTitle}: ${CONFIDENCE_LABELS[level] || CONFIDENCE_LABELS[0]}`;
+            }
+            if (labelId) {
+                const labelEl = document.getElementById(labelId);
+                if (labelEl) {
+                    labelEl.innerText = `How well do you know this word (${skillTitle})?`;
+                }
             }
             document.querySelectorAll('.conf-btn').forEach(btn => {
                 const btnLevel = parseInt(btn.getAttribute('data-level'), 10);
@@ -719,18 +786,16 @@
             });
         }
 
-        // Prioritize sentences containing lower-confidence words from your vocabulary list
         function getSensibleSentencePool() {
             const scored = sentenceBank.map(sentence => {
                 const matched = vocabList.filter(v => v.chinese && sentence.chinese.includes(v.chinese));
                 const avgConf = matched.length > 0
-                    ? matched.reduce((sum, w) => sum + (w.confidence ?? 0), 0) / matched.length
+                    ? matched.reduce((sum, w) => sum + getLowestSkillLevel(w), 0) / matched.length
                     : 1.5;
                 return { sentence, avgConf };
             });
 
             scored.sort((a, b) => (a.avgConf - b.avgConf) + (Math.random() - 0.5) * 0.5);
-            // Reverse so .pop() draws lowest-confidence sentences first
             return scored.reverse().map(entry => entry.sentence);
         }
 
@@ -785,12 +850,17 @@
                 return;
             }
 
-            vocabList.push({ chinese, pinyin, english, confidence: 0 });
+            vocabList.push({
+                chinese,
+                pinyin,
+                english,
+                confidenceBySkill: { char: 0, pinyin: 0, recall: 0, tone: 0 }
+            });
             saveVocabToStorage();
             document.getElementById('input-chinese').value = '';
             document.getElementById('input-pinyin').value = '';
             document.getElementById('input-english').value = '';
-            alert('Word added successfully (marked as New/Unfamiliar).');
+            alert('Word added successfully.');
         }
 
         function bulkImport() {
@@ -807,7 +877,7 @@
                 if (parsed) {
                     vocabList.push({
                         ...parsed,
-                        confidence: 0
+                        confidenceBySkill: { char: 0, pinyin: 0, recall: 0, tone: 0 }
                     });
                     addedCount++;
                 }
@@ -845,38 +915,50 @@
             downloadAnchor.remove();
         }
 
+        function buildSkillSelect(idx, skillKey, currentVal) {
+            return `
+                <select class="row-skill-select" data-index="${idx}" data-skill="${skillKey}">
+                    <option value="0" ${currentVal === 0 ? 'selected' : ''}>0</option>
+                    <option value="1" ${currentVal === 1 ? 'selected' : ''}>1</option>
+                    <option value="2" ${currentVal === 2 ? 'selected' : ''}>2</option>
+                    <option value="3" ${currentVal === 3 ? 'selected' : ''}>3</option>
+                </select>
+            `;
+        }
+
         function updateVocabTable() {
             const tbody = document.getElementById('vocab-table-body');
             tbody.innerHTML = '';
             document.getElementById('vocab-count').innerText = vocabList.length;
 
             const indexed = vocabList.map((item, idx) => ({ item, idx }));
-            indexed.sort((a, b) => (a.item.confidence ?? 0) - (b.item.confidence ?? 0));
+            indexed.sort((a, b) => getLowestSkillLevel(a.item) - getLowestSkillLevel(b.item));
 
             indexed.forEach(({ item, idx }) => {
-                const conf = item.confidence ?? 0;
+                const c = normalizeConfidence(item);
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.chinese}</td>
                     <td>${item.pinyin}</td>
                     <td>${item.english}</td>
                     <td>
-                        <select class="row-conf-select" data-index="${idx}" style="padding: 4px; font-size: 0.78rem;">
-                            <option value="0" ${conf === 0 ? 'selected' : ''}>0: New</option>
-                            <option value="1" ${conf === 1 ? 'selected' : ''}>1: Shaky</option>
-                            <option value="2" ${conf === 2 ? 'selected' : ''}>2: Good</option>
-                            <option value="3" ${conf === 3 ? 'selected' : ''}>3: Solid</option>
-                        </select>
+                        <div class="skill-grid">
+                            <span class="skill-item">Char${buildSkillSelect(idx, 'char', c.char)}</span>
+                            <span class="skill-item">Pin${buildSkillSelect(idx, 'pinyin', c.pinyin)}</span>
+                            <span class="skill-item">Rec${buildSkillSelect(idx, 'recall', c.recall)}</span>
+                            <span class="skill-item">Tone${buildSkillSelect(idx, 'tone', c.tone)}</span>
+                        </div>
                     </td>
                     <td><button class="secondary delete-row-btn" data-index="${idx}" style="padding: 2px 6px; font-size: 0.8rem; background-color: var(--error);">✕</button></td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            document.querySelectorAll('.row-conf-select').forEach(sel => {
+            document.querySelectorAll('.row-skill-select').forEach(sel => {
                 sel.addEventListener('change', (e) => {
                     const index = parseInt(e.target.getAttribute('data-index'), 10);
-                    setWordConfidence(vocabList[index], parseInt(e.target.value, 10));
+                    const skill = e.target.getAttribute('data-skill');
+                    setWordSkillConfidence(vocabList[index], skill, parseInt(e.target.value, 10));
                 });
             });
 
@@ -1096,8 +1178,9 @@
                 return;
             }
 
-            currentToneItem = weightedSampleVocab(vocabList, 1, true)[0];
-            syncConfidenceUI(currentToneItem.confidence ?? 0, 'tone-mastery-badge');
+            currentToneItem = weightedSampleVocab(vocabList, 1, true, 'tone', false)[0];
+            const c = normalizeConfidence(currentToneItem);
+            syncSkillConfidenceUI(c.tone, 'tone', 'tone-mastery-badge', null);
 
             let showChinese = Math.random() > 0.5;
             let promptLabel = showChinese ? currentToneItem.chinese : currentToneItem.english;
@@ -1122,18 +1205,19 @@
 
             document.querySelectorAll('#tone-options .option-btn').forEach(btn => btn.disabled = true);
 
+            const currentLvl = normalizeConfidence(currentToneItem).tone;
             if (isCorrect) {
-                const nextConf = Math.min(3, (currentToneItem.confidence ?? 0) + 1);
-                setWordConfidence(currentToneItem, nextConf);
-                syncConfidenceUI(nextConf, 'tone-mastery-badge');
+                const nextConf = Math.min(3, currentLvl + 1);
+                setWordSkillConfidence(currentToneItem, 'tone', nextConf);
+                syncSkillConfidenceUI(nextConf, 'tone', 'tone-mastery-badge', null);
                 feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = `✨ Correct! Confidence updated to <strong>${CONFIDENCE_LABELS[nextConf]}</strong>.`;
+                feedback.innerHTML = `✨ Correct! Tone confidence updated to <strong>${CONFIDENCE_LABELS[nextConf]}</strong>.`;
             } else {
-                const nextConf = Math.max(0, (currentToneItem.confidence ?? 0) - 1);
-                setWordConfidence(currentToneItem, nextConf);
-                syncConfidenceUI(nextConf, 'tone-mastery-badge');
+                const nextConf = Math.max(0, currentLvl - 1);
+                setWordSkillConfidence(currentToneItem, 'tone', nextConf);
+                syncSkillConfidenceUI(nextConf, 'tone', 'tone-mastery-badge', null);
                 feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Not Quite Right. Correct pinyin: <strong>${correctPinyin}</strong> (Confidence: ${CONFIDENCE_LABELS[nextConf]})`;
+                feedback.innerHTML = `❌ Not Quite Right. Correct pinyin: <strong>${correctPinyin}</strong> (Tone: ${CONFIDENCE_LABELS[nextConf]})`;
             }
 
             document.getElementById('tone-next-btn').style.display = 'block';
@@ -1144,6 +1228,7 @@
         let totalItemsInSession = 0;
         let currentQuizItem = null;
         let currentActiveType = 'c2e';
+        let currentSkillKey = 'char';
         let isRetryMode = false;
 
         function startQuiz() {
@@ -1153,7 +1238,11 @@
             }
 
             const prioritizeWeak = document.getElementById('prioritize-weak-toggle').checked;
-            quizQueue = weightedSampleVocab(vocabList, vocabList.length, prioritizeWeak);
+            const settingType = document.getElementById('quiz-type').value;
+            const useLowest = settingType === 'random';
+            const skillKey = getSkillForQuizType(settingType);
+
+            quizQueue = weightedSampleVocab(vocabList, vocabList.length, prioritizeWeak, skillKey, useLowest);
             totalItemsInSession = quizQueue.length;
 
             document.getElementById('quiz-setup').style.display = 'none';
@@ -1186,7 +1275,7 @@
 
         function loadQuestion() {
             if (quizQueue.length === 0) {
-                alert('🎉 Session complete! Your confidence ratings have been saved.');
+                alert('🎉 Session complete! Your skill confidence ratings have been saved.');
                 endQuiz();
                 return;
             }
@@ -1205,11 +1294,14 @@
             document.getElementById('submit-btn').disabled = false;
 
             currentQuizItem = quizQueue[0];
-            syncConfidenceUI(currentQuizItem.confidence ?? 0, 'quiz-mastery-badge');
 
             let settingType = document.getElementById('quiz-type').value;
             const allTypes = ['c2e', 'c2p', 'p2c', 'e2c', 'p2e', 'e2p'];
             currentActiveType = settingType === 'random' ? allTypes[Math.floor(Math.random() * allTypes.length)] : settingType;
+            currentSkillKey = getSkillForQuizType(currentActiveType);
+
+            const skillLvl = normalizeConfidence(currentQuizItem)[currentSkillKey] ?? 0;
+            syncSkillConfidenceUI(skillLvl, currentSkillKey, 'quiz-mastery-badge', 'quiz-conf-label');
 
             let promptText = '';
             let promptLabel = '';
@@ -1322,21 +1414,25 @@
 
             const isCorrect = userText.toLowerCase() === correctAnswer.toLowerCase();
             feedback.style.display = 'block';
+            const skillTitle = SKILL_NAMES[currentSkillKey] || "Confidence";
+            const currentLvl = normalizeConfidence(currentQuizItem)[currentSkillKey] ?? 0;
 
             if (isCorrect) {
-                const nextConf = Math.min(3, (currentQuizItem.confidence ?? 0) + 1);
-                setWordConfidence(currentQuizItem, nextConf);
+                const nextConf = Math.min(3, currentLvl + 1);
+                setWordSkillConfidence(currentQuizItem, currentSkillKey, nextConf);
+                syncSkillConfidenceUI(nextConf, currentSkillKey, 'quiz-mastery-badge', 'quiz-conf-label');
                 feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = `✨ CORRECT!! Fantastic! (Confidence: ${CONFIDENCE_LABELS[nextConf]})`;
+                feedback.innerHTML = `✨ CORRECT!! Fantastic! (${skillTitle}: ${CONFIDENCE_LABELS[nextConf]})`;
                 document.getElementById('submit-btn').disabled = true;
                 quizQueue.shift();
                 document.getElementById('next-btn').style.display = 'block';
             } else {
-                const nextConf = Math.max(0, (currentQuizItem.confidence ?? 0) - 1);
-                setWordConfidence(currentQuizItem, nextConf);
+                const nextConf = Math.max(0, currentLvl - 1);
+                setWordSkillConfidence(currentQuizItem, currentSkillKey, nextConf);
+                syncSkillConfidenceUI(nextConf, currentSkillKey, 'quiz-mastery-badge', 'quiz-conf-label');
                 isRetryMode = true;
                 feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Incorrect. Correct answer: <strong>${correctAnswer}</strong> (Confidence: ${CONFIDENCE_LABELS[nextConf]})<br><span style="font-size:0.85rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
+                feedback.innerHTML = `❌ Incorrect. Correct answer: <strong>${correctAnswer}</strong> (${skillTitle}: ${CONFIDENCE_LABELS[nextConf]})<br><span style="font-size:0.85rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
                 document.getElementById('user-answer').value = '';
                 document.getElementById('user-answer').focus();
             }
@@ -1348,17 +1444,22 @@
 
             document.querySelectorAll('#mc-container .option-btn').forEach(btn => btn.disabled = true);
 
+            const skillTitle = SKILL_NAMES[currentSkillKey] || "Confidence";
+            const currentLvl = normalizeConfidence(currentQuizItem)[currentSkillKey] ?? 0;
+
             if (isCorrect) {
-                const nextConf = Math.min(3, (currentQuizItem.confidence ?? 0) + 1);
-                setWordConfidence(currentQuizItem, nextConf);
+                const nextConf = Math.min(3, currentLvl + 1);
+                setWordSkillConfidence(currentQuizItem, currentSkillKey, nextConf);
+                syncSkillConfidenceUI(nextConf, currentSkillKey, 'quiz-mastery-badge', 'quiz-conf-label');
                 feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = `✨ CORRECT!! Fantastic! (Confidence: ${CONFIDENCE_LABELS[nextConf]})`;
+                feedback.innerHTML = `✨ CORRECT!! Fantastic! (${skillTitle}: ${CONFIDENCE_LABELS[nextConf]})`;
                 quizQueue.shift();
             } else {
-                const nextConf = Math.max(0, (currentQuizItem.confidence ?? 0) - 1);
-                setWordConfidence(currentQuizItem, nextConf);
+                const nextConf = Math.max(0, currentLvl - 1);
+                setWordSkillConfidence(currentQuizItem, currentSkillKey, nextConf);
+                syncSkillConfidenceUI(nextConf, currentSkillKey, 'quiz-mastery-badge', 'quiz-conf-label');
                 feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Incorrect. Correct: <strong>${correctAnswer}</strong> (Confidence: ${CONFIDENCE_LABELS[nextConf]})`;
+                feedback.innerHTML = `❌ Incorrect. Correct: <strong>${correctAnswer}</strong> (${skillTitle}: ${CONFIDENCE_LABELS[nextConf]})`;
                 const missedItem = quizQueue.shift();
                 quizQueue.push(missedItem);
             }
@@ -1383,11 +1484,11 @@
                     const lvl = parseInt(btn.getAttribute('data-level'), 10);
                     const activeTab = document.querySelector('.tab-content.active');
                     if (activeTab && activeTab.id === 'tones-tab' && currentToneItem) {
-                        setWordConfidence(currentToneItem, lvl);
-                        syncConfidenceUI(lvl, 'tone-mastery-badge');
+                        setWordSkillConfidence(currentToneItem, 'tone', lvl);
+                        syncSkillConfidenceUI(lvl, 'tone', 'tone-mastery-badge', null);
                     } else if (currentQuizItem) {
-                        setWordConfidence(currentQuizItem, lvl);
-                        syncConfidenceUI(lvl, 'quiz-mastery-badge');
+                        setWordSkillConfidence(currentQuizItem, currentSkillKey, lvl);
+                        syncSkillConfidenceUI(lvl, currentSkillKey, 'quiz-mastery-badge', 'quiz-conf-label');
                     }
                 });
             });
