@@ -103,7 +103,7 @@
             border: 1px solid var(--card-border);
             border-radius: 8px;
             color: var(--text-main);
-            font-size: 16px;
+            font-size: 0.95rem;
             box-sizing: border-box;
         }
         input:focus, select:focus, textarea:focus {
@@ -120,12 +120,13 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         th, td {
             border: 1px solid var(--card-border);
-            padding: 8px;
+            padding: 8px 6px;
             text-align: left;
+            vertical-align: middle;
         }
         th {
             background-color: #0f172a;
@@ -177,6 +178,50 @@
             margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+        .mastery-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 999px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            background-color: #1e293b;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+        }
+        .confidence-panel {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #1e293b;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            text-align: left;
+        }
+        .confidence-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .confidence-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+        .conf-btn {
+            padding: 7px 4px;
+            font-size: 0.78rem;
+            border-radius: 8px;
+            background-color: #0f172a;
+            color: var(--text-muted);
+            border: 1px solid var(--card-border);
+            cursor: pointer;
+        }
+        .conf-btn.selected {
+            background-color: var(--theme-color);
+            color: white;
+            border-color: var(--theme-color);
         }
         .options-grid {
             display: grid;
@@ -235,6 +280,21 @@
             display: flex;
             gap: 8px;
         }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.15);
+        }
+        .checkbox-row label {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -248,7 +308,6 @@
         <button id="nav-sentences">Sentences</button>
         <button id="nav-tones">Tone Practice</button>
         <button id="nav-manage">Manage Words</button>
-        <button id="nav-manage-sentences">Manage Sentences</button>
     </nav>
 
     <!-- QUIZ TAB -->
@@ -274,6 +333,10 @@
                     <option value="e2p">English -> Pinyin</option>
                 </select>
             </div>
+            <div class="checkbox-row">
+                <input type="checkbox" id="prioritize-weak-toggle" checked>
+                <label for="prioritize-weak-toggle">Prioritize unfamiliar & shaky words</label>
+            </div>
             <button id="start-quiz-btn" style="width: 100%; margin-top: 5px;">Start Session</button>
         </div>
 
@@ -287,6 +350,7 @@
             </div>
 
             <div class="quiz-card-box" id="quiz-card-box">
+                <div id="quiz-mastery-badge" class="mastery-badge">Confidence: Unfamiliar</div>
                 <div id="prompt-instruction" class="prompt-instruction">Translate this:</div>
                 <div id="prompt-text" class="prompt-display"></div>
                 
@@ -298,6 +362,17 @@
                 </div>
 
                 <div id="feedback-area" class="feedback-box"></div>
+
+                <div class="confidence-panel">
+                    <div class="confidence-label">How well do you know this word?</div>
+                    <div class="confidence-buttons">
+                        <button type="button" class="conf-btn" data-level="0">0: New</button>
+                        <button type="button" class="conf-btn" data-level="1">1: Shaky</button>
+                        <button type="button" class="conf-btn" data-level="2">2: Good</button>
+                        <button type="button" class="conf-btn" data-level="3">3: Solid</button>
+                    </div>
+                </div>
+
                 <button id="next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Question ➔</button>
             </div>
         </div>
@@ -305,10 +380,7 @@
 
     <!-- SENTENCE TRANSLATION TAB -->
     <div id="sentences-tab" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h2 style="margin:0; font-size: 1.2rem;">Sentence Trainer</h2>
-            <span id="st-remaining-in-cycle" style="font-size: 0.85rem; color: var(--text-muted);">0 left in shuffle</span>
-        </div>
+        <h2 style="margin-top:0; font-size: 1.2rem;">Sentence Trainer</h2>
         
         <div class="form-group" style="margin-bottom: 12px;">
             <label>Sentence Quiz Type:</label>
@@ -346,6 +418,7 @@
     <div id="tones-tab" class="tab-content">
         <h2 style="margin-top:0; font-size: 1.2rem;">Tone & Sound Practice</h2>
         <div class="quiz-card-box">
+            <div id="tone-mastery-badge" class="mastery-badge">Confidence: Unfamiliar</div>
             <div class="prompt-instruction">Identify the correct pinyin:</div>
             <div id="tone-prompt" class="prompt-display">--</div>
             <div id="tone-options" class="options-grid"></div>
@@ -385,13 +458,14 @@
         </details>
 
         <h3 style="margin-top: 20px; font-size: 1rem;">Saved Vocabulary (<span id="vocab-count">0</span>)</h3>
-        <div style="max-height: 200px; overflow-y: auto;">
+        <div style="max-height: 240px; overflow-y: auto;">
             <table>
                 <thead>
                     <tr>
                         <th>Chinese</th>
                         <th>Pinyin</th>
                         <th>English</th>
+                        <th>Confidence</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -405,151 +479,182 @@
         </div>
     </div>
 
-    <!-- MANAGE SENTENCES TAB -->
-    <div id="manage-sentences-tab" class="tab-content">
-        <h2 style="margin-top:0; font-size: 1.2rem;">Manage Sentences</h2>
-
-        <div style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <h3 style="margin-top:0; font-size: 1rem; color:var(--text-main);">Bulk Import Sentences</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 8px 0;">Format: <code>Chinese, Pinyin, English</code> (one per line; <code>|</code> also works)</p>
-            <div class="form-group" style="margin-bottom: 8px;">
-                <textarea id="st-bulk-input" style="height: 95px;" placeholder="我今天不想出門。, Wǒ jīntiān bù xiǎng chūmén., I don't want to go out today.&#10;你吃飽了嗎？, Nǐ chībǎo le ma?, Are you full?"></textarea>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button id="st-import-btn">Import Sentences</button>
-                <button id="st-replace-btn" class="secondary">Replace All</button>
-            </div>
-        </div>
-
-        <h3 style="margin-top: 20px; font-size: 1rem;">Saved Sentences (<span id="sentence-count">0</span>)</h3>
-        <div style="max-height: 240px; overflow-y: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Chinese</th>
-                        <th>Pinyin</th>
-                        <th>English</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="sentence-table-body"></tbody>
-            </table>
-        </div>
-
-        <div class="backup-section">
-            <button id="st-clear-btn" class="secondary" style="background-color: var(--error); padding: 8px 12px; font-size: 0.85rem;">Delete All Sentences</button>
-        </div>
-    </div>
-
     <script>
-        const CUSTOM_SENTENCES_STORAGE_KEY = 'chinese_custom_sentences';
+        // Confidence levels: 0 = New/Unfamiliar, 1 = Shaky, 2 = Good, 3 = Solid
+        const CONFIDENCE_LABELS = {
+            0: "0: Unfamiliar",
+            1: "1: Shaky",
+            2: "2: Good",
+            3: "3: Solid"
+        };
 
-        let vocabList = JSON.parse(localStorage.getItem('chinese_vocab')) || [];
-        let customSentenceBank = JSON.parse(localStorage.getItem(CUSTOM_SENTENCES_STORAGE_KEY)) || [];
-        let activeSentencePool = [];
-        let currentActiveSentenceType = 'e2c';
-        let currentSentenceObj = null;
+        let vocabList = (JSON.parse(localStorage.getItem('chinese_vocab')) || []).map(item => ({
+            chinese: item.chinese,
+            pinyin: item.pinyin,
+            english: item.english,
+            confidence: typeof item.confidence === 'number' ? item.confidence : 0
+        }));
 
-        function saveSentencesToStorage() {
-            localStorage.setItem(CUSTOM_SENTENCES_STORAGE_KEY, JSON.stringify(customSentenceBank));
-            updateSentenceTable();
-            updateSentenceShuffleLabel();
+        const masterSentenceBank = [
+            // Daily & Feelings
+            { chinese: "我今天很累。", pinyin: "Wǒ jīntiān hěn lèi.", english: "I am very tired today.", required: ["我", "今天", "很", "累"] },
+            { chinese: "因為下雨，所以我遲到了。", pinyin: "Yīnwèi xiàyǔ, suǒyǐ wǒ chídào le.", english: "Because it rained, I was late.", required: ["因為", "下雨", "所以", "我", "遲到"] },
+            { chinese: "今天天氣非常熱。", pinyin: "Jīntiān tiānqì fēicháng rè.", english: "Today's weather is extremely hot.", required: ["今天", "非常"] },
+            { chinese: "今天晚上我有空。", pinyin: "Jīntiān wǎnshang wǒ yǒu kòng.", english: "I have free time tonight.", required: ["今天", "晚", "我", "有"] },
+            { chinese: "昨天晚上有雨。", pinyin: "Zuótiān wǎnshang yǒu yǔ.", english: "There was rain yesterday evening.", required: ["昨天", "晚", "雨"] },
+            { chinese: "春天的時候天氣很好。", pinyin: "Chūntiān de shíhòu tiānqì hěn hǎo.", english: "The weather is very good during spring.", required: ["春天", "的時候", "好"] },
+            { chinese: "夏天的時候我喜歡游泳。", pinyin: "Xiàtiān de shíhòu wǒ xǐhuān yóuyǒng.", english: "I like to swim during summer.", required: ["夏天", "的時候", "我", "喜歡", "游泳"] },
+            { chinese: "冬天的時候會下雪。", pinyin: "Dōngtiān de shíhòu huì xiàxuě.", english: "It snows during winter.", required: ["冬天", "的時候"] },
+            { chinese: "我喜歡秋天的天氣。", pinyin: "Wǒ xǐhuān qiūtiān de tiānqì.", english: "I like autumn weather.", required: ["我", "喜歡"] },
+            { chinese: "外面正在下雨。", pinyin: "Wàimiàn zhèngzài xiàyǔ.", english: "It is currently raining outside.", required: ["下雨"] },
+
+            // Food & Drink
+            { chinese: "我想去超市買東西。", pinyin: "Wǒ xiǎng qù chāoshì mǎi dōngxī.", english: "I want to go to the supermarket to buy things.", required: ["我", "想", "去", "超市", "買", "東西"] },
+            { chinese: "我常常喝熱水。", pinyin: "Wǒ chángcháng hē rèshuǐ.", english: "I often drink hot water.", required: ["我", "常常", "喝", "熱水"] },
+            { chinese: "這杯咖啡很好喝。", pinyin: "Zhè bēi kāfēi hěn hǎohē.", english: "This cup of coffee is delicious.", required: ["這", "杯", "咖啡", "很", "好"] },
+            { chinese: "我喜歡吃烤鴨和餃子。", pinyin: "Wǒ xǐhuān chī kǎoyǎ hé jiǎozi.", english: "I like to eat roast duck and dumplings.", required: ["我", "喜歡", "吃", "烤鴨", "和", "餃子"] },
+            { chinese: "我想要一杯冰啤酒。", pinyin: "Wǒ xiǎng yào yībēi bīng píjiǔ.", english: "I want a glass of iced beer.", required: ["我", "想", "要", "一杯", "冰", "啤酒"] },
+            { chinese: "我不喜歡喝冰水。", pinyin: "Wǒ bù xǐhuān hē bīng shuǐ.", english: "I do not like drinking ice water.", required: ["我", "喜歡", "喝", "冰", "水"] },
+            { chinese: "這家飯店的菜很好吃。", pinyin: "Zhè jiā fàndiàn de cài hěn hǎochī.", english: "The dishes at this restaurant are delicious.", required: ["這", "家", "好吃"] },
+            { chinese: "你喝茶還是喝咖啡？", pinyin: "Nǐ hē chá háishì hē kāfēi?", english: "Do you drink tea or coffee?", required: ["你", "喝", "茶", "還是", "咖啡"] },
+            { chinese: "這杯水太冰了。", pinyin: "Zhè bēi shuǐ tài bīng le.", english: "This glass of water is too iced.", required: ["這", "杯", "水", "冰"] },
+            { chinese: "這個漢堡很好吃。", pinyin: "Zhège hànbǎo hěn hǎochī.", english: "This hamburger is delicious.", required: ["這", "好吃"] },
+            { chinese: "別吃太多冰淇淋。", pinyin: "Bié chī tài duō bīngqílín.", english: "Don't eat too much ice cream.", required: ["吃"] },
+            { chinese: "我媽媽會做中國菜。", pinyin: "Wǒ māmā huì zuò zhōngguó cài.", english: "My mother can cook Chinese food.", required: ["我", "做"] },
+            { chinese: "你為什麼不吃早餐？", pinyin: "Nǐ wèishénme bù chī zǎocān?", english: "Why don't you eat breakfast?", required: ["你", "為什麼", "吃", "早餐"] },
+
+            // Work & School
+            { chinese: "老師是醫生嗎？", pinyin: "Lǎoshī shì yīshēng ma?", english: "Is the teacher a doctor?", required: ["老師", "是", "醫生"] },
+            { chinese: "明天我有考試。", pinyin: "Míngtiān wǒ yǒu kǎoshì.", english: "Tomorrow I have an exam.", required: ["明天", "我", "有", "考試"] },
+            { chinese: "你在哪裡工作？", pinyin: "Nǐ zài nǎlǐ gōngzuò?", english: "Where do you work?", required: ["你", "在", "哪裡", "工作"] },
+            { chinese: "我們的學校很大。", pinyin: "Wǒmen de xuéxiào hěn dà.", english: "Our school is very big.", required: ["我們", "的", "學校", "很", "大"] },
+            { chinese: "他常常去書店看書。", pinyin: "Tā chángcháng qù shūdiàn kàn shū.", english: "He often goes to the bookstore to read books.", required: ["他", "常常", "去", "書店", "看", "書"] },
+            { chinese: "他是我的中文老師。", pinyin: "Tā shì wǒ de zhōngwén lǎoshī.", english: "He is my Chinese teacher.", required: ["他", "是", "我", "老師"] },
+            { chinese: "我明天想去書店。", pinyin: "Wǒ míngtiān xiǎng qù shūdiàn.", english: "I want to go to the bookstore tomorrow.", required: ["我", "明天", "想", "去", "書店"] },
+            { chinese: "我認識那個學生。", pinyin: "Wǒ rènshi nàge xuéshēng.", english: "I know that student.", required: ["我", "那個", "學生"] },
+            { chinese: "這家書店有很多書。", pinyin: "Zhè jiā shūdiàn yǒu hěnduō shū.", english: "This bookstore has a lot of books.", required: ["這", "書店", "有", "書"] },
+            { chinese: "他每天都去工作。", pinyin: "Tā měitiān dōu qù gōngzuò.", english: "He goes to work every day.", required: ["他", "去", "工作"] },
+            { chinese: "我在客廳看書。", pinyin: "Wǒ zài kètīng kàn shū.", english: "I am reading a book in the living room.", required: ["我", "在", "客廳", "看", "書"] },
+
+            // Travel & Location
+            { chinese: "洗手間在哪裡？", pinyin: "Xǐshǒujiān zài nǎlǐ?", english: "Where is the bathroom?", required: ["洗手間", "在哪裡"] },
+            { chinese: "火車快要到了。", pinyin: "Huǒchē kuàiyào dào le.", english: "The train is about to arrive.", required: ["火車"] },
+            { chinese: "這件公寓很新也很小。", pinyin: "Zhè jiàn gōngyù hěn xīn yě hěn xiǎo.", english: "This apartment is very new and also very small.", required: ["這", "公寓", "新", "也", "小"] },
+            { chinese: "請問這本書多少錢？", pinyin: "Qǐngwèn zhè běn shū duōshǎo qián?", english: "Excuse me, how much is this book?", required: ["這", "書", "多少", "錢"] },
+            { chinese: "我昨天去了火車站。", pinyin: "Wǒ zuótiān qù le huǒchēzhàn.", english: "I went to the train station yesterday.", required: ["我", "昨天", "去", "火車站"] },
+            { chinese: "桌子上有一個手機。", pinyin: "Zhuōzi shàng yǒu yīgè shǒujī.", english: "There is a cell phone on the table.", required: ["有", "手機"] },
+            { chinese: "火車票已經買好了。", pinyin: "Huǒchēpiào yǐjīng mǎihǎo le.", english: "The train ticket has already been bought.", required: ["火車", "買"] },
+            { chinese: "你的手機在哪裡？", pinyin: "Nǐ de shǒujī zài nǎlǐ?", english: "Where is your cell phone?", required: ["你", "手機"] },
+            { chinese: "我下午要去超市。", pinyin: "Wǒ xiàwǔ yào qù chāoshì.", english: "I am going to the supermarket this afternoon.", required: ["我", "午", "要", "去", "超市"] },
+            { chinese: "這家飯店在哪裡？", pinyin: "Zhè jiā fàndiàn zài nǎlǐ?", english: "Where is this restaurant?", required: ["這", "家", "在哪裡"] },
+
+            // People & Hobbies
+            { chinese: "我有一個兒子和一個女兒。", pinyin: "Wǒ yǒu yīgè érzi hé yīgè nǚ'ér.", english: "I have a son and a daughter.", required: ["我", "有", "一個", "兒子", "和", "女兒"] },
+            { chinese: "他是我的好朋友。", pinyin: "Tā shì wǒ de hǎo péngyǒu.", english: "He is my good friend.", required: ["他", "是", "我", "朋友"] },
+            { chinese: "你喜歡打籃球還是網球？", pinyin: "Nǐ xǐhuān dǎ lánqiú háishì wǎngqiú?", english: "Do you like playing basketball or tennis?", required: ["你", "喜歡", "籃球", "還是"] },
+            { chinese: "我們明天去買新衣服。", pinyin: "Wǒmen míngtiān qù mǎi xīn yīfu.", english: "We are going to buy new clothes tomorrow.", required: ["我們", "明天", "去", "買", "新"] },
+            { chinese: "這件衣服非常好看。", pinyin: "Zhè jiàn yīfu fēicháng hǎokān.", english: "This piece of clothing looks extremely nice.", required: ["這", "非常", "好看"] },
+            { chinese: "這個字是什麼意思？", pinyin: "Zhège zì shì shénme yìsi?", english: "What is the meaning of this character?", required: ["這", "什麼"] },
+            { chinese: "我們一起去跑步吧。", pinyin: "Wǒmen yīqǐ qù pǎobù ba.", english: "Let's go running together.", required: ["我們", "去", "跑步"] },
+            { chinese: "你有沒有兄弟姐妹？", pinyin: "Nǐ yǒu méiyǒu xiōngdì jiěmèi?", english: "Do you have siblings?", required: ["你", "有", "沒有"] },
+            { chinese: "這本書非常有趣。", pinyin: "Zhè běn shū fēicháng yǒuqù.", english: "This book is extremely interesting.", required: ["這", "書", "非常"] },
+            { chinese: "週末你打算做什麼？", pinyin: "Zhōumò nǐ dǎsuàn zuò shénme?", english: "What do you plan to do over the weekend?", required: ["你", "做", "什麼"] }
+        ];
+
+        function shuffle(array) {
+            return [...array].sort(() => Math.random() - 0.5);
         }
 
-        function updateSentenceShuffleLabel() {
-            const remainingEl = document.getElementById('st-remaining-in-cycle');
-            if (remainingEl) {
-                remainingEl.innerText = `${activeSentencePool.length} left in shuffle`;
+        // Weighted sampling so lower confidence words (0 or 1) appear much more often
+        function weightedSampleVocab(items, count, prioritizeWeak = true) {
+            if (!prioritizeWeak || items.length === 0) {
+                return shuffle(items).slice(0, count);
             }
+            const weightForLevel = (lvl) => {
+                if (lvl === 0) return 10;
+                if (lvl === 1) return 6;
+                if (lvl === 2) return 2.5;
+                return 1;
+            };
+            const pool = [...items];
+            const picked = [];
+            const targetCount = Math.min(count, pool.length);
+
+            for (let i = 0; i < targetCount; i++) {
+                const weights = pool.map(w => weightForLevel(w.confidence ?? 0));
+                const totalWeight = weights.reduce((a, b) => a + b, 0);
+                let r = Math.random() * totalWeight;
+                let chosenIdx = 0;
+                for (let j = 0; j < pool.length; j++) {
+                    r -= weights[j];
+                    if (r <= 0) {
+                        chosenIdx = j;
+                        break;
+                    }
+                }
+                picked.push(pool[chosenIdx]);
+                pool.splice(chosenIdx, 1);
+            }
+            return picked;
         }
 
-        function refillCustomSentenceDeck() {
-            activeSentencePool = shuffle([...customSentenceBank]);
-            updateSentenceShuffleLabel();
+        function setWordConfidence(wordObj, newLevel) {
+            if (!wordObj) return;
+            const clamped = Math.max(0, Math.min(3, parseInt(newLevel, 10) || 0));
+            wordObj.confidence = clamped;
+            saveVocabToStorage();
+            syncConfidenceUI(clamped);
         }
 
-        function parseSentenceLines(rawText) {
-            const lines = rawText.split(/\r?\n/);
-            const parsed = [];
+        function syncConfidenceUI(level, badgeId = 'quiz-mastery-badge') {
+            const badge = document.getElementById(badgeId);
+            if (badge) {
+                badge.innerText = `Confidence: ${CONFIDENCE_LABELS[level] || CONFIDENCE_LABELS[0]}`;
+            }
+            document.querySelectorAll('.conf-btn').forEach(btn => {
+                const btnLevel = parseInt(btn.getAttribute('data-level'), 10);
+                if (btnLevel === level) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
 
-            lines.forEach(line => {
-                const trimmed = line.trim();
-                if (!trimmed) return;
+        function getSensibleSentencePool() {
+            const vocabByWord = new Map();
+            vocabList.forEach(v => {
+                vocabByWord.set(v.chinese.toLowerCase().trim(), v);
+            });
 
-                let parts = trimmed.includes('|')
-                    ? trimmed.split('|').map(p => p.trim())
-                    : trimmed.split(',').map(p => p.trim());
+            const validPool = [];
+            masterSentenceBank.forEach(sentence => {
+                const matchedWords = [];
+                const canUnlock = sentence.required.every(reqWord => {
+                    const found = vocabByWord.get(reqWord.toLowerCase().trim());
+                    if (found) {
+                        matchedWords.push(found);
+                        return true;
+                    }
+                    return false;
+                });
 
-                if (parts.length >= 3) {
-                    parsed.push({
-                        chinese: parts[0],
-                        pinyin: parts[1],
-                        english: parts.slice(2).join(', ')
-                    });
-                } else if (parts.length === 2) {
-                    parsed.push({
-                        chinese: parts[0],
-                        pinyin: '',
-                        english: parts[1]
-                    });
+                if (canUnlock) {
+                    const avgConf = matchedWords.length > 0
+                        ? matchedWords.reduce((sum, w) => sum + (w.confidence ?? 0), 0) / matchedWords.length
+                        : 0;
+                    validPool.push({ sentence, avgConf });
                 }
             });
 
-            return parsed;
+            // Sort sentences with lowest average word confidence first, with light jitter
+            validPool.sort((a, b) => (a.avgConf - b.avgConf) + (Math.random() - 0.5) * 0.4);
+            return validPool.map(entry => entry.sentence);
         }
 
-        function importCustomSentences(replaceExisting = false) {
-            const textarea = document.getElementById('st-bulk-input');
-            const parsed = parseSentenceLines(textarea.value);
-
-            if (parsed.length === 0) {
-                alert('Please paste at least one sentence in the format: Chinese, Pinyin, English');
-                return;
-            }
-
-            customSentenceBank = replaceExisting ? parsed : [...customSentenceBank, ...parsed];
-            textarea.value = '';
-            refillCustomSentenceDeck();
-            saveSentencesToStorage();
-            alert(`${replaceExisting ? 'Replaced deck with' : 'Imported'} ${parsed.length} sentence(s).`);
-        }
-
-        function deleteSentence(index) {
-            customSentenceBank.splice(index, 1);
-            refillCustomSentenceDeck();
-            saveSentencesToStorage();
-        }
-
-        function clearAllCustomSentences() {
-            if (!confirm('Delete all saved sentences?')) return;
-            customSentenceBank = [];
-            activeSentencePool = [];
-            saveSentencesToStorage();
-        }
-
-        function updateSentenceTable() {
-            const tbody = document.getElementById('sentence-table-body');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            document.getElementById('sentence-count').innerText = customSentenceBank.length;
-
-            customSentenceBank.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.chinese}</td>
-                    <td>${item.pinyin || '--'}</td>
-                    <td>${item.english}</td>
-                    <td><button class="secondary delete-sentence-btn" data-index="${index}" style="padding: 2px 6px; font-size: 0.8rem; background-color: var(--error);">✕</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.querySelectorAll('.delete-sentence-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    deleteSentence(parseInt(e.target.getAttribute('data-index')));
-                });
-            });
-        }
+        let activeSentencePool = [];
+        let currentActiveSentenceType = 'e2c';
+        let currentSentenceObj = null;
 
         function saveVocabToStorage() {
             localStorage.setItem('chinese_vocab', JSON.stringify(vocabList));
@@ -562,7 +667,6 @@
             document.getElementById('nav-sentences').classList.remove('active-tab');
             document.getElementById('nav-tones').classList.remove('active-tab');
             document.getElementById('nav-manage').classList.remove('active-tab');
-            document.getElementById('nav-manage-sentences').classList.remove('active-tab');
 
             if (tabName === 'quiz') {
                 document.getElementById('quiz-tab').classList.add('active');
@@ -577,10 +681,6 @@
                 document.getElementById('tones-tab').classList.add('active');
                 document.getElementById('nav-tones').classList.add('active-tab');
                 loadToneCard();
-            } else if (tabName === 'manage-sentences') {
-                document.getElementById('manage-sentences-tab').classList.add('active');
-                document.getElementById('nav-manage-sentences').classList.add('active-tab');
-                updateSentenceTable();
             } else {
                 document.getElementById('manage-tab').classList.add('active');
                 document.getElementById('nav-manage').classList.add('active-tab');
@@ -598,12 +698,13 @@
                 return;
             }
 
-            vocabList.push({ chinese, pinyin, english });
+            vocabList.push({ chinese, pinyin, english, confidence: 0 });
             saveVocabToStorage();
             document.getElementById('input-chinese').value = '';
             document.getElementById('input-pinyin').value = '';
             document.getElementById('input-english').value = '';
-            alert('Word added successfully!');
+            activeSentencePool = [];
+            alert('Word added successfully (marked as New/Unfamiliar).');
         }
 
         function bulkImport() {
@@ -619,7 +720,8 @@
                     vocabList.push({
                         chinese: parts[0],
                         pinyin: parts[1],
-                        english: parts.slice(2).join(', ')
+                        english: parts.slice(2).join(', '),
+                        confidence: 0
                     });
                     addedCount++;
                 }
@@ -628,6 +730,7 @@
             if (addedCount > 0) {
                 saveVocabToStorage();
                 document.getElementById('bulk-input').value = '';
+                activeSentencePool = [];
                 alert(`Successfully imported ${addedCount} words!`);
             } else {
                 alert('Invalid format. Use: Chinese, Pinyin, English');
@@ -637,6 +740,7 @@
         function deleteVocab(index) {
             vocabList.splice(index, 1);
             saveVocabToStorage();
+            activeSentencePool = [];
             updateVocabTable();
         }
 
@@ -644,6 +748,7 @@
             if (confirm('Delete all saved vocabulary?')) {
                 vocabList = [];
                 saveVocabToStorage();
+                activeSentencePool = [];
             }
         }
 
@@ -661,32 +766,43 @@
             const tbody = document.getElementById('vocab-table-body');
             tbody.innerHTML = '';
             document.getElementById('vocab-count').innerText = vocabList.length;
-            
-            vocabList.forEach((item, index) => {
+
+            // Show weakest words first so you can easily judge/review what you don't know
+            const indexed = vocabList.map((item, idx) => ({ item, idx }));
+            indexed.sort((a, b) => (a.item.confidence ?? 0) - (b.item.confidence ?? 0));
+
+            indexed.forEach(({ item, idx }) => {
+                const conf = item.confidence ?? 0;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.chinese}</td>
                     <td>${item.pinyin}</td>
                     <td>${item.english}</td>
-                    <td><button class="secondary delete-row-btn" data-index="${index}" style="padding: 2px 6px; font-size: 0.8rem; background-color: var(--error);">✕</button></td>
+                    <td>
+                        <select class="row-conf-select" data-index="${idx}" style="padding: 4px; font-size: 0.78rem;">
+                            <option value="0" ${conf === 0 ? 'selected' : ''}>0: New</option>
+                            <option value="1" ${conf === 1 ? 'selected' : ''}>1: Shaky</option>
+                            <option value="2" ${conf === 2 ? 'selected' : ''}>2: Good</option>
+                            <option value="3" ${conf === 3 ? 'selected' : ''}>3: Solid</option>
+                        </select>
+                    </td>
+                    <td><button class="secondary delete-row-btn" data-index="${idx}" style="padding: 2px 6px; font-size: 0.8rem; background-color: var(--error);">✕</button></td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            document.querySelectorAll('.delete-row-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    deleteVocab(parseInt(e.target.getAttribute('data-index')));
+            document.querySelectorAll('.row-conf-select').forEach(sel => {
+                sel.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'), 10);
+                    setWordConfidence(vocabList[index], parseInt(e.target.value, 10));
                 });
             });
-        }
 
-        function shuffle(array) {
-            const arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
+            document.querySelectorAll('.delete-row-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    deleteVocab(parseInt(e.target.getAttribute('data-index'), 10));
+                });
+            });
         }
 
         function setSentenceTheme(themeType) {
@@ -698,46 +814,33 @@
 
         // ================= SENTENCE TRANSLATION LOGIC =================
         function loadSentenceCard() {
+            if (activeSentencePool.length === 0) {
+                activeSentencePool = getSensibleSentencePool();
+            }
+
             const promptTextEl = document.getElementById('st-prompt-text');
             const inputSection = document.getElementById('st-input-section');
             const feedbackBox = document.getElementById('st-feedback-box');
 
-            updateSentenceShuffleLabel();
-
-            if (customSentenceBank.length === 0) {
-                promptTextEl.innerText = "No sentences saved yet.";
+            if (activeSentencePool.length === 0) {
+                promptTextEl.innerText = "No matching sentences unlocked yet.";
                 document.getElementById('st-prompt-label').innerText = "Status:";
                 inputSection.style.display = 'none';
                 feedbackBox.style.display = 'block';
                 feedbackBox.className = 'feedback-box feedback-incorrect';
-                feedbackBox.innerHTML = `Go to <strong>Manage Sentences</strong> to bulk import your sentences.`;
+                feedbackBox.innerHTML = `Your active vocabulary list has ${vocabList.length} words. Import required vocabulary in the <strong>Manage Words</strong> tab to unlock sentences.`;
                 document.getElementById('st-next-btn').style.display = 'none';
                 return;
-            }
-
-            if (activeSentencePool.length === 0) {
-                refillCustomSentenceDeck();
             }
 
             inputSection.style.display = 'block';
             feedbackBox.style.display = 'none';
             currentSentenceObj = activeSentencePool.pop();
-            updateSentenceShuffleLabel();
-
+            
             const selectedDropdownType = document.getElementById('st-type').value;
-            let availableTypes = ['e2c', 'c2e'];
-            if (currentSentenceObj.pinyin) {
-                availableTypes.push('p2e', 'e2p');
-            }
-
-            currentActiveSentenceType = selectedDropdownType === 'random'
-                ? availableTypes[Math.floor(Math.random() * availableTypes.length)]
-                : selectedDropdownType;
-
-            if ((currentActiveSentenceType === 'p2e' || currentActiveSentenceType === 'e2p') && !currentSentenceObj.pinyin) {
-                currentActiveSentenceType = 'e2c';
-            }
-
+            const availableTypes = ['e2c', 'c2e', 'p2e', 'e2p'];
+            currentActiveSentenceType = selectedDropdownType === 'random' ? availableTypes[Math.floor(Math.random() * availableTypes.length)] : selectedDropdownType;
+            
             const inputLabel = document.getElementById('st-input-label');
             document.getElementById('st-prompt-label').innerText = "Translate the sentence:";
 
@@ -787,9 +890,12 @@
                 if (!isCorrect && currentSentenceObj.altChinese) {
                     isCorrect = currentSentenceObj.altChinese.some(alt => sanitizeAnswer(alt) === cleanUser);
                 }
-            } else if (currentActiveSentenceType === 'e2p') {
-                const cleanTarget = sanitizeAnswer(currentSentenceObj.pinyin);
+            } else if (currentActiveSentenceType === 'e2p' || currentActiveSentenceType === 'p2e') {
+                const cleanTarget = sanitizeAnswer(currentActiveSentenceType === 'e2p' ? currentSentenceObj.pinyin : currentSentenceObj.english);
                 isCorrect = (cleanUser === cleanTarget);
+                if (!isCorrect && currentSentenceObj.altEnglish && currentActiveSentenceType === 'p2e') {
+                    isCorrect = currentSentenceObj.altEnglish.some(alt => sanitizeAnswer(alt) === cleanUser);
+                }
             } else {
                 const cleanEnglish = sanitizeAnswer(currentSentenceObj.english);
                 isCorrect = (cleanUser === cleanEnglish);
@@ -810,12 +916,7 @@
             const feedbackBox = document.getElementById('st-feedback-box');
             feedbackBox.style.display = 'block';
 
-            const pinyinPart = card.pinyin ? ` (${card.pinyin})` : '';
-            let targetDisplay = mode === 'e2c'
-                ? `${card.chinese}${pinyinPart}`
-                : mode === 'e2p'
-                ? `${card.pinyin || card.chinese}`
-                : `${card.english} (${card.chinese}${pinyinPart})`;
+            let targetDisplay = mode === 'e2c' ? `${card.chinese} (${card.pinyin})` : mode === 'e2p' ? `${card.pinyin}` : `${card.english} (${card.chinese} - ${card.pinyin})`;
 
             if (isCorrect) {
                 feedbackBox.className = 'feedback-box feedback-correct';
@@ -913,7 +1014,9 @@
                 return;
             }
 
-            currentToneItem = vocabList[Math.floor(Math.random() * vocabList.length)];
+            currentToneItem = weightedSampleVocab(vocabList, 1, true)[0];
+            syncConfidenceUI(currentToneItem.confidence ?? 0, 'tone-mastery-badge');
+
             let showChinese = Math.random() > 0.5;
             let promptLabel = showChinese ? currentToneItem.chinese : currentToneItem.english;
             document.getElementById('tone-prompt').innerText = `${promptLabel} (${showChinese ? 'Chinese' : 'English'})`;
@@ -938,11 +1041,17 @@
             document.querySelectorAll('#tone-options .option-btn').forEach(btn => btn.disabled = true);
 
             if (isCorrect) {
+                const nextConf = Math.min(3, (currentToneItem.confidence ?? 0) + 1);
+                setWordConfidence(currentToneItem, nextConf);
+                syncConfidenceUI(nextConf, 'tone-mastery-badge');
                 feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = `✨ Correct! Perfect tone and sound selection.`;
+                feedback.innerHTML = `✨ Correct! Confidence updated to <strong>${CONFIDENCE_LABELS[nextConf]}</strong>.`;
             } else {
+                const nextConf = Math.max(0, (currentToneItem.confidence ?? 0) - 1);
+                setWordConfidence(currentToneItem, nextConf);
+                syncConfidenceUI(nextConf, 'tone-mastery-badge');
                 feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Not Quite Right. Correct pinyin: <strong>${correctPinyin}</strong>`;
+                feedback.innerHTML = `❌ Not Quite Right. Correct pinyin: <strong>${correctPinyin}</strong> (Confidence: ${CONFIDENCE_LABELS[nextConf]})`;
             }
 
             document.getElementById('tone-next-btn').style.display = 'block';
@@ -961,7 +1070,8 @@
                 return;
             }
 
-            quizQueue = shuffle([...vocabList]);
+            const prioritizeWeak = document.getElementById('prioritize-weak-toggle').checked;
+            quizQueue = weightedSampleVocab(vocabList, vocabList.length, prioritizeWeak);
             totalItemsInSession = quizQueue.length;
 
             document.getElementById('quiz-setup').style.display = 'none';
@@ -994,7 +1104,7 @@
 
         function loadQuestion() {
             if (quizQueue.length === 0) {
-                alert('🎉 Session complete! You successfully mastered all words.');
+                alert('🎉 Session complete! Your confidence ratings have been saved.');
                 endQuiz();
                 return;
             }
@@ -1013,6 +1123,7 @@
             document.getElementById('submit-btn').disabled = false;
 
             currentQuizItem = quizQueue[0];
+            syncConfidenceUI(currentQuizItem.confidence ?? 0, 'quiz-mastery-badge');
 
             let settingType = document.getElementById('quiz-type').value;
             const allTypes = ['c2e', 'c2p', 'p2c', 'e2c', 'p2e', 'e2p'];
@@ -1131,15 +1242,19 @@
             feedback.style.display = 'block';
 
             if (isCorrect) {
+                const nextConf = Math.min(3, (currentQuizItem.confidence ?? 0) + 1);
+                setWordConfidence(currentQuizItem, nextConf);
                 feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = '✨ CORRECT!! Fantastic!';
+                feedback.innerHTML = `✨ CORRECT!! Fantastic! (Confidence: ${CONFIDENCE_LABELS[nextConf]})`;
                 document.getElementById('submit-btn').disabled = true;
                 quizQueue.shift();
                 document.getElementById('next-btn').style.display = 'block';
             } else {
+                const nextConf = Math.max(0, (currentQuizItem.confidence ?? 0) - 1);
+                setWordConfidence(currentQuizItem, nextConf);
                 isRetryMode = true;
                 feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Incorrect. Correct answer: <strong>${correctAnswer}</strong><br><span style="font-size:0.85rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
+                feedback.innerHTML = `❌ Incorrect. Correct answer: <strong>${correctAnswer}</strong> (Confidence: ${CONFIDENCE_LABELS[nextConf]})<br><span style="font-size:0.85rem; color:var(--text-main);">Type the correct answer below to continue:</span>`;
                 document.getElementById('user-answer').value = '';
                 document.getElementById('user-answer').focus();
             }
@@ -1152,12 +1267,16 @@
             document.querySelectorAll('#mc-container .option-btn').forEach(btn => btn.disabled = true);
 
             if (isCorrect) {
+                const nextConf = Math.min(3, (currentQuizItem.confidence ?? 0) + 1);
+                setWordConfidence(currentQuizItem, nextConf);
                 feedback.className = 'feedback-box feedback-correct';
-                feedback.innerHTML = '✨ CORRECT!! Fantastic!';
+                feedback.innerHTML = `✨ CORRECT!! Fantastic! (Confidence: ${CONFIDENCE_LABELS[nextConf]})`;
                 quizQueue.shift();
             } else {
+                const nextConf = Math.max(0, (currentQuizItem.confidence ?? 0) - 1);
+                setWordConfidence(currentQuizItem, nextConf);
                 feedback.className = 'feedback-box feedback-incorrect';
-                feedback.innerHTML = `❌ Incorrect. Correct: <strong>${correctAnswer}</strong>`;
+                feedback.innerHTML = `❌ Incorrect. Correct: <strong>${correctAnswer}</strong> (Confidence: ${CONFIDENCE_LABELS[nextConf]})`;
                 const missedItem = quizQueue.shift();
                 quizQueue.push(missedItem);
             }
@@ -1170,19 +1289,29 @@
             document.getElementById('nav-sentences').addEventListener('click', () => switchTab('sentences'));
             document.getElementById('nav-tones').addEventListener('click', () => switchTab('tones'));
             document.getElementById('nav-manage').addEventListener('click', () => switchTab('manage'));
-            document.getElementById('nav-manage-sentences').addEventListener('click', () => switchTab('manage-sentences'));
 
             document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
             document.getElementById('exit-btn').addEventListener('click', endQuiz);
             document.getElementById('submit-btn').addEventListener('click', submitWriteAnswer);
             document.getElementById('next-btn').addEventListener('click', loadQuestion);
 
+            document.querySelectorAll('.conf-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const lvl = parseInt(btn.getAttribute('data-level'), 10);
+                    const activeTab = document.querySelector('.tab-content.active');
+                    if (activeTab && activeTab.id === 'tones-tab' && currentToneItem) {
+                        setWordConfidence(currentToneItem, lvl);
+                        syncConfidenceUI(lvl, 'tone-mastery-badge');
+                    } else if (currentQuizItem) {
+                        setWordConfidence(currentQuizItem, lvl);
+                        syncConfidenceUI(lvl, 'quiz-mastery-badge');
+                    }
+                });
+            });
+
             document.getElementById('st-submit-btn').addEventListener('click', checkSentenceAnswer);
             document.getElementById('st-reveal-btn').addEventListener('click', revealSentenceAnswer);
             document.getElementById('st-next-btn').addEventListener('click', loadSentenceCard);
-            document.getElementById('st-import-btn').addEventListener('click', () => importCustomSentences(false));
-            document.getElementById('st-replace-btn').addEventListener('click', () => importCustomSentences(true));
-            document.getElementById('st-clear-btn').addEventListener('click', clearAllCustomSentences);
 
             document.getElementById('tone-next-btn').addEventListener('click', loadToneCard);
 
@@ -1192,8 +1321,6 @@
             document.getElementById('clear-btn').addEventListener('click', clearAllVocab);
 
             updateVocabTable();
-            updateSentenceTable();
-            updateSentenceShuffleLabel();
         }
 
         if (document.readyState === 'loading') {
