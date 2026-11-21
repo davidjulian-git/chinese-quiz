@@ -434,9 +434,9 @@
         
         <div style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 15px;">
             <h3 style="margin-top:0; font-size: 1rem; color:var(--text-main);">Bulk Import Words</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 8px 0;">Format: <code>Chinese, Pinyin, English</code> (one per line)</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 8px 0;">Format: <code>Chinese | Pinyin | English</code> or <code>Chinese, Pinyin, English</code></p>
             <div class="form-group" style="margin-bottom: 8px;">
-                <textarea id="bulk-input" placeholder="台灣, Táiwān, Taiwan&#10;學校, xuéxiào, School"></textarea>
+                <textarea id="bulk-input" placeholder="台灣 | Táiwān | Taiwan&#10;學校 | xuéxiào | School"></textarea>
             </div>
             <button id="bulk-import-btn">Import List</button>
         </div>
@@ -486,9 +486,9 @@
 
         <div style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 15px;">
             <h3 style="margin-top:0; font-size: 1rem; color:var(--text-main);">Bulk Upload Sentences</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 8px 0;">Format: <code>Chinese, Pinyin, English</code> (one per line)</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 8px 0;">Format: <code>Chinese | Pinyin | English</code> (one per line)</p>
             <div class="form-group" style="margin-bottom: 8px;">
-                <textarea id="sentence-bulk-input" placeholder="我今天很累。, Wǒ jīntiān hěn lèi., I am very tired today.&#10;我想去買咖啡。, Wǒ xiǎng qù mǎi kāfēi., I want to go buy coffee."></textarea>
+                <textarea id="sentence-bulk-input" placeholder="我愛吃烤鴨。 | Wǒ ài chī kǎoyā. | I love eating roast duck.&#10;因為下雨，所以我遲到。 | Yīnwèi xiàyǔ, suǒyǐ wǒ chídào. | Because it is raining, I am late."></textarea>
             </div>
             <button id="sentence-bulk-import-btn">Upload Sentences</button>
         </div>
@@ -547,6 +547,29 @@
 
         let sentenceBank = JSON.parse(localStorage.getItem('chinese_sentences')) || [];
 
+        function parseDelimitedLine(line) {
+            if (line.includes('|')) {
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length >= 3 && parts[0] && parts[1] && parts[2]) {
+                    return {
+                        chinese: parts[0],
+                        pinyin: parts[1],
+                        english: parts.slice(2).join(' | ')
+                    };
+                }
+                return null;
+            }
+            const parts = line.split(',').map(p => p.trim());
+            if (parts.length >= 3 && parts[0] && parts[1] && parts[2]) {
+                return {
+                    chinese: parts[0],
+                    pinyin: parts[1],
+                    english: parts.slice(2).join(', ')
+                };
+            }
+            return null;
+        }
+
         function saveSentencesToStorage() {
             localStorage.setItem('chinese_sentences', JSON.stringify(sentenceBank));
             updateSentenceTable();
@@ -580,13 +603,11 @@
             let addedCount = 0;
 
             lines.forEach(line => {
-                const parts = line.split(',').map(p => p.trim());
-                if (parts.length >= 3) {
-                    sentenceBank.push({
-                        chinese: parts[0],
-                        pinyin: parts[1],
-                        english: parts.slice(2).join(', ')
-                    });
+                const trimmed = line.trim();
+                if (!trimmed) return;
+                const parsed = parseDelimitedLine(trimmed);
+                if (parsed) {
+                    sentenceBank.push(parsed);
                     addedCount++;
                 }
             });
@@ -597,7 +618,7 @@
                 activeSentencePool = [];
                 alert(`Uploaded ${addedCount} sentences!`);
             } else {
-                alert('Invalid format. Use: Chinese, Pinyin, English');
+                alert('Invalid format. Use: Chinese | Pinyin | English');
             }
         }
 
@@ -698,8 +719,19 @@
             });
         }
 
+        // Prioritize sentences containing lower-confidence words from your vocabulary list
         function getSensibleSentencePool() {
-            return shuffle([...sentenceBank]);
+            const scored = sentenceBank.map(sentence => {
+                const matched = vocabList.filter(v => v.chinese && sentence.chinese.includes(v.chinese));
+                const avgConf = matched.length > 0
+                    ? matched.reduce((sum, w) => sum + (w.confidence ?? 0), 0) / matched.length
+                    : 1.5;
+                return { sentence, avgConf };
+            });
+
+            scored.sort((a, b) => (a.avgConf - b.avgConf) + (Math.random() - 0.5) * 0.5);
+            // Reverse so .pop() draws lowest-confidence sentences first
+            return scored.reverse().map(entry => entry.sentence);
         }
 
         let activeSentencePool = [];
@@ -769,12 +801,12 @@
             let addedCount = 0;
 
             lines.forEach(line => {
-                const parts = line.split(',').map(p => p.trim());
-                if (parts.length >= 3) {
+                const trimmed = line.trim();
+                if (!trimmed) return;
+                const parsed = parseDelimitedLine(trimmed);
+                if (parsed) {
                     vocabList.push({
-                        chinese: parts[0],
-                        pinyin: parts[1],
-                        english: parts.slice(2).join(', '),
+                        ...parsed,
                         confidence: 0
                     });
                     addedCount++;
@@ -786,7 +818,7 @@
                 document.getElementById('bulk-input').value = '';
                 alert(`Successfully imported ${addedCount} words!`);
             } else {
-                alert('Invalid format. Use: Chinese, Pinyin, English');
+                alert('Invalid format. Use: Chinese | Pinyin | English (or comma-separated)');
             }
         }
 
@@ -924,7 +956,7 @@
             return str
                 .toLowerCase()
                 .trim()
-                .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’]/g, "");
+                .replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()？，。！"'“”‘’、]/g, "");
         }
 
         function checkSentenceAnswer() {
