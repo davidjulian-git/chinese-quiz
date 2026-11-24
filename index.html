@@ -14,6 +14,8 @@
             --success: #22c55e;
             --error: #ef4444;
             --theme-color: #f97316;
+            --card-bg: #0f172a;
+            --card-accent-secondary: var(--theme-color);
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -174,13 +176,52 @@
             transition: width 0.3s ease;
         }
         .quiz-card-box {
-            background-color: #0f172a;
+            background-color: var(--card-bg);
             border: 2px solid var(--theme-color);
             border-radius: 12px;
             padding: 16px;
             text-align: center;
             margin-bottom: 10px;
-            transition: border-color 0.3s;
+            transition: border-color 0.25s, background-color 0.25s;
+        }
+        .quiz-card-box.answer-english {
+            background: linear-gradient(180deg, #172554 0%, #0f172a 58%, #2a1016 100%);
+            border-color: #ef4444;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.45);
+        }
+        .quiz-card-box.answer-english .prompt-instruction {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+        }
+        .quiz-card-box.answer-english .prompt-display {
+            color: #ffffff;
+            border-bottom: 2px solid #ef4444;
+            padding-bottom: 8px;
+        }
+        .quiz-card-box.answer-english .option-btn:hover {
+            border-color: #3b82f6;
+        }
+        .quiz-card-box.answer-chinese {
+            background-color: #1c0d12;
+            border-color: #ef4444;
+        }
+        .quiz-card-box.answer-chinese .prompt-instruction,
+        .quiz-card-box.answer-chinese .prompt-display {
+            color: #ef4444;
+        }
+        .quiz-card-box.answer-chinese .option-btn:hover {
+            border-color: #ef4444;
+        }
+        .quiz-card-box.answer-pinyin {
+            background-color: #170e26;
+            border-color: #a855f7;
+        }
+        .quiz-card-box.answer-pinyin .prompt-instruction,
+        .quiz-card-box.answer-pinyin .prompt-display {
+            color: #c084fc;
+        }
+        .quiz-card-box.answer-pinyin .option-btn:hover {
+            border-color: #a855f7;
         }
         .prompt-display {
             font-size: 1.5rem;
@@ -565,6 +606,40 @@
             tone: "Tone"
         };
 
+        function getAnswerTargetFormat(questionType) {
+            if (questionType === 'c2e' || questionType === 'p2e') return 'english';
+            if (questionType === 'p2c' || questionType === 'e2c') return 'chinese';
+            if (questionType === 'c2p' || questionType === 'e2p') return 'pinyin';
+            return 'default';
+        }
+
+        function applyAnswerColorScheme(cardElement, questionType) {
+            if (!cardElement) return;
+            cardElement.classList.remove('answer-english', 'answer-chinese', 'answer-pinyin');
+            const target = getAnswerTargetFormat(questionType);
+
+            if (target === 'english') {
+                cardElement.classList.add('answer-english');
+                document.documentElement.style.setProperty('--theme-color', '#3b82f6');
+            } else if (target === 'chinese') {
+                cardElement.classList.add('answer-chinese');
+                document.documentElement.style.setProperty('--theme-color', '#ef4444');
+            } else if (target === 'pinyin') {
+                cardElement.classList.add('answer-pinyin');
+                document.documentElement.style.setProperty('--theme-color', '#a855f7');
+            } else {
+                document.documentElement.style.setProperty('--theme-color', '#f97316');
+            }
+        }
+
+        function resetCardColorSchemes() {
+            const quizCard = document.getElementById('quiz-card-box');
+            const stCard = document.getElementById('st-card-box');
+            if (quizCard) quizCard.classList.remove('answer-english', 'answer-chinese', 'answer-pinyin');
+            if (stCard) stCard.classList.remove('answer-english', 'answer-chinese', 'answer-pinyin');
+            document.documentElement.style.setProperty('--theme-color', '#f97316');
+        }
+
         function getSkillForQuizType(quizType) {
             if (quizType === 'c2e' || quizType === 'c2p') return 'char';
             if (quizType === 'p2e') return 'pinyin';
@@ -816,6 +891,8 @@
             document.getElementById('nav-manage').classList.remove('active-tab');
             document.getElementById('nav-manage-sentences').classList.remove('active-tab');
 
+            resetCardColorSchemes();
+
             if (tabName === 'quiz') {
                 document.getElementById('quiz-tab').classList.add('active');
                 document.getElementById('nav-quiz').classList.add('active-tab');
@@ -969,13 +1046,6 @@
             });
         }
 
-        function setSentenceTheme(themeType) {
-            let color = '#f97316';
-            if (themeType === 'c2e') color = '#f97316';
-            else if (themeType === 'p2e' || themeType === 'e2p') color = '#38bdf8';
-            document.documentElement.style.setProperty('--theme-color', color);
-        }
-
         // ================= SENTENCE TRANSLATION LOGIC =================
         function loadSentenceCard() {
             if (activeSentencePool.length === 0) {
@@ -985,8 +1055,10 @@
             const promptTextEl = document.getElementById('st-prompt-text');
             const inputSection = document.getElementById('st-input-section');
             const feedbackBox = document.getElementById('st-feedback-box');
+            const stCardBox = document.getElementById('st-card-box');
 
             if (activeSentencePool.length === 0) {
+                resetCardColorSchemes();
                 promptTextEl.innerText = "No sentences uploaded yet.";
                 document.getElementById('st-prompt-label').innerText = "Status:";
                 inputSection.style.display = 'none';
@@ -1005,26 +1077,24 @@
             const availableTypes = ['e2c', 'c2e', 'p2e', 'e2p'];
             currentActiveSentenceType = selectedDropdownType === 'random' ? availableTypes[Math.floor(Math.random() * availableTypes.length)] : selectedDropdownType;
             
+            applyAnswerColorScheme(stCardBox, currentActiveSentenceType);
+
             const inputLabel = document.getElementById('st-input-label');
             document.getElementById('st-prompt-label').innerText = "Translate the sentence:";
 
             if (currentActiveSentenceType === 'e2c') {
-                setSentenceTheme('e2c');
                 promptTextEl.innerText = currentSentenceObj.english;
                 inputLabel.innerText = "Your Translation (Chinese Characters):";
                 document.getElementById('st-user-input').placeholder = "Type Chinese characters here...";
             } else if (currentActiveSentenceType === 'c2e') {
-                setSentenceTheme('c2e');
                 promptTextEl.innerText = currentSentenceObj.chinese;
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
             } else if (currentActiveSentenceType === 'p2e') {
-                setSentenceTheme('p2e');
                 promptTextEl.innerText = currentSentenceObj.pinyin;
                 inputLabel.innerText = "Your Translation (English):";
                 document.getElementById('st-user-input').placeholder = "Type English translation here...";
             } else if (currentActiveSentenceType === 'e2p') {
-                setSentenceTheme('e2p');
                 promptTextEl.innerText = currentSentenceObj.english;
                 inputLabel.innerText = "Your Translation (Pinyin):";
                 document.getElementById('st-user-input').placeholder = "Type Pinyin here...";
@@ -1261,16 +1331,9 @@
         }
 
         function endQuiz() {
+            resetCardColorSchemes();
             document.getElementById('quiz-setup').style.display = 'block';
             document.getElementById('quiz-active').style.display = 'none';
-        }
-
-        function setAnswerTheme(answerCategory) {
-            let color = '#f97316'; 
-            if (answerCategory === 'chinese') color = '#f97316'; 
-            else if (answerCategory === 'pinyin') color = '#38bdf8'; 
-            else if (answerCategory === 'english') color = '#a855f7'; 
-            document.documentElement.style.setProperty('--theme-color', color);
         }
 
         function loadQuestion() {
@@ -1300,6 +1363,8 @@
             currentActiveType = settingType === 'random' ? allTypes[Math.floor(Math.random() * allTypes.length)] : settingType;
             currentSkillKey = getSkillForQuizType(currentActiveType);
 
+            applyAnswerColorScheme(document.getElementById('quiz-card-box'), currentActiveType);
+
             const skillLvl = normalizeConfidence(currentQuizItem)[currentSkillKey] ?? 0;
             syncSkillConfidenceUI(skillLvl, currentSkillKey, 'quiz-mastery-badge', 'quiz-conf-label');
 
@@ -1307,47 +1372,38 @@
             let promptLabel = '';
             let correctAnswer = '';
             let targetKey = '';
-            let answerCategory = 'english';
 
             if (currentActiveType === 'c2e') {
-                promptLabel = "Translate to English 🇬🇧";
+                promptLabel = "Translate to English";
                 promptText = currentQuizItem.chinese;
                 correctAnswer = currentQuizItem.english;
                 targetKey = 'english';
-                answerCategory = 'english';
             } else if (currentActiveType === 'c2p') {
-                promptLabel = "Provide the Pinyin 🔤";
+                promptLabel = "Provide the Pinyin";
                 promptText = currentQuizItem.chinese;
                 correctAnswer = currentQuizItem.pinyin;
                 targetKey = 'pinyin';
-                answerCategory = 'pinyin';
             } else if (currentActiveType === 'p2c') {
-                promptLabel = "Provide Chinese Characters 🇨🇳";
+                promptLabel = "Provide Chinese Characters";
                 promptText = currentQuizItem.pinyin;
                 correctAnswer = currentQuizItem.chinese;
                 targetKey = 'chinese';
-                answerCategory = 'chinese';
             } else if (currentActiveType === 'e2c') {
-                promptLabel = "Provide Chinese Characters 🇨🇳";
+                promptLabel = "Provide Chinese Characters";
                 promptText = currentQuizItem.english;
                 correctAnswer = currentQuizItem.chinese;
                 targetKey = 'chinese';
-                answerCategory = 'chinese';
             } else if (currentActiveType === 'p2e') {
-                promptLabel = "Translate to English 🇬🇧";
+                promptLabel = "Translate to English";
                 promptText = currentQuizItem.pinyin;
                 correctAnswer = currentQuizItem.english;
                 targetKey = 'english';
-                answerCategory = 'english';
             } else if (currentActiveType === 'e2p') {
-                promptLabel = "Provide the Pinyin 🔤";
+                promptLabel = "Provide the Pinyin";
                 promptText = currentQuizItem.english;
                 correctAnswer = currentQuizItem.pinyin;
                 targetKey = 'pinyin';
-                answerCategory = 'pinyin';
             }
-
-            setAnswerTheme(answerCategory);
 
             document.getElementById('prompt-instruction').innerText = promptLabel;
             document.getElementById('prompt-text').innerText = promptText;
