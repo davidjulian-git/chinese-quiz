@@ -377,14 +377,14 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            margin-bottom: 12px;
+            margin-top: 8px;
         }
         .word-pill {
             background: #0f172a;
             border: 1px solid var(--card-border);
             border-radius: 999px;
             padding: 4px 10px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-main);
         }
         .etymology-card {
@@ -406,6 +406,20 @@
             font-size: 0.78rem;
             color: var(--text-muted);
             margin-top: 6px;
+        }
+        .quiet-drawer {
+            background: rgba(15, 23, 42, 0.55);
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(51, 65, 85, 0.65);
+            margin-top: 10px;
+        }
+        .quiet-drawer summary {
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            user-select: none;
         }
     </style>
 </head>
@@ -543,61 +557,58 @@
 
     <!-- 5-WORD FOCUS TAB -->
     <div id="focus5-tab" class="tab-content">
-        <h2 style="margin-top:0; font-size: 1.2rem;">5-Word Intensive Focus</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2 style="margin: 0; font-size: 1.15rem;">5-Word Focus</h2>
+            <span id="focus5-active-count" style="font-size: 0.78rem; color: var(--text-muted);">0/5 loaded</span>
+        </div>
 
-        <details style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 12px;" open>
-            <summary style="font-weight:600; cursor:pointer; font-size: 0.9rem; color: var(--text-main);">Set Active 5 Words / Phrases</summary>
-            <p class="status-note" style="margin-top: 6px;">Enter up to 5 lines using <code>Chinese | Pinyin | English</code> or comma-separated format. Flashcards and write-ins run offline; Gemini etymology and sentences require internet.</p>
-            <div class="form-group" style="margin-top: 8px;">
-                <textarea id="focus5-input" placeholder="烤鴨 | kǎoyā | roast duck&#10;遲到 | chídào | to be late&#10;錢包 | qiánbāo | wallet&#10;旅行 | lǚxíng | travel&#10;愛好 | àihào | hobby"></textarea>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button id="focus5-save-btn" style="flex: 1; padding: 8px 12px; font-size: 0.85rem;">Load 5 Words</button>
-                <button id="focus5-add-to-vocab-btn" class="secondary" style="padding: 8px 12px; font-size: 0.85rem;">+ Save to Main Vocab</button>
-            </div>
-        </details>
-
-        <div id="focus5-pills" class="word-pill-list"></div>
-
+        <!-- Primary Exercise Sub-Navigation -->
         <div class="focus-subnav">
-            <button type="button" id="subnav-fc" class="active-subtab">Flashcards</button>
+            <button type="button" id="subnav-mc" class="active-subtab">Multiple Choice</button>
             <button type="button" id="subnav-wr">Write-In</button>
             <button type="button" id="subnav-st">5-Word Sentences</button>
         </div>
 
-        <!-- Flashcards Mode -->
-        <div id="focus5-fc-panel">
-            <div class="quiz-card-box" id="fc-card-box">
-                <div class="quiz-header" style="margin-bottom: 6px;">
-                    <span id="fc-counter">Card 0/0</span>
-                    <span id="fc-side-label">Front</span>
-                </div>
-                <div id="fc-main-text" class="prompt-display">Load up to 5 words above to begin.</div>
-                <div id="fc-sub-text" style="font-size: 0.95rem; color: var(--text-muted); min-height: 1.4rem; margin-bottom: 10px;"></div>
-                <div style="display: flex; gap: 8px;">
-                    <button type="button" id="fc-flip-btn" class="secondary" style="flex: 1; padding: 8px;">Flip Card</button>
-                    <button type="button" id="fc-next-btn" style="flex: 1; padding: 8px;">Next Card ➔</button>
-                </div>
+        <!-- Multiple Choice Mode (Primary) -->
+        <div id="focus5-mc-panel">
+            <div class="form-group" style="margin-bottom: 10px;">
+                <select id="f5-mc-type" style="padding: 8px; font-size: 0.85rem;">
+                    <option value="random">🎲 Randomize All Types (Mixed)</option>
+                    <option value="c2e">Chinese Character ➔ English</option>
+                    <option value="c2p">Chinese Character ➔ Pinyin</option>
+                    <option value="p2c">Pinyin ➔ Chinese Character</option>
+                    <option value="e2c">English ➔ Chinese Character</option>
+                    <option value="p2e">Pinyin ➔ English</option>
+                    <option value="e2p">English ➔ Pinyin</option>
+                </select>
+            </div>
+            <div class="quiz-card-box" id="f5-mc-card-box">
+                <div id="f5-mc-instruction" class="prompt-instruction">Multiple Choice:</div>
+                <div id="f5-mc-prompt" class="prompt-display">Open "Set / Edit 5 Words" below to load your 5 words.</div>
+                <div id="f5-mc-options" class="options-grid"></div>
+                <div id="f5-mc-feedback" class="feedback-box"></div>
+                <button type="button" id="f5-mc-next-btn" style="margin-top: 10px; width: 100%; display: none;">Next Question ➔</button>
             </div>
         </div>
 
         <!-- Write-In Mode -->
         <div id="focus5-wr-panel" style="display: none;">
-            <div class="form-group">
-                <label>Direction:</label>
-                <select id="f5-write-type">
+            <div class="form-group" style="margin-bottom: 10px;">
+                <select id="f5-write-type" style="padding: 8px; font-size: 0.85rem;">
+                    <option value="random">🎲 Randomize All Types (Mixed)</option>
                     <option value="e2c">English ➔ Chinese Characters</option>
                     <option value="c2e">Chinese Characters ➔ English</option>
                     <option value="e2p">English ➔ Pinyin</option>
+                    <option value="p2c">Pinyin ➔ Chinese Characters</option>
                 </select>
             </div>
             <div class="quiz-card-box" id="f5-wr-card-box">
                 <div id="f5-wr-instruction" class="prompt-instruction">Type your answer:</div>
                 <div id="f5-wr-prompt" class="prompt-display">--</div>
-                <input type="text" id="f5-wr-input" placeholder="Type answer for one of your 5 words..." autocomplete="off">
+                <input type="text" id="f5-wr-input" placeholder="Type your answer..." autocomplete="off">
                 <div style="display: flex; gap: 8px; margin-top: 8px;">
                     <button type="button" id="f5-wr-submit-btn" style="flex: 1; padding: 8px;">Submit</button>
-                    <button type="button" id="f5-wr-next-btn" class="secondary" style="padding: 8px;">Skip / Next</button>
+                    <button type="button" id="f5-wr-next-btn" class="secondary" style="padding: 8px;">Next</button>
                 </div>
                 <div id="f5-wr-feedback" class="feedback-box"></div>
             </div>
@@ -610,7 +621,7 @@
                     <span id="f5-st-counter">Sentence 0/0</span>
                     <span id="f5-st-dir-badge">EN ➔ ZH</span>
                 </div>
-                <div id="f5-st-prompt" class="prompt-display" style="min-height: 3.2rem; display: flex; align-items: center; justify-content: center;">Generate or add sentences for your 5 words.</div>
+                <div id="f5-st-prompt" class="prompt-display" style="min-height: 3.2rem; display: flex; align-items: center; justify-content: center;">Generate sentences in the Etymology & Gemini drawer below.</div>
                 <div id="f5-st-input-area" style="text-align: left;">
                     <textarea id="f5-st-input" placeholder="Translate the sentence..."></textarea>
                     <div style="display: flex; gap: 8px; margin-top: 8px;">
@@ -623,20 +634,39 @@
             </div>
         </div>
 
-        <!-- Gemini Etymology & Sentence Generator (Online) -->
-        <div style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border); margin-top: 14px;">
-            <h3 style="margin-top:0; font-size: 1rem; color: var(--text-main);">Gemini Etymology & 5-Word Sentences (Online)</h3>
-            <div class="form-group">
-                <label>Gemini API Key (saved in browser only):</label>
-                <input type="password" id="gemini-api-key" placeholder="Paste Google AI Studio API key...">
+        <!-- Quiet Collapsed Drawer 1: Set / Edit 5 Words (Hidden by default so you can't peek) -->
+        <details id="focus5-words-drawer" class="quiet-drawer">
+            <summary>Set / Edit 5 Words (Hidden while practicing)</summary>
+            <p class="status-note" style="margin-top: 6px;">Up to 5 lines: <code>Chinese | Pinyin | English</code></p>
+            <div class="form-group" style="margin-top: 6px; margin-bottom: 8px;">
+                <textarea id="focus5-input" placeholder="烤鴨 | kǎoyā | roast duck&#10;遲到 | chídào | to be late&#10;錢包 | qiánbāo | wallet&#10;旅行 | lǚxíng | travel&#10;愛好 | àihào | hobby"></textarea>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button type="button" id="gemini-generate-btn" style="flex: 1; padding: 8px 12px; font-size: 0.85rem;">Get Etymology & Sentences</button>
-                <button type="button" id="gemini-push-sentences-btn" class="secondary" style="padding: 8px 12px; font-size: 0.85rem;">+ Add Sentences to Trainer</button>
+                <button type="button" id="focus5-save-btn" style="flex: 1; padding: 8px 10px; font-size: 0.82rem;">Load & Hide 5 Words</button>
+                <button type="button" id="focus5-toggle-peek-btn" class="secondary" style="padding: 8px 10px; font-size: 0.82rem;">Peek List</button>
+                <button type="button" id="focus5-add-to-vocab-btn" class="secondary" style="padding: 8px 10px; font-size: 0.82rem;">+ Main Vocab</button>
             </div>
-            <div id="gemini-status" class="status-note">Offline-ready for flashcards & write-ins; online required for Gemini lookup.</div>
+            <div id="focus5-pills" class="word-pill-list" style="display: none;"></div>
+        </details>
+
+        <!-- Quiet Collapsed Drawer 2: Gemini Etymology & Sentences (Visually deprioritized) -->
+        <details id="focus5-gemini-drawer" class="quiet-drawer">
+            <summary>Etymology & AI Sentences (Online)</summary>
+            <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" id="gemini-generate-btn" style="flex: 1; padding: 8px 10px; font-size: 0.82rem;">Fetch Etymology & Sentences</button>
+                <button type="button" id="gemini-push-sentences-btn" class="secondary" style="padding: 8px 10px; font-size: 0.82rem;">+ Sentence Trainer</button>
+            </div>
+            <div id="gemini-status" class="status-note">Uses saved API key when online.</div>
             <div id="gemini-etymology-output"></div>
-        </div>
+
+            <details style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(51, 65, 85, 0.5);">
+                <summary style="font-size: 0.74rem; color: var(--text-muted); font-weight: 500;">API Key Setup</summary>
+                <div style="margin-top: 6px; display: flex; gap: 6px;">
+                    <input type="password" id="gemini-api-key" placeholder="Paste Google AI Studio key..." style="padding: 7px; font-size: 0.8rem;">
+                    <button type="button" id="gemini-save-key-btn" class="secondary" style="padding: 7px 10px; font-size: 0.78rem; white-space: nowrap;">Save</button>
+                </div>
+            </details>
+        </details>
     </div>
 
     <!-- MANAGE VOCABULARY TAB -->
@@ -756,7 +786,7 @@
             tone: "Tone"
         };
 
-        const GEMINI_MODEL = "gemini-3.5-flash-lite"; // Fast low-latency model
+        const GEMINI_MODEL = "gemini-3.5-flash-lite";
 
         function getAnswerTargetFormat(questionType) {
             if (questionType === 'c2e' || questionType === 'p2e') return 'english';
@@ -785,11 +815,9 @@
         }
 
         function resetCardColorSchemes() {
-            const quizCard = document.getElementById('quiz-card-box');
-            const stCard = document.getElementById('st-card-box');
-            const f5WrCard = document.getElementById('f5-wr-card-box');
-            const f5StCard = document.getElementById('f5-st-card-box');
-            [quizCard, stCard, f5WrCard, f5StCard].forEach(el => {
+            const ids = ['quiz-card-box', 'st-card-box', 'f5-mc-card-box', 'f5-wr-card-box', 'f5-st-card-box'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
                 if (el) el.classList.remove('answer-english', 'answer-chinese', 'answer-pinyin');
             });
             document.documentElement.style.setProperty('--theme-color', '#f97316');
@@ -827,7 +855,6 @@
 
         let sentenceBank = JSON.parse(localStorage.getItem('chinese_sentences')) || [];
 
-        // 5-Word Focus state persisted in localStorage
         let focus5State = JSON.parse(localStorage.getItem('chinese_focus5_state')) || {
             words: [],
             etymologies: [],
@@ -1076,11 +1103,19 @@
             } else if (tabName === 'focus5') {
                 document.getElementById('focus5-tab').classList.add('active');
                 document.getElementById('nav-focus5').classList.add('active-tab');
+                // Ensure the 5-word list stays hidden on entry so you cannot accidentally peek
+                const wordsDrawer = document.getElementById('focus5-words-drawer');
+                if (wordsDrawer && (focus5State.words || []).length > 0) {
+                    wordsDrawer.removeAttribute('open');
+                }
+                const pillsEl = document.getElementById('focus5-pills');
+                if (pillsEl) pillsEl.style.display = 'none';
+                document.getElementById('focus5-toggle-peek-btn').innerText = 'Peek List';
+
+                updateFocus5CountLabel();
                 renderFocus5Pills();
                 renderEtymologyCards();
-                loadFocus5Flashcard();
-                loadFocus5WriteCard();
-                loadFocus5SentenceCard();
+                loadFocus5McCard();
             } else if (tabName === 'manage-sentences') {
                 document.getElementById('manage-sentences-tab').classList.add('active');
                 document.getElementById('nav-manage-sentences').classList.add('active-tab');
@@ -1093,25 +1128,32 @@
         }
 
         // ================= 5-WORD FOCUS LOGIC =================
-        let fcIndex = 0;
-        let fcFlipped = false;
+        let f5CurrentMcItem = null;
+        let f5CurrentMcType = 'c2e';
         let f5CurrentWriteItem = null;
+        let f5CurrentWriteType = 'e2c';
         let f5SentenceIndex = 0;
         let f5CurrentSentenceObj = null;
 
+        function updateFocus5CountLabel() {
+            const count = (focus5State.words || []).length;
+            const el = document.getElementById('focus5-active-count');
+            if (el) el.innerText = `${count}/5 loaded`;
+        }
+
         function switchFocus5Subtab(mode) {
-            document.getElementById('subnav-fc').classList.remove('active-subtab');
+            document.getElementById('subnav-mc').classList.remove('active-subtab');
             document.getElementById('subnav-wr').classList.remove('active-subtab');
             document.getElementById('subnav-st').classList.remove('active-subtab');
-            document.getElementById('focus5-fc-panel').style.display = 'none';
+            document.getElementById('focus5-mc-panel').style.display = 'none';
             document.getElementById('focus5-wr-panel').style.display = 'none';
             document.getElementById('focus5-st-panel').style.display = 'none';
             resetCardColorSchemes();
 
-            if (mode === 'fc') {
-                document.getElementById('subnav-fc').classList.add('active-subtab');
-                document.getElementById('focus5-fc-panel').style.display = 'block';
-                loadFocus5Flashcard();
+            if (mode === 'mc') {
+                document.getElementById('subnav-mc').classList.add('active-subtab');
+                document.getElementById('focus5-mc-panel').style.display = 'block';
+                loadFocus5McCard();
             } else if (mode === 'wr') {
                 document.getElementById('subnav-wr').classList.add('active-subtab');
                 document.getElementById('focus5-wr-panel').style.display = 'block';
@@ -1144,17 +1186,20 @@
             focus5State.words = parsedWords;
             focus5State.etymologies = [];
             focus5State.sentences = [];
-            fcIndex = 0;
-            fcFlipped = false;
             f5SentenceIndex = 0;
             saveFocus5State();
 
+            // Collapse the drawer and hide pills immediately so you don't peek during exercises
+            document.getElementById('focus5-words-drawer').removeAttribute('open');
+            document.getElementById('focus5-pills').style.display = 'none';
+            document.getElementById('focus5-toggle-peek-btn').innerText = 'Peek List';
+
+            updateFocus5CountLabel();
             renderFocus5Pills();
             renderEtymologyCards();
-            loadFocus5Flashcard();
+            loadFocus5McCard();
             loadFocus5WriteCard();
             loadFocus5SentenceCard();
-            alert(`Loaded ${parsedWords.length} focus words.`);
         }
 
         function pushFocus5WordsToMainVocab() {
@@ -1191,52 +1236,118 @@
             });
         }
 
-        function loadFocus5Flashcard() {
+        // 5-Word Multiple Choice Mode
+        function loadFocus5McCard() {
             const words = focus5State.words || [];
-            const counterEl = document.getElementById('fc-counter');
-            const sideEl = document.getElementById('fc-side-label');
-            const mainEl = document.getElementById('fc-main-text');
-            const subEl = document.getElementById('fc-sub-text');
+            const instrEl = document.getElementById('f5-mc-instruction');
+            const promptEl = document.getElementById('f5-mc-prompt');
+            const optionsContainer = document.getElementById('f5-mc-options');
+            const feedbackEl = document.getElementById('f5-mc-feedback');
+            const nextBtn = document.getElementById('f5-mc-next-btn');
+            const cardEl = document.getElementById('f5-mc-card-box');
+
+            optionsContainer.innerHTML = '';
+            feedbackEl.style.display = 'none';
+            nextBtn.style.display = 'none';
 
             if (words.length === 0) {
-                counterEl.innerText = "Card 0/0";
-                sideEl.innerText = "Front";
-                mainEl.innerText = "Load up to 5 words above to start.";
-                subEl.innerText = "";
+                resetCardColorSchemes();
+                instrEl.innerText = "Multiple Choice";
+                promptEl.innerText = 'Open "Set / Edit 5 Words" below to load your 5 words.';
                 return;
             }
 
-            if (fcIndex >= words.length) fcIndex = 0;
-            const item = words[fcIndex];
-            counterEl.innerText = `Card ${fcIndex + 1}/${words.length}`;
+            f5CurrentMcItem = words[Math.floor(Math.random() * words.length)];
+            const settingType = document.getElementById('f5-mc-type').value;
+            const allTypes = ['c2e', 'c2p', 'p2c', 'e2c', 'p2e', 'e2p'];
+            f5CurrentMcType = settingType === 'random' ? allTypes[Math.floor(Math.random() * allTypes.length)] : settingType;
 
-            if (!fcFlipped) {
-                sideEl.innerText = "Front (Characters)";
-                mainEl.innerText = item.chinese;
-                subEl.innerText = "Tap Flip Card to check Pinyin & English";
+            applyAnswerColorScheme(cardEl, f5CurrentMcType);
+
+            let promptText = '';
+            let promptLabel = '';
+            let correctAnswer = '';
+            let targetKey = '';
+
+            if (f5CurrentMcType === 'c2e') {
+                promptLabel = "Translate to English";
+                promptText = f5CurrentMcItem.chinese;
+                correctAnswer = f5CurrentMcItem.english;
+                targetKey = 'english';
+            } else if (f5CurrentMcType === 'c2p') {
+                promptLabel = "Provide the Pinyin";
+                promptText = f5CurrentMcItem.chinese;
+                correctAnswer = f5CurrentMcItem.pinyin;
+                targetKey = 'pinyin';
+            } else if (f5CurrentMcType === 'p2c') {
+                promptLabel = "Provide Chinese Characters";
+                promptText = f5CurrentMcItem.pinyin;
+                correctAnswer = f5CurrentMcItem.chinese;
+                targetKey = 'chinese';
+            } else if (f5CurrentMcType === 'e2c') {
+                promptLabel = "Provide Chinese Characters";
+                promptText = f5CurrentMcItem.english;
+                correctAnswer = f5CurrentMcItem.chinese;
+                targetKey = 'chinese';
+            } else if (f5CurrentMcType === 'p2e') {
+                promptLabel = "Translate to English";
+                promptText = f5CurrentMcItem.pinyin;
+                correctAnswer = f5CurrentMcItem.english;
+                targetKey = 'english';
             } else {
-                sideEl.innerText = "Back (Meaning & Pinyin)";
-                mainEl.innerText = item.english;
-                subEl.innerText = `${item.chinese}  •  ${item.pinyin}`;
+                promptLabel = "Provide the Pinyin";
+                promptText = f5CurrentMcItem.english;
+                correctAnswer = f5CurrentMcItem.pinyin;
+                targetKey = 'pinyin';
             }
+
+            instrEl.innerText = promptLabel;
+            promptEl.innerText = promptText;
+
+            // Build 4 choices: prioritize distractors from the other 4 focus words, then top up from main vocab if < 4
+            let wrongOptions = words
+                .filter(w => w[targetKey] !== correctAnswer)
+                .map(w => w[targetKey]);
+            wrongOptions = Array.from(new Set(wrongOptions));
+
+            if (wrongOptions.length < 3) {
+                const extraPool = shuffle(vocabList)
+                    .map(v => v[targetKey])
+                    .filter(val => val && val !== correctAnswer && !wrongOptions.includes(val));
+                wrongOptions = wrongOptions.concat(extraPool.slice(0, 3 - wrongOptions.length));
+            }
+
+            const choices = shuffle([correctAnswer, ...shuffle(wrongOptions).slice(0, 3)]);
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'option-btn';
+                btn.innerText = choice;
+                btn.addEventListener('click', () => {
+                    checkFocus5McAnswer(choice === correctAnswer, correctAnswer);
+                });
+                optionsContainer.appendChild(btn);
+            });
         }
 
-        function flipFocus5Card() {
-            if (!(focus5State.words || []).length) return;
-            fcFlipped = !fcFlipped;
-            loadFocus5Flashcard();
+        function checkFocus5McAnswer(isCorrect, correctAnswer) {
+            const feedbackEl = document.getElementById('f5-mc-feedback');
+            feedbackEl.style.display = 'block';
+            document.querySelectorAll('#f5-mc-options .option-btn').forEach(btn => btn.disabled = true);
+
+            const fullEntry = `${f5CurrentMcItem.chinese} (${f5CurrentMcItem.pinyin}) — ${f5CurrentMcItem.english}`;
+            if (isCorrect) {
+                feedbackEl.className = 'feedback-box feedback-correct';
+                feedbackEl.innerHTML = `✨ Correct! <span style="font-weight:normal;">${fullEntry}</span>`;
+            } else {
+                feedbackEl.className = 'feedback-box feedback-incorrect';
+                feedbackEl.innerHTML = `❌ Incorrect. Correct: <strong>${correctAnswer}</strong><br><span style="font-weight:normal;">${fullEntry}</span>`;
+            }
+
+            document.getElementById('f5-mc-next-btn').style.display = 'block';
         }
 
-        function nextFocus5Card() {
-            const words = focus5State.words || [];
-            if (!words.length) return;
-            fcIndex = (fcIndex + 1) % words.length;
-            fcFlipped = false;
-            loadFocus5Flashcard();
-        }
-
-        let f5CurrentWriteType = 'e2c';
-
+        // 5-Word Write-In Mode
         function loadFocus5WriteCard() {
             const words = focus5State.words || [];
             const promptEl = document.getElementById('f5-wr-prompt');
@@ -1249,13 +1360,15 @@
 
             if (words.length === 0) {
                 resetCardColorSchemes();
-                instrEl.innerText = "No Focus Words";
-                promptEl.innerText = "Load up to 5 words above first.";
+                instrEl.innerText = "Write-In";
+                promptEl.innerText = 'Open "Set / Edit 5 Words" below to load your 5 words.';
                 return;
             }
 
             f5CurrentWriteItem = words[Math.floor(Math.random() * words.length)];
-            f5CurrentWriteType = document.getElementById('f5-write-type').value;
+            const settingType = document.getElementById('f5-write-type').value;
+            const wrTypes = ['e2c', 'c2e', 'e2p', 'p2c'];
+            f5CurrentWriteType = settingType === 'random' ? wrTypes[Math.floor(Math.random() * wrTypes.length)] : settingType;
             applyAnswerColorScheme(cardEl, f5CurrentWriteType);
 
             if (f5CurrentWriteType === 'e2c') {
@@ -1264,6 +1377,9 @@
             } else if (f5CurrentWriteType === 'c2e') {
                 instrEl.innerText = "Write English Meaning";
                 promptEl.innerText = f5CurrentWriteItem.chinese;
+            } else if (f5CurrentWriteType === 'p2c') {
+                instrEl.innerText = "Write Chinese Characters";
+                promptEl.innerText = f5CurrentWriteItem.pinyin;
             } else {
                 instrEl.innerText = "Write Pinyin";
                 promptEl.innerText = f5CurrentWriteItem.english;
@@ -1306,7 +1422,7 @@
             if (list.length === 0) {
                 resetCardColorSchemes();
                 counterEl.innerText = "Sentence 0/0";
-                promptEl.innerText = "Click 'Get Etymology & Sentences' below (while online) to create sentences for these 5 words.";
+                promptEl.innerText = 'Open "Etymology & AI Sentences" below while online to generate sentences.';
                 f5CurrentSentenceObj = null;
                 return;
             }
@@ -1372,12 +1488,13 @@
         }
 
         async function generateGeminiFocusData() {
-            const apiKey = document.getElementById('gemini-api-key').value.trim();
+            const inputKey = document.getElementById('gemini-api-key').value.trim();
+            const apiKey = inputKey || localStorage.getItem('gemini_api_key') || '';
             const statusEl = document.getElementById('gemini-status');
             const words = focus5State.words || [];
 
             if (!apiKey) {
-                statusEl.innerText = "Enter a Gemini API key first to fetch etymology and sentences online.";
+                statusEl.innerText = "Open 'API Key Setup' below and save your Gemini API key first.";
                 return;
             }
             if (words.length === 0) {
@@ -1385,7 +1502,7 @@
                 return;
             }
             if (!navigator.onLine) {
-                statusEl.innerText = "You appear to be offline. Flashcards and write-ins still work offline.";
+                statusEl.innerText = "You appear to be offline. Multiple choice and write-ins still work offline.";
                 return;
             }
 
@@ -1441,7 +1558,7 @@ Include 1 etymology entry per input word and 4 to 6 short study sentences.`;
 
                 renderEtymologyCards();
                 loadFocus5SentenceCard();
-                statusEl.innerText = `Updated ${focus5State.etymologies.length} etymologies and ${focus5State.sentences.length} sentences.`;
+                statusEl.innerText = `Loaded ${focus5State.etymologies.length} etymologies and ${focus5State.sentences.length} sentences.`;
             } catch (err) {
                 statusEl.innerText = `Could not fetch from Gemini (${err.message}). Check API key or connection.`;
             }
@@ -2106,16 +2223,26 @@ Include 1 etymology entry per input word and 4 to 6 short study sentences.`;
             document.getElementById('tone-next-btn').addEventListener('click', loadToneCard);
 
             // 5-Word Focus listeners
-            document.getElementById('subnav-fc').addEventListener('click', () => switchFocus5Subtab('fc'));
+            document.getElementById('subnav-mc').addEventListener('click', () => switchFocus5Subtab('mc'));
             document.getElementById('subnav-wr').addEventListener('click', () => switchFocus5Subtab('wr'));
             document.getElementById('subnav-st').addEventListener('click', () => switchFocus5Subtab('st'));
             document.getElementById('focus5-save-btn').addEventListener('click', saveFocus5WordsFromInput);
+            document.getElementById('focus5-toggle-peek-btn').addEventListener('click', () => {
+                const pillsEl = document.getElementById('focus5-pills');
+                const btn = document.getElementById('focus5-toggle-peek-btn');
+                const hidden = pillsEl.style.display === 'none';
+                pillsEl.style.display = hidden ? 'flex' : 'none';
+                btn.innerText = hidden ? 'Hide List' : 'Peek List';
+            });
             document.getElementById('focus5-add-to-vocab-btn').addEventListener('click', pushFocus5WordsToMainVocab);
-            document.getElementById('fc-flip-btn').addEventListener('click', flipFocus5Card);
-            document.getElementById('fc-next-btn').addEventListener('click', nextFocus5Card);
+
+            document.getElementById('f5-mc-type').addEventListener('change', loadFocus5McCard);
+            document.getElementById('f5-mc-next-btn').addEventListener('click', loadFocus5McCard);
+
             document.getElementById('f5-write-type').addEventListener('change', loadFocus5WriteCard);
             document.getElementById('f5-wr-submit-btn').addEventListener('click', checkFocus5WriteAnswer);
             document.getElementById('f5-wr-next-btn').addEventListener('click', loadFocus5WriteCard);
+
             document.getElementById('f5-st-submit-btn').addEventListener('click', () => checkFocus5SentenceAnswer(false));
             document.getElementById('f5-st-reveal-btn').addEventListener('click', () => checkFocus5SentenceAnswer(true));
             document.getElementById('f5-st-next-btn').addEventListener('click', () => {
@@ -2125,8 +2252,16 @@ Include 1 etymology entry per input word and 4 to 6 short study sentences.`;
                     loadFocus5SentenceCard();
                 }
             });
+
             document.getElementById('gemini-generate-btn').addEventListener('click', generateGeminiFocusData);
             document.getElementById('gemini-push-sentences-btn').addEventListener('click', pushFocus5SentencesToMainTrainer);
+            document.getElementById('gemini-save-key-btn').addEventListener('click', () => {
+                const key = document.getElementById('gemini-api-key').value.trim();
+                if (key) {
+                    localStorage.setItem('gemini_api_key', key);
+                    document.getElementById('gemini-status').innerText = "API key saved in browser.";
+                }
+            });
 
             const savedKey = localStorage.getItem('gemini_api_key');
             if (savedKey) {
